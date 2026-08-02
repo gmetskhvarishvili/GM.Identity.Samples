@@ -1,0 +1,686 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GM.Identity.Sample.API</name>
+    </assembly>
+    <members>
+        <member name="T:GM.Identity.Sample.API.Accounts.AccountsController">
+            <summary>
+            Accounts Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.Authorize(GM.Identity.Sample.API.Accounts.AuthorizeModel,System.Threading.CancellationToken)">
+            <summary>
+            Authorize
+            </summary>
+            <param name="request">request</param>
+            <param name="cancellationToken"></param>
+            <returns>UserSession Response</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.GoogleConnect(GM.Identity.Sample.API.Accounts.AuthConnectModel,System.Threading.CancellationToken)">
+            <summary>
+            Google Connect
+            </summary>
+            <param name="request">Auth Connect Request Params</param>
+            <param name="cancellationToken"></param>
+            <returns>Redirect Uri</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.GoogleAuthorize(GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel,System.Threading.CancellationToken)">
+            <summary>
+            Google Connect UserSession
+            </summary>
+            <param name="request">Auth Connect UserSession Request Params</param>
+            <param name="cancellationToken"></param>
+            <returns>UserSession Response</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.FacebookConnect(GM.Identity.Sample.API.Accounts.AuthConnectModel,System.Threading.CancellationToken)">
+            <summary>
+            Facebook Connect
+            </summary>
+            <param name="request">Auth Connect Request Params</param>
+            <param name="cancellationToken"></param>
+            <returns>Redirect Uri</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.FacebookAuthorize(GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel,System.Threading.CancellationToken)">
+            <summary>
+            Facebook Connect UserSession
+            </summary>
+            <param name="request">Auth Connect UserSession Request Params</param>
+            <param name="cancellationToken"></param>
+            <returns>UserSession Response</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.ClientsController">
+            <summary>
+            Clients Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.AddClient(GM.Identity.Sample.API.Clients.CreateClientModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Client
+            </summary>
+            <param name="request">Client Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Client Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.AddClientScope(System.Guid,GM.Identity.Sample.API.Clients.CreateClientScopeModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Client Scope
+            </summary>
+            <param name="id">Client Id to Update</param>
+            <param name="request">Client Scope Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.UpdateClient(System.Guid,GM.Identity.Sample.API.Clients.UpdateClientModel,System.Threading.CancellationToken)">
+            <summary>
+            Update Client
+            </summary>
+            <param name="id">Client Id to Update</param>
+            <param name="request">Client Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeleteClient(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Client
+            </summary>
+            <param name="id">Client Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeleteClientScope(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Client Scope
+            </summary>
+            <param name="id">Client Id to Delete</param>
+            <param name="scopeId">Scope Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeleteClientSessions(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Client Sessions
+            </summary>
+            <param name="id">Client Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeleteClientSession(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Client Session
+            </summary>
+            <param name="id">Client Id to Delete</param>
+            <param name="sessionId">Session Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.GetClientsList(GM.Identity.Sample.API.Clients.GetClientsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Clients List
+            </summary>
+            <param name="request">Client Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of Roles</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.GetClientScopes(System.Guid,GM.API.Models.GetBaseListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Client Scopes List
+            </summary>
+            <param name="id">Client Id to Get</param>
+            <param name="request">Client Scope Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Client Scopes</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.GetClientSessions(System.Guid,GM.Identity.Sample.API.Clients.GetClientSessionsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Client Sessions List
+            </summary>
+            <param name="id">Client Id to Get</param>
+            <param name="request">Client Session Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Client Sessions</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.GetClientDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get Client Details
+            </summary>
+            <param name="id">Client Id to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Client Details</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Operations.GetOperationsListModel">
+            <summary>
+            Get Operations List
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.GetOperationsListModel.Id">
+            <summary>
+            The Id of the Operation
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.GetOperationsListModel.Name">
+            <summary>
+            The Name of the Operation
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.GetOperationsListModel.Description">
+            <summary>
+            The Description of the Operation
+            </summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Operations.GetOperationsListModelValidator">
+            <inheritdoc />
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.GetOperationsListModelValidator.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Operations.OperationsController">
+            <summary>
+            Operations Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.AddOperation(GM.Identity.Sample.API.Operations.CreateOperationModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Operation
+            </summary>
+            <param name="request">Operation Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Operation Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.UpdateOperation(System.Guid,GM.Identity.Sample.API.Operations.UpdateOperationModel,System.Threading.CancellationToken)">
+            <summary>
+            Update Operation
+            </summary>
+            <param name="id">Operation Id to Update</param>
+            <param name="request">Operation Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.DeleteOperation(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Operation
+            </summary>
+            <param name="id">Operation Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.GetOperationsList(GM.Identity.Sample.API.Operations.GetOperationsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Operations List
+            </summary>
+            <param name="request">Operation Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of Operations</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.GetOperationDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get Operation Details
+            </summary>
+            <param name="id">Operation Id to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Operation Details</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.GetPermissionsListModel">
+            <summary>
+            Get Permissions List
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.GetPermissionsListModel.Id">
+            <summary>
+            The Id of the Permission
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.GetPermissionsListModel.Name">
+            <summary>
+            The Name of the Permission
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.GetPermissionsListModel.Description">
+            <summary>
+            The Description of the Permission
+            </summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.GetPermissionsListModelValidator">
+            <inheritdoc />
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.GetPermissionsListModelValidator.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.PermissionsController">
+            <summary>
+            Permissions Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.AddPermission(GM.Identity.Sample.API.Permissions.CreatePermissionModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Permission
+            </summary>
+            <param name="request">Permission Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Permission Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.UpdatePermission(System.Guid,GM.Identity.Sample.API.Permissions.UpdatePermissionModel,System.Threading.CancellationToken)">
+            <summary>
+            Update Permission
+            </summary>
+            <param name="id">Permission Id to Update</param>
+            <param name="request">Permission Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.DeletePermission(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Permission
+            </summary>
+            <param name="id">Permission Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.GetPermissionsList(GM.Identity.Sample.API.Permissions.GetPermissionsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Permissions List
+            </summary>
+            <param name="request">Permission Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of Permissions</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.GetPermissionDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get Permission Details
+            </summary>
+            <param name="id">Permission Id to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Permission Details</returns>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.GetRolesListModel.Id">
+            <summary>
+            The Id of the Role
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.GetRolesListModel.Name">
+            <summary>
+            The Name of the Role
+            </summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.GetRolesListModelValidator">
+            <inheritdoc />
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.GetRolesListModelValidator.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.RolesController">
+            <summary>
+            Roles Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.AddRole(GM.Identity.Sample.API.Roles.CreateRoleModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Role
+            </summary>
+            <param name="request">Role Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Role Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.AddRolePermission(System.Guid,GM.Identity.Sample.API.Roles.CreateRolePermissionModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Role Permission
+            </summary>
+            <param name="id">Role Id to Update</param>
+            <param name="request">Role Permission Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Role Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.UpdateRole(System.Guid,GM.Identity.Sample.API.Roles.UpdateRoleModel,System.Threading.CancellationToken)">
+            <summary>
+            Update Role
+            </summary>
+            <param name="id">Role Id to Update</param>
+            <param name="request">Role Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.DeleteRole(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Role
+            </summary>
+            <param name="id">Role Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.DeleteRolePermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Role Permission
+            </summary>
+            <param name="id">Role Id to Delete</param>
+            <param name="permissionId">Permission Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.GetRolesList(GM.Identity.Sample.API.Roles.GetRolesListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Roles List
+            </summary>
+            <param name="request">Role Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of Roles</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.GetRolePermissions(System.Guid,GM.API.Models.GetBaseListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Role Permissions List
+            </summary>
+            <param name="id">Role Id to Get</param>
+            <param name="request">Role Permission Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Role Permissions</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.GetRoleDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get Role Details
+            </summary>
+            <param name="id">Role Id to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Role Details</returns>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.GetScopesListModel.Id">
+            <summary>
+            The Id of the Scope
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.GetScopesListModel.Name">
+            <summary>
+            The Name of the Scope
+            </summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.GetScopesListModelValidator">
+            <inheritdoc />
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.GetScopesListModelValidator.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.ScopesController">
+            <summary>
+            Scopes Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.AddScope(GM.Identity.Sample.API.Scopes.CreateScopeModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Scope
+            </summary>
+            <param name="request">Scope Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Scope Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.AddScopeOperation(System.Guid,GM.Identity.Sample.API.Scopes.CreateScopeOperationModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Scope Operation
+            </summary>
+            <param name="id">Scope Id to Update</param>
+            <param name="request">Scope Operation Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Scope Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.UpdateScope(System.Guid,GM.Identity.Sample.API.Scopes.UpdateScopeModel,System.Threading.CancellationToken)">
+            <summary>
+            Update Scope
+            </summary>
+            <param name="id">Scope Id to Update</param>
+            <param name="request">Scope Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.DeleteScope(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Scope
+            </summary>
+            <param name="id">Scope Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.DeleteScopeOperation(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Scope Operation
+            </summary>
+            <param name="id">Scope Id to Delete</param>
+            <param name="operationId">Operation Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.GetScopesList(GM.Identity.Sample.API.Scopes.GetScopesListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Scopes List
+            </summary>
+            <param name="request">Scope Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of Scopes</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.GetScopeOperations(System.Guid,GM.API.Models.GetBaseListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Scope Operations List
+            </summary>
+            <param name="id">Scope Id to Get</param>
+            <param name="request">Scope Operation Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Scope Operations</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.GetScopeDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get Scope Details
+            </summary>
+            <param name="id">Scope Id to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>Scope Details</returns>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.GetUsersListModel.Id">
+            <summary>
+            The Id of the User
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.GetUsersListModel.Email">
+            <summary>
+            The Email of the User
+            </summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.GetUsersListModel.Username">
+            <summary>
+            The Username of the User
+            </summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.GetUsersListModelValidator">
+            <inheritdoc />
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.GetUsersListModelValidator.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UsersController">
+            <summary>
+            Users Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.AddUser(GM.Identity.Sample.API.Users.CreateUserModel,System.Threading.CancellationToken)">
+            <summary>
+            Add User
+            </summary>
+            <param name="request">User Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>User Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.AddUserRole(System.Guid,GM.Identity.Sample.API.Users.CreateUserRoleModel,System.Threading.CancellationToken)">
+            <summary>
+            Add User Role
+            </summary>
+            <param name="id">User Id to Update</param>
+            <param name="request">User Role Model to Add</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ResetUserPassword(GM.Identity.Sample.API.Users.ResetUserPasswordModel,System.Threading.CancellationToken)">
+            <summary>
+            Reset User Password
+            </summary>
+            <param name="request">Reset User Password</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RecoverUserPassword(GM.Identity.Sample.API.Users.RecoverUserPasswordModel,System.Threading.CancellationToken)">
+            <summary>
+            Recover User Password
+            </summary>
+            <param name="request">Recover User Password</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserInit(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserInitModel,System.Threading.CancellationToken)">
+            <summary>
+            Confirm User Init
+            </summary>
+            <param name="id">User Id to Confirm</param>
+            <param name="request">Confirm User Init</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUser(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserModel,System.Threading.CancellationToken)">
+            <summary>
+            Confirm User
+            </summary>
+            <param name="id">User Id to Confirm</param>
+            <param name="request">Confirm User</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateUser(System.Guid,GM.Identity.Sample.API.Users.UpdateUserModel,System.Threading.CancellationToken)">
+            <summary>
+            Update User
+            </summary>
+            <param name="id">User Id to Update</param>
+            <param name="request">User Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateUserPassword(System.Guid,GM.Identity.Sample.API.Users.UpdateUserPasswordModel,System.Threading.CancellationToken)">
+            <summary>
+            Update User Password
+            </summary>
+            <param name="id">User Id to Update</param>
+            <param name="request">User Model to Update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DeleteUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete User
+            </summary>
+            <param name="id">User Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DeleteUserRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete User Role
+            </summary>
+            <param name="id">User Id to Delete</param>
+            <param name="roleId">Role Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DeleteUserSessions(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete User Sessions
+            </summary>
+            <param name="id">User Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DeleteUserSession(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete User Session
+            </summary>
+            <param name="id">User Id to Delete</param>
+            <param name="sessionId">User Id to Delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUsersList(GM.Identity.Sample.API.Users.GetUsersListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Users List
+            </summary>
+            <param name="request">User Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of Roles</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserRoles(System.Guid,GM.API.Models.GetBaseListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get User Roles List
+            </summary>
+            <param name="id">User Id to Get</param>
+            <param name="request">User Role Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>User Roles</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserSessions(System.Guid,GM.Identity.Sample.API.Users.GetUserSessionsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get User Sessions List
+            </summary>
+            <param name="id">User Id to Get</param>
+            <param name="request">User Session Model to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>User Sessions</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get User Details
+            </summary>
+            <param name="id">User Id to Get</param>
+            <param name="cancellationToken"></param>
+            <returns>User Details</returns>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Auto-generated public partial Program class for top-level statement apps.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
+            <summary>
+            Generates a documentation comment ID for a type.
+            Example: T:Namespace.Outer+Inner`1 becomes T:Namespace.Outer.Inner`1
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Reflection.PropertyInfo)">
+            <summary>
+            Generates a documentation comment ID for a property.
+            Example: P:Namespace.ContainingType.PropertyName or for an indexer P:Namespace.ContainingType.Item(System.Int32)
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type,System.String)">
+            <summary>
+            Generates a documentation comment ID for a property given its container type and property name.
+            Example: P:Namespace.ContainingType.PropertyName
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Reflection.MethodInfo)">
+            <summary>
+            Generates a documentation comment ID for a method (or constructor).
+            For example:
+              M:Namespace.ContainingType.MethodName(ParamType1,ParamType2)~ReturnType
+              M:Namespace.ContainingType.#ctor(ParamType)
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.GetTypeDocId(System.Type,System.Boolean,System.Boolean)">
+            <summary>
+            Generates a documentation ID string for a type.
+            This method handles nested types (replacing '+' with '.'),
+            generic types, arrays, pointers, by-ref types, and generic parameters.
+            The <paramref name="includeGenericArguments"/> flag controls whether
+            constructed generic type arguments are emitted, while <paramref name="omitGenericArity"/>
+            controls whether the generic arity marker (e.g. "`1") is appended.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.NormalizeDocId(System.String)">
+            <summary>
+            Normalizes a documentation comment ID to match the compiler-style format.
+            Strips the return type suffix for ordinary methods but retains it for conversion operators.
+            </summary>
+            <param name="docId">The documentation comment ID to normalize.</param>
+            <returns>The normalized documentation comment ID.</returns>
+        </member>
+    </members>
+</doc>

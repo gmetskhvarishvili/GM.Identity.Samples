@@ -1,0 +1,5 @@
+using GM.EntityFramework.Domain.Repositories;
+
+namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
+
+public interface IUserTwoFactorAuthTypeRepository : IGenericRepository<UserTwoFactorAuthType>;

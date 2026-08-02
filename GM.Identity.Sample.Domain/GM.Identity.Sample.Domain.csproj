@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="GM.EntityFramework.Domain" Version="1.2.1"/>
+        <PackageReference Include="GM.Identity.Domain" Version="1.0.0" />
+        <PackageReference Include="GM.Messaging.Domain" Version="1.2.0" />
+        <PackageReference Include="WolverineFx" Version="6.24.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10"/>
+        <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.10"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\ClientScopeAggregate\Events\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\ClientScopeAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\OperationAggregate\Events\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\OperationAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\PermissionAggregate\Events\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\PermissionAggregate\ValueObjects\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\RoleAggregate\Events\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\RoleAggregate\ValueObjects\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\RolePermissionAggregate\Events\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\RolePermissionAggregate\ValueObjects\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\ScopeAggregate\Events\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\ScopeAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\ScopeOperationAggregate\Events\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\ScopeOperationAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\AccessControlBoundedContext\UserRoleAggregate\Events\"/>
+        <Folder Include="BoundedContext\AccessControlBoundedContext\UserRoleAggregate\ValueObjects\"/>
+        <Folder Include="BoundedContext\AuthorizationBoundedContext\ClientSessionAggregate\Events\" />
+        <Folder Include="BoundedContext\AuthorizationBoundedContext\ClientSessionAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\AuthorizationBoundedContext\UserSessionAggregate\Events\" />
+        <Folder Include="BoundedContext\AuthorizationBoundedContext\UserSessionAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\IdentityBoundedContext\TwoFactorAuthTypeAggregate\Events\" />
+        <Folder Include="BoundedContext\IdentityBoundedContext\TwoFactorAuthTypeAggregate\Specifications\" />
+        <Folder Include="BoundedContext\IdentityBoundedContext\TwoFactorAuthTypeAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\IdentityBoundedContext\UserAggregate\Events\"/>
+        <Folder Include="BoundedContext\IdentityBoundedContext\UserAggregate\ValueObjects\"/>
+        <Folder Include="BoundedContext\IdentityBoundedContext\UserTwoFactorAuthTypeAggregate\Events\" />
+        <Folder Include="BoundedContext\IdentityBoundedContext\UserTwoFactorAuthTypeAggregate\Specifications\" />
+        <Folder Include="BoundedContext\IdentityBoundedContext\UserTwoFactorAuthTypeAggregate\ValueObjects\" />
+        <Folder Include="BoundedContext\MessagingBoundedContext\" />
+    </ItemGroup>
+
+</Project>

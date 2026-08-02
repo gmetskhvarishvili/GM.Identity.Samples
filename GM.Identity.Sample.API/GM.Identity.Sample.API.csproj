@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>GM.Identity.Sample.API.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Asp.Versioning.Mvc" Version="10.0.1" />
+        <PackageReference Include="FluentValidation" Version="12.1.1" />
+        <PackageReference Include="GM.API" Version="1.4.0" />
+        <PackageReference Include="GM.Identity" Version="1.0.0" />
+        <PackageReference Include="GM.Mediator" Version="1.3.3" />
+        <PackageReference Include="Mapster" Version="10.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GM.Identity.Sample.Application\GM.Identity.Sample.Application.csproj" />
+        <ProjectReference Include="..\GM.Identity.Sample.Infrastructure\GM.Identity.Sample.Infrastructure.csproj" />
+        <ProjectReference Include="..\GM.Identity.Sample.Persistence\GM.Identity.Sample.Persistence.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Assets\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="GM.Identity.Sample.API.xml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

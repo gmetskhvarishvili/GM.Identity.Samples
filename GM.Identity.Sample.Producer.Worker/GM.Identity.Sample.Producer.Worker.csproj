@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>GM.Identity.Sample.Producer</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GM.Identity.Sample.Infrastructure\GM.Identity.Sample.Infrastructure.csproj" />
+      <ProjectReference Include="..\GM.Identity.Sample.Persistence\GM.Identity.Sample.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

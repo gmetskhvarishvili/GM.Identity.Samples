@@ -50,7 +50,7 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.IsExpired, 
             request.CurrentPage,
             request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         
         var entities = await unitOfWork
             .UserSessionRepository

@@ -50,7 +50,7 @@ public class CreateRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
         if (request.RolePermissions?.Any() == true)
         {
             var items = request.RolePermissions
-                .Select(item => RolePermission.Create(entity.Id, item.PermissionId!))
+                .Select(item => RolePermission.Create(entity.Id, item.PermissionId))
                 .ToArray();
             
             entity.AddPermissions(items);

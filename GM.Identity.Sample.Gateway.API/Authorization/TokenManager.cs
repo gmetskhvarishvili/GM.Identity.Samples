@@ -5,7 +5,7 @@ namespace GM.Identity.Sample.Gateway.API.Authorization;
 
 public class TokenManager(IHttpContextAccessor httpContextAccessor) : ITokenManager
 {
-    private readonly IDictionary<string, string> _dictionary = new Dictionary<string, string>();
+    private readonly Dictionary<string, string> _dictionary = new();
     private string? _json;
     
     public string? GetClaim(string key)
@@ -72,7 +72,8 @@ public class TokenManager(IHttpContextAccessor httpContextAccessor) : ITokenMana
                 case JsonValueKind.Null:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException(
+                        $"Unsupported JSON value kind '{value.ValueKind}' for claim '{key}'.");
             }
 
             return null;

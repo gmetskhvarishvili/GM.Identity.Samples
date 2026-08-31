@@ -36,7 +36,7 @@ public class GetClientScopesListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new ClientScopeSpecification(request.ClientId, request.CurrentPage, request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.ClientScopeRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ScopeDto>

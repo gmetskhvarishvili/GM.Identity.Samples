@@ -50,7 +50,7 @@ public class CreateScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler
         if (request.ScopeOperations?.Any() == true)
         {
             var items = request.ScopeOperations
-                .Select(item => ScopeOperation.Create(entity.Id, item.OperationId!))
+                .Select(item => ScopeOperation.Create(entity.Id, item.OperationId))
                 .ToArray();
             
             entity.AddOperations(items);

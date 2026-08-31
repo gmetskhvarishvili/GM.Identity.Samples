@@ -38,7 +38,7 @@ public class DeletePermissionCommandHandler(IUnitOfWork unitOfWork) : IRequestHa
             throw new NotFoundException(
                 StringResource.Permission,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         entity.SoftRemove();

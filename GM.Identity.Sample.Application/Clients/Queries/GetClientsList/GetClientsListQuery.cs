@@ -34,7 +34,7 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
             request.Name, 
             request.CurrentPage, 
             request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.ClientRepository.ListAsync(spec, cancellationToken);
         
         return new PagedListDto<ClientDto>

@@ -38,7 +38,7 @@ public class DeleteClientScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestH
             throw new NotFoundException(
                 StringResource.ClientScope,
                 StringResource.ScopeId,
-                request.ScopeId!);
+                request.ScopeId);
         }
 
         // Persist the aggregate

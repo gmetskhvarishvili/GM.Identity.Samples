@@ -38,7 +38,7 @@ public class DeleteOperationCommandHandler(IUnitOfWork unitOfWork) : IRequestHan
             throw new NotFoundException(
                 StringResource.Operation,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         entity.SoftRemove();

@@ -63,7 +63,7 @@ public class CreateUserCommandHandler(
         {
             var items = request.UserRoles
                 .Select(item =>
-                    UserRole.Create(entity.Id, item.RoleId!))
+                    UserRole.Create(entity.Id, item.RoleId))
                 .ToArray();
 
             entity.AddRoles(items);

@@ -14,13 +14,13 @@ public abstract class DesignTimeDbContextFactoryBase<TContext> :
 
     public TContext CreateDbContext(string[] args)
     {
-        var basePath = Directory.GetCurrentDirectory() + string.Format("{0}..{0}GM.Identity.Sample.API", Path.DirectorySeparatorChar);
+        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "GM.Identity.Sample.API");
         return Create(basePath, Environment.GetEnvironmentVariable(AspNetCoreEnvironment));
     }
 
     protected abstract TContext CreateNewInstance(DbContextOptions<TContext> options);
 
-    private TContext Create(string basePath, string environmentName)
+    private TContext Create(string basePath, string? environmentName)
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(basePath)
@@ -35,7 +35,7 @@ public abstract class DesignTimeDbContextFactoryBase<TContext> :
         return Create(connectionString);
     }
 
-    private TContext Create(string connectionString)
+    private TContext Create(string? connectionString)
     {
         if (string.IsNullOrEmpty(connectionString))
         {

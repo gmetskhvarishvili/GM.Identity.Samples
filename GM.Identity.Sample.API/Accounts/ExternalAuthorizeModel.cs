@@ -8,7 +8,7 @@ public class ExternalAuthorizeModel
     public string State { get; set; } = null!;
     public string RedirectUri { get; set; } = null!;
     public Guid ClientId { get; set; }
-    public string ClientSecret { get; set; }
+    public string ClientSecret { get; set; } = null!;
 }
 
 public class ExternalAuthorizeModelValidator : AbstractValidator<ExternalAuthorizeModel>

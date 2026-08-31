@@ -19,34 +19,6 @@ builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAuthentication();
-    // .AddAuthentication(options =>
-    // {
-    //     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    //     options.DefaultChallengeScheme = "Google";
-    // })
-    // .AddCookie(options =>
-    // {
-    //     options.Cookie.SameSite = SameSiteMode.Lax; // important for external redirects
-    //     options.Cookie.SecurePolicy = CookieSecurePolicy.None; // ok for localhost
-    //     options.Cookie.Path = "/";
-    // })
-    // .AddGoogle("Google", options =>
-    // {
-    //     options.ClientId = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
-    //     options.ClientSecret = "YOUR_GOOGLE_CLIENT_SECRET";
-    //     options.CallbackPath = new PathString("/connect/google/callback");
-    //
-    //     // Optional
-    //     options.SaveTokens = true;
-    // })
-    // // .AddFacebook("Facebook", options =>
-    // // {
-    // //     options.ClientId = "";
-    // //     options.ClientSecret = "";
-    // //     options.CallbackPath = "";
-    // // })
-    ;
-
 
 var app = builder.Build();
 
@@ -73,7 +45,7 @@ using (var scope = app.Services.CreateScope())
 
             var logger = scope.ServiceProvider.GetService<ILogger<ApplicationDbContextSeed>>();
             if (logger != null)
-                new ApplicationDbContextSeed().SeedAsync(context, logger).Wait();
+                await new ApplicationDbContextSeed().SeedAsync(context, logger);
         }
     }
     catch (Exception ex)
@@ -83,4 +55,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+await app.RunAsync();

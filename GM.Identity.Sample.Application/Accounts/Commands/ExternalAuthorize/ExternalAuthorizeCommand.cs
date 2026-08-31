@@ -24,7 +24,7 @@ public class ExternalAuthorizeCommand : IRequest<AuthorizeResponseDto>
     public string Provider { get; set; } = null!;
     
     public Guid ClientId { get; set; }
-    public string ClientSecret { get; set; }
+    public string ClientSecret { get; set; } = null!;
 }
 
 public class ExternalAuthorizeCommandValidator : AbstractValidator<ExternalAuthorizeCommand>

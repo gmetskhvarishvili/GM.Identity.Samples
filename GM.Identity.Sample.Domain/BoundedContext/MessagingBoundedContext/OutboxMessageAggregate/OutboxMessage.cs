@@ -8,7 +8,7 @@ public class OutboxMessage : GM.Messaging.Domain.Outbox.OutboxMessage, IAggregat
 {
     private OutboxMessage() { }
 
-    public new static OutboxMessage From<TEvent>(Guid? userId, TEvent evt, JsonSerializerOptions? options = null)
+    public static OutboxMessage From<TEvent>(Guid? userId, TEvent evt, JsonSerializerOptions? options = null)
         where TEvent : IIntegrationEvent =>
         new()
         {

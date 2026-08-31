@@ -9,8 +9,10 @@ namespace GM.Identity.Sample.Persistence.Repositories;
 public class OutboxMessageRepository(ApplicationDbContext context)
     : GenericRepository<OutboxMessage, ApplicationDbContext>(context), IOutboxMessageRepository, IOutboxDbContext<OutboxMessage>
 {
-    IQueryable<OutboxMessage> IOutboxDbContext<OutboxMessage>.OutboxMessages => context.Set<OutboxMessage>();
+    // _context is the protected DbContext field on GenericRepository; reuse it rather than
+    // capturing the primary-constructor parameter separately (which would trigger CS9107).
+    IQueryable<OutboxMessage> IOutboxDbContext<OutboxMessage>.OutboxMessages => _context.Set<OutboxMessage>();
 
     Task<int> IOutboxDbContext<OutboxMessage>.SaveChangesAsync(CancellationToken cancellationToken) =>
-        context.SaveChangesAsync(cancellationToken);
+        _context.SaveChangesAsync(cancellationToken);
 }

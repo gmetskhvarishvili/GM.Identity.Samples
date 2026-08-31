@@ -42,11 +42,11 @@ public class UpdateUserPasswordCommandHandler(
             throw new NotFoundException(
                 StringResource.User,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         var (hash, salt) = PasswordHasher
-            .Hash(request.Password!);
+            .Hash(request.Password);
         
         entity.UpdatePassword(hash, salt);
 

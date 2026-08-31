@@ -31,7 +31,7 @@ public class GetScopeOperationsListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new ScopeOperationSpecification(request.ScopeId, request.CurrentPage, request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.ScopeOperationRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<OperationDto>

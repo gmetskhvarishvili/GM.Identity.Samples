@@ -1,0 +1,34 @@
+<Project>
+
+  <!--
+    Shared build settings for the GM.Identity sample solution. The samples are executable
+    documentation, so they are held to the same engineering baseline as the packages they
+    demonstrate: latest analyzers + code style, with warnings treated as errors.
+  -->
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!--
+      Sample-wide analyzer relaxations. These are teaching-code conventions, not defects:
+        CA1848 - source-generated LoggerMessage delegates are a high-throughput micro-optimization;
+                 the sample favours plain structured-template calls for readability.
+        S6964  - request models bind required value types (Guid ids, enums) as non-nullable on
+                 purpose; presence is enforced by their FluentValidation validators, and making
+                 every id nullable purely to satisfy under-posting analysis would obscure the shape
+                 the samples demonstrate.
+        S101   - the OTP feature keeps the well-known acronyms OTP and API uppercase
+                 (IOTPService, VerifyOTPDto, IOTPAPIService, ...) rather than the analyzer's
+                 Pascal-case suggestion (Otp/Otpapi), which reads worse for a standard acronym.
+    -->
+    <NoWarn>$(NoWarn);CA1848;S6964;S101</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -7,11 +7,12 @@ public class ApplicationDbContextSeed
     public async Task SeedAsync(ApplicationDbContext context,
         ILogger<ApplicationDbContextSeed> logger, int? retry = 0)
     {
-        int retryForAvaiability = retry.Value;
+        int retryForAvaiability = retry ?? 0;
 
         try
         {
-            
+            // No seed data yet — this is a placeholder for future reference-data seeding,
+            // kept so the retry/backoff scaffolding around it is ready to use.
         }
         catch (Exception ex)
         {

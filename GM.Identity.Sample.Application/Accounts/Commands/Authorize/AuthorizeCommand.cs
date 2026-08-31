@@ -15,9 +15,9 @@ public class AuthorizeCommand : IRequest<AuthorizeResponseDto>
     public string? Password { get; set; }
 
     public Guid ClientId { get; set; }
-    public string ClientSecret { get; set; }
-    
-    public string GrantType { get; set; }
+    public string ClientSecret { get; set; } = null!;
+
+    public string GrantType { get; set; } = null!;
 }
 
 public class AuthorizeCommandValidator : AbstractValidator<AuthorizeCommand>
@@ -93,12 +93,12 @@ public class AuthorizeCommandHandler(
             throw new NotFoundException(
                 StringResource.User,
                 StringResource.UserName,
-                request.UserName);
+                request.UserName ?? string.Empty);
         }
-        
+
         if (!PasswordHasher.Verify(
-                request.Password, 
-                user.PasswordHash, 
+                request.Password ?? string.Empty,
+                user.PasswordHash,
                 user.PasswordSalt))
         {
             throw new ValidationException(ExceptionsResource.InvalidCredentials);

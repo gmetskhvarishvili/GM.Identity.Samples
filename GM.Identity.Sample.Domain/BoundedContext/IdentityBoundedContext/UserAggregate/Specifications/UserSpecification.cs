@@ -12,7 +12,7 @@ public class UserSpecification : BaseSpecification<User>
             AddCriteria(s => s.Id == id);
 
         if (!string.IsNullOrWhiteSpace(email))
-            AddCriteria(s => s.Email.Contains(email));
+            AddCriteria(s => s.Email != null && s.Email.Contains(email));
 
         if (!string.IsNullOrWhiteSpace(username))
             AddCriteria(s => s.UserName.Contains(username));

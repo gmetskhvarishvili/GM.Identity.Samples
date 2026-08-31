@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GM.Identity.Sample.Persistence.UnitOfWork;
 
-public class UnitOfWork(
+public sealed class UnitOfWork(
     ApplicationDbContext context,
     IOutboxMessageRepository outboxMessageRepository,
     IClientRepository clientRepository,
@@ -125,5 +125,6 @@ public class UnitOfWork(
     {
         _transaction?.Dispose();
         context.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

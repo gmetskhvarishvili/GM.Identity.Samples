@@ -35,6 +35,9 @@ builder.Services.AddGMHttpClient<IPermissionsService, GMAPIClientOptions>(
     builder.Configuration.GetSection("ApiServices:PermissionsService"),
     "PermissionsService");
 
+// S1075: the issuer below is a fixed localhost URL on purpose — it points at the demo identity
+// server this sample runs against locally, so it stays inline rather than moving to configuration.
+#pragma warning disable S1075
 builder.Services.AddOpenIddict()
 
     // Register the OpenIddict client components.
@@ -76,6 +79,7 @@ builder.Services.AddOpenIddict()
             .SetClientId("MyIdentityClient")
             .SetClientSecret("YOUR_CLIENT_SECRET");  // for remote token validation
     });
+#pragma warning restore S1075
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ITokenManager, TokenManager>();
@@ -89,4 +93,4 @@ app.UseAuthorization();
 
 app.UseGMServices();
 
-app.Run();
+await app.RunAsync();

@@ -31,7 +31,7 @@ public class GetRolePermissionsListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new RolePermissionSpecification(request.RoleId, request.CurrentPage, request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.RolePermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>

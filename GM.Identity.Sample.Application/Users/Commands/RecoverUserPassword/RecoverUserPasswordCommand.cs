@@ -46,45 +46,6 @@ public class RecoverUserPasswordCommandHandler(
                 request.Email);
         }
 
-        // var userCode = await unitOfWork.UserCodeRepository
-        //     .FirstOrDefaultAsync(x => x.UserId == entity.Id
-        //                               && x.Code == request.Code
-        //                               && x.IsActive
-        //                               && !x.IsDeleted
-        //                               && !x.IsHidden,
-        //         true,
-        //         null,
-        //         cancellationToken);
-        //
-        // if (userCode == null)
-        // {
-        //     throw new NotFoundException(
-        //         StringResource.User,
-        //         StringResource.Email,
-        //         request.Code);
-        // }
-        //
-        // if (userCode.ExpirationDate < DateTime.UtcNow)
-        // {
-        //     throw new CustomException("Code Expired");
-        // }
-        //
-        // if (userCode.Status == 2)
-        // {
-        //     throw new CustomException("Code Already Used");
-        // }
-        //
-        // if (request.Code != userCode.Code)
-        // {
-        //     throw new CustomException("Invalid Code");
-        // }
-        //
-        // userCode.UpdateStatus(2);
-        // unitOfWork.UserCodeRepository.Update(userCode);
-        //
-        // entity.UpdatePassword(userPasswordHasher.HashPassword(entity, request.Password));
-        // unitOfWork.UserRepository.Update(entity);
-
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

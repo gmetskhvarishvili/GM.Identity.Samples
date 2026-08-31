@@ -38,7 +38,7 @@ public class DeleteClientSessionCommandHandler(IUnitOfWork unitOfWork) : IReques
             throw new NotFoundException(
                 StringResource.ClientSession,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
         
         entity.Revoke();

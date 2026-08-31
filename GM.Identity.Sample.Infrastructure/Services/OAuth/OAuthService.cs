@@ -61,7 +61,7 @@ public class OAuthService(IOptions<OAuthOptions> options, IHttpClientFactory htt
 
         var tokenJson =
             await tokenResp.Content.ReadFromJsonAsync<Dictionary<string, object>>(cancellationToken: cancellationToken);
-        var token = tokenJson![_providers[request.Provider].TokenName].ToString() ?? throw new Exception("id_token missing");
+        var token = tokenJson![_providers[request.Provider].TokenName].ToString() ?? throw new CustomException("id_token missing");
             
         if (string.IsNullOrEmpty(token))
             throw new CustomException("Missing access token");

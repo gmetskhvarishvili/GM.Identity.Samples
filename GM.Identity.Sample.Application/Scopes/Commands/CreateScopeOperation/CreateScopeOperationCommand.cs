@@ -39,13 +39,13 @@ public class CreateScopeOperationCommandHandler(IUnitOfWork unitOfWork) : IReque
             throw new AlreadyExistsException(
                 StringResource.ScopeOperation,
                 StringResource.OperationId,
-                request.OperationId!);
+                request.OperationId);
         }
         
         // Create the root aggregate
         var entity = ScopeOperation
-            .Create(request.ScopeId!,
-                request.OperationId!);
+            .Create(request.ScopeId,
+                request.OperationId);
 
         // Persist the aggregate
         await unitOfWork.ScopeOperationRepository.AddAsync(entity, cancellationToken);

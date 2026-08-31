@@ -39,7 +39,7 @@ public class UserSession : GMUserSession
     public static UserSession Create(
         Guid? userId,
         Guid? clientId,
-        string provider,
+        string? provider,
         string tokenHash,
         DateTime expiresAt)
     {

@@ -48,7 +48,7 @@ public class CreateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
             .Create(request.Name!);
         
         var (hash, salt) = PasswordHasher
-            .Hash(request.Secret);
+            .Hash(request.Secret!);
         
         entity.UpdateSecret(hash, salt);
         
@@ -57,7 +57,7 @@ public class CreateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
         {
             var items = request.ClientScopes
                 .Select(item =>
-                    ClientScope.Create(entity.Id, item.ScopeId!))
+                    ClientScope.Create(entity.Id, item.ScopeId))
                 .ToArray();
 
             entity.AddScopes(items);
@@ -67,6 +67,6 @@ public class CreateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
         await unitOfWork.ClientRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id!.ToString();
+        return entity.Id.ToString();
     }
 }

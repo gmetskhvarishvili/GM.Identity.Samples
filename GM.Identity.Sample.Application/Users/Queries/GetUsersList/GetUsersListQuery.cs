@@ -31,7 +31,7 @@ public class GetUsersListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new UserSpecification(request.Id, request.Email, request.Username, request.CurrentPage, request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.UserRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<UserDto>

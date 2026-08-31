@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
@@ -13,6 +14,10 @@ namespace GM.Identity.Sample.API.Accounts;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[SuppressMessage("Major Code Smell", "S6931:Controller actions should not use routes starting with '/'",
+    Justification = "These endpoints deliberately sit at the well-known OpenID Connect paths " +
+                     "(~/connect/token, ~/connect/google, ...); rewriting them as controller-relative " +
+                     "routes would move them off the standard locations clients expect.")]
 public class AccountsController : BaseController
 {
     /// <summary>

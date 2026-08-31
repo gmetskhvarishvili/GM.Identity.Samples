@@ -32,7 +32,7 @@ public class GetOperationsListQueryHandler(IUnitOfWork unitOfWork)
                 countSpec,
                 cancellationToken);
         
-        var spec = new OperationSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy);
+        var spec = new OperationSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.OperationRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<OperationDto>

@@ -42,7 +42,7 @@ public class UpdatePermissionCommandHandler(IUnitOfWork unitOfWork) : IRequestHa
             throw new NotFoundException(
                 StringResource.Permission,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         if (await unitOfWork.PermissionRepository.ExistsAsync(

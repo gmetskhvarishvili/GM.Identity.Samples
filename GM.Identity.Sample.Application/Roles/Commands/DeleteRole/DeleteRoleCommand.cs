@@ -38,7 +38,7 @@ public class DeleteRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
             throw new NotFoundException(
                 StringResource.Role,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         entity.SoftRemove();

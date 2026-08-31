@@ -42,7 +42,7 @@ public class CreateClientScopeCommandHandler(
             throw new AlreadyExistsException(
                 StringResource.ClientScope,
                 StringResource.ScopeId,
-                request.ScopeId!);
+                request.ScopeId);
         }
 
         // Persist the aggregate

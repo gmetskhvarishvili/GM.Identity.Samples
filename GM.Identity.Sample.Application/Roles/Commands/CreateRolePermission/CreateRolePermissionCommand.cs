@@ -39,13 +39,13 @@ public class CreateRolePermissionCommandHandler(IUnitOfWork unitOfWork) : IReque
             throw new AlreadyExistsException(
                 StringResource.RolePermission,
                 StringResource.PermissionId,
-                request.PermissionId!);
+                request.PermissionId);
         }
         
         // Create the root aggregate
         var entity = RolePermission
-            .Create(request.RoleId!,
-                request.PermissionId!);
+            .Create(request.RoleId,
+                request.PermissionId);
 
         // Persist the aggregate
         await unitOfWork.RolePermissionRepository.AddAsync(entity, cancellationToken);

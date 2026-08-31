@@ -42,7 +42,7 @@ public class UpdateOperationCommandHandler(IUnitOfWork unitOfWork) : IRequestHan
             throw new NotFoundException(
                 StringResource.Operation,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         if (await unitOfWork.OperationRepository.ExistsAsync(

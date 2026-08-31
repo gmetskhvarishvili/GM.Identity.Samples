@@ -26,13 +26,12 @@ public class UserSessionSpecification : BaseSpecification<UserSession>
             AddCriteria(s => s.IsRevoked == isRevoked);
 
         if (isExpired == null) return;
-        {
-            var datetimeNow = DateTime.UtcNow;
-            if (isExpired == true)
-                AddCriteria(s => s.ExpiresAt <= datetimeNow);
-            else
-                AddCriteria(s => s.ExpiresAt > datetimeNow);
-        }
+
+        var datetimeNow = DateTime.UtcNow;
+        if (isExpired == true)
+            AddCriteria(s => s.ExpiresAt <= datetimeNow);
+        else
+            AddCriteria(s => s.ExpiresAt > datetimeNow);
     }
 
     public UserSessionSpecification(

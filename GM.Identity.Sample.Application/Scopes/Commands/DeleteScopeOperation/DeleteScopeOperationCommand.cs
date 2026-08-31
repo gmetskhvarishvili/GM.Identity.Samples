@@ -41,7 +41,7 @@ public class DeleteScopeOperationCommandHandler(IUnitOfWork unitOfWork) : IReque
             throw new NotFoundException(
                 StringResource.ScopeOperation,
                 StringResource.OperationId,
-                request.OperationId!);
+                request.OperationId);
         }
 
         entity.SoftRemove();

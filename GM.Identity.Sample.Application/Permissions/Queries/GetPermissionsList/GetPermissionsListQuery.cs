@@ -33,7 +33,7 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
 
         
-        var spec = new PermissionSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy);
+        var spec = new PermissionSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.PermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>

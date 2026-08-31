@@ -39,7 +39,7 @@ public class GetClientDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHand
             throw new NotFoundException(
                 StringResource.Client,
                 StringResource.Id,
-                request.Id!);
+                request.Id);
         }
 
         var result = entity.Adapt<ClientDetailsDto>();

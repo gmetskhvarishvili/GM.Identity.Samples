@@ -37,7 +37,7 @@ public class GetUserRolesListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new UserRoleSpecification(request.UserId, request.CurrentPage, request.PageSize,
-            request.OrderBy);
+            request.OrderBy ?? string.Empty);
         var entities = await unitOfWork.UserRoleRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<RoleDto>

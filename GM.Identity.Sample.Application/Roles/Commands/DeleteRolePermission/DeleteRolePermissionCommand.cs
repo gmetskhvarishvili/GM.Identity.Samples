@@ -41,7 +41,7 @@ public class DeleteRolePermissionCommandHandler(IUnitOfWork unitOfWork) : IReque
             throw new NotFoundException(
                 StringResource.RolePermission,
                 StringResource.PermissionId,
-                request.PermissionId!);
+                request.PermissionId);
         }
 
         entity.SoftRemove();

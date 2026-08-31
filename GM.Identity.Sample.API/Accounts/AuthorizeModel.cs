@@ -15,10 +15,10 @@ public class AuthorizeModel
     public Guid ClientId { get; set; }
     
     [FromForm(Name = "client_secret")]
-    public string ClientSecret { get; set; }
-    
+    public string ClientSecret { get; set; } = null!;
+
     [FromForm(Name = "grant_type")]
-    public string GrantType { get; set; } 
+    public string GrantType { get; set; } = null!;
 }
 
 public class AuthorizeModelValidator : AbstractValidator<AuthorizeModel>

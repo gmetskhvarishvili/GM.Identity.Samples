@@ -38,7 +38,7 @@ public class DeleteUserRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHand
             throw new NotFoundException(
                 StringResource.UserRole,
                 StringResource.RoleId,
-                request.RoleId!);
+                request.RoleId);
         }
 
         // Persist the aggregate

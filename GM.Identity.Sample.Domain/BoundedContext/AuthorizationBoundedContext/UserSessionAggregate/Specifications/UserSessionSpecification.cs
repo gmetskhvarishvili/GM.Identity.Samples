@@ -17,7 +17,7 @@ public class UserSessionSpecification : BaseSpecification<UserSession>
             AddCriteria(s => s.Id == id);
 
         if (userId.HasValue && userId.Value != Guid.Empty)
-            AddCriteria(s => s.UserId == clientId);
+            AddCriteria(s => s.UserId == userId);
         
         if (clientId.HasValue && clientId.Value != Guid.Empty)
             AddCriteria(s => s.ClientId == clientId);

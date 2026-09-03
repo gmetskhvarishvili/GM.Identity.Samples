@@ -48,7 +48,7 @@ public class GetScopeDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandl
     }
 }
 
-public class ScopeDetailsDto
+public class ScopeDetailsDto : AuditableDto
 {
     public string? Id { get; set; }
     public string? Name { get; set; }

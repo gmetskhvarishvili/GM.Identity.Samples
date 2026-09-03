@@ -22,6 +22,7 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
         var countSpec = new ClientSpecification(
             request.Id, 
             request.Name);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .ClientRepository
@@ -34,7 +35,8 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
             request.Name, 
             request.CurrentPage, 
             request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.ClientRepository.ListAsync(spec, cancellationToken);
         
         return new PagedListDto<ClientDto>
@@ -47,7 +49,7 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class ClientDto
+public class ClientDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }

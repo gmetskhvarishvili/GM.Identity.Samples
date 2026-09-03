@@ -17,7 +17,7 @@ public class ScopeOperationSpecification : BaseSpecification<ScopeOperation>
         AddInclude(x => x.Operation);
     }
     
-    public ScopeOperationSpecification(Guid? scopeId, int currentPage, int pageSize, string orderBy)
+    public ScopeOperationSpecification(Guid? scopeId, int currentPage, int pageSize, string? orderBy)
     : this(scopeId)
     {
         ApplyPaging(currentPage, pageSize);

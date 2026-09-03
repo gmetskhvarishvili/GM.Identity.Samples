@@ -13,6 +13,9 @@ public class ApplicationDbContextSeed
         {
             // No seed data yet — this is a placeholder for future reference-data seeding,
             // kept so the retry/backoff scaffolding around it is ready to use.
+            // Reference data owned by GM.Identity (e.g. the "None" two-factor auth type) is
+            // seeded through EF migrations, not here.
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {

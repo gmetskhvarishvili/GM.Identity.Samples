@@ -15,7 +15,7 @@ public class ScopeSpecification : BaseSpecification<Scope>
             AddCriteria(s => s.Name.Contains(name));
     }
     
-    public ScopeSpecification(Guid? id, string? name, int currentPage, int pageSize, string orderBy)
+    public ScopeSpecification(Guid? id, string? name, int currentPage, int pageSize, string? orderBy)
     : this(id, name)
     {
         AddVisibilityFilter();

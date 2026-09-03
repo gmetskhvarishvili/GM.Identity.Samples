@@ -19,7 +19,7 @@ public class PermissionSpecification : BaseSpecification<Permission>
     }
 
     public PermissionSpecification(Guid? id, string? name, string? description, int currentPage, int pageSize,
-        string orderBy)
+        string? orderBy)
         : this(id, name, description)
     {
         ApplyPaging(currentPage, pageSize);

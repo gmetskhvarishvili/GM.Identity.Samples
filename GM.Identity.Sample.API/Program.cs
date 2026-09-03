@@ -1,8 +1,10 @@
 using GM.API.Startup;
 using GM.Identity;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Infrastructure;
 using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
+using Mapster;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +19,9 @@ builder.Services.AddGMIdentity();
 
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Apply the application layer's Mapster configuration (audit-timestamp formatting, etc.).
+TypeAdapterConfig.GlobalSettings.Scan(typeof(MappingRegister).Assembly);
 
 builder.Services.AddAuthentication();
 

@@ -48,7 +48,7 @@ public class GetPermissionDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequest
     }
 }
 
-public class PermissionDetailsDto
+public class PermissionDetailsDto : AuditableDto
 {
     public string? Id { get; set; }
     public string? Name { get; set; }

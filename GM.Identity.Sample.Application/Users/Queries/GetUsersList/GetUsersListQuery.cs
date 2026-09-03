@@ -23,6 +23,7 @@ public class GetUsersListQueryHandler(IUnitOfWork unitOfWork)
     {
         var countSpec = new UserSpecification(
             request.Id, request.Email, request.Username);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .UserRepository
@@ -31,7 +32,8 @@ public class GetUsersListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new UserSpecification(request.Id, request.Email, request.Username, request.CurrentPage, request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.UserRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<UserDto>
@@ -44,7 +46,7 @@ public class GetUsersListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class UserDto
+public class UserDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Email { get; set; }

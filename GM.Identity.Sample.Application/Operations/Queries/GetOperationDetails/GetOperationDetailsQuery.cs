@@ -48,7 +48,7 @@ public class GetOperationDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestH
     }
 }
 
-public class OperationDetailsDto
+public class OperationDetailsDto : AuditableDto
 {
     public string? Id { get; set; }
     public string? Name { get; set; }

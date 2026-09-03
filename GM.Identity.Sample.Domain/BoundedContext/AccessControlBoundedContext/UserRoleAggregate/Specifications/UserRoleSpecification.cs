@@ -16,7 +16,7 @@ public class UserRoleSpecification : BaseSpecification<UserRole>
         AddInclude(x => x.User);
     }
 
-    public UserRoleSpecification(Guid? userId, int currentPage, int pageSize, string orderBy)
+    public UserRoleSpecification(Guid? userId, int currentPage, int pageSize, string? orderBy)
         : this(userId)
     {
         ApplyPaging(currentPage, pageSize);

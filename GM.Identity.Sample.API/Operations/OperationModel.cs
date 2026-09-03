@@ -1,6 +1,6 @@
 namespace GM.Identity.Sample.API.Operations;
 
-public class OperationModel
+public class OperationModel : AuditableModel
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }

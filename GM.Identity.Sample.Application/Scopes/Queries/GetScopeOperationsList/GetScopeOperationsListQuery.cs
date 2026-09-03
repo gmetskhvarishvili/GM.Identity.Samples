@@ -23,6 +23,7 @@ public class GetScopeOperationsListQueryHandler(IUnitOfWork unitOfWork)
     {
         var countSpec = new ScopeOperationSpecification(
             request.ScopeId);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .ScopeOperationRepository
@@ -31,7 +32,8 @@ public class GetScopeOperationsListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new ScopeOperationSpecification(request.ScopeId, request.CurrentPage, request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.ScopeOperationRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<OperationDto>

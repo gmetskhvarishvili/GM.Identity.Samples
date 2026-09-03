@@ -18,7 +18,7 @@ public class ClientScopeSpecification : BaseSpecification<ClientScope>
 
     }
 
-    public ClientScopeSpecification(Guid? userId, int currentPage, int pageSize, string orderBy)
+    public ClientScopeSpecification(Guid? userId, int currentPage, int pageSize, string? orderBy)
         : this(userId)
     {
         ApplyPaging(currentPage, pageSize);

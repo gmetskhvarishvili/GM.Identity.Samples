@@ -37,7 +37,7 @@ public class ClientSessionSpecification : BaseSpecification<ClientSession>
         bool? isExpired,
         int currentPage,
         int pageSize,
-        string orderBy)
+        string? orderBy)
         : this(id, clientId, isRevoked, isExpired)
     {
         ApplyPaging(currentPage, pageSize);

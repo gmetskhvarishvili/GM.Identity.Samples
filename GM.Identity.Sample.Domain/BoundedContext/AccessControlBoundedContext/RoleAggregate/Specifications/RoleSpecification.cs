@@ -15,7 +15,7 @@ public class RoleSpecification : BaseSpecification<Role>
             AddCriteria(s => s.Name.Contains(name));
     }
     
-    public RoleSpecification(Guid? id, string? name, int currentPage, int pageSize, string orderBy)
+    public RoleSpecification(Guid? id, string? name, int currentPage, int pageSize, string? orderBy)
     : this(id, name)
     {
         ApplyPaging(currentPage, pageSize);

@@ -48,7 +48,7 @@ public class GetUserDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
     }
 }
 
-public class UserDetailsDto
+public class UserDetailsDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Email { get; set; }

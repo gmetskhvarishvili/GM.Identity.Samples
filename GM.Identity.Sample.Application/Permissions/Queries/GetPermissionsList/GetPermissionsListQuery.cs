@@ -25,6 +25,7 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
             request.Id, 
             request.Name,
             request.Description);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .PermissionRepository
@@ -33,7 +34,8 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
 
         
-        var spec = new PermissionSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy ?? string.Empty);
+        var spec = new PermissionSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.PermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>
@@ -46,7 +48,7 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class PermissionDto
+public class PermissionDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }

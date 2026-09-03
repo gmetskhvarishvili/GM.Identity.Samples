@@ -15,8 +15,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="GM.EntityFramework.Domain" Version="1.2.2"/>
-        <PackageReference Include="GM.Identity.Domain" Version="1.0.1" />
+        <PackageReference Include="GM.EntityFramework.Domain" Version="1.2.4"/>
+        <PackageReference Include="GM.Identity.Domain" Version="1.0.2" />
         <PackageReference Include="GM.Messaging.Domain" Version="1.2.1" />
         <PackageReference Include="WolverineFx" Version="6.31.0" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.11"/>

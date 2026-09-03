@@ -1,6 +1,6 @@
 namespace GM.Identity.Sample.API.Clients;
 
-public class ClientSessionModel
+public class ClientSessionModel : AuditableModel
 {
     public Guid Id { get; set; }
     public Guid ClientId { get; set; }

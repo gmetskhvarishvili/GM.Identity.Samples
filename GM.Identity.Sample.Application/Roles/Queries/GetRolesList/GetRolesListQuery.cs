@@ -23,6 +23,7 @@ public class GetRolesListQueryHandler(IUnitOfWork unitOfWork)
         var countSpec = new RoleSpecification(
             request.Id, 
             request.Name);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .RoleRepository
@@ -31,7 +32,8 @@ public class GetRolesListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new RoleSpecification(request.Id, request.Name, request.CurrentPage, request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.RoleRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<RoleDto>
@@ -44,7 +46,7 @@ public class GetRolesListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class RoleDto
+public class RoleDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }

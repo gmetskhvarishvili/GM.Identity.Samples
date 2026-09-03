@@ -48,7 +48,7 @@ public class GetRoleDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
     }
 }
 
-public class RoleDetailsDto
+public class RoleDetailsDto : AuditableDto
 {
     public string? Id { get; set; }
     public string? Name { get; set; }

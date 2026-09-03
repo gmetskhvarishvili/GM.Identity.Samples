@@ -17,7 +17,7 @@ public class RolePermissionSpecification : BaseSpecification<RolePermission>
         AddInclude(x => x.Permission);
     }
     
-    public RolePermissionSpecification(Guid? roleId, int currentPage, int pageSize, string orderBy)
+    public RolePermissionSpecification(Guid? roleId, int currentPage, int pageSize, string? orderBy)
     : this(roleId)
     {
         ApplyPaging(currentPage, pageSize);

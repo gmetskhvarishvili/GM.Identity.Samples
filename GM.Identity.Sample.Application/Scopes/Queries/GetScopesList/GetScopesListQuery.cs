@@ -23,6 +23,7 @@ public class GetScopesListQueryHandler(IUnitOfWork unitOfWork)
         var countSpec = new ScopeSpecification(
             request.Id, 
             request.Name);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .ScopeRepository
@@ -31,7 +32,8 @@ public class GetScopesListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new ScopeSpecification(request.Id, request.Name, request.CurrentPage, request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.ScopeRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ScopeDto>
@@ -44,7 +46,7 @@ public class GetScopesListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class ScopeDto
+public class ScopeDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }

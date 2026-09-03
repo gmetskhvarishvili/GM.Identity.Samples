@@ -25,6 +25,7 @@ public class GetOperationsListQueryHandler(IUnitOfWork unitOfWork)
             request.Id, 
             request.Name,
             request.Description);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .OperationRepository
@@ -32,7 +33,8 @@ public class GetOperationsListQueryHandler(IUnitOfWork unitOfWork)
                 countSpec,
                 cancellationToken);
         
-        var spec = new OperationSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy ?? string.Empty);
+        var spec = new OperationSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.OperationRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<OperationDto>
@@ -45,7 +47,7 @@ public class GetOperationsListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class OperationDto
+public class OperationDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }

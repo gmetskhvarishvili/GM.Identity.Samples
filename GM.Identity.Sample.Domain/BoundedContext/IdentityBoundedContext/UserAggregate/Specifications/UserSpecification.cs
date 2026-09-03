@@ -18,7 +18,7 @@ public class UserSpecification : BaseSpecification<User>
             AddCriteria(s => s.UserName.Contains(username));
     }
     
-    public UserSpecification(Guid? id, string? email, string? username, int currentPage, int pageSize, string orderBy)
+    public UserSpecification(Guid? id, string? email, string? username, int currentPage, int pageSize, string? orderBy)
     : this(id, email, username)
     {
         ApplyPaging(currentPage, pageSize);

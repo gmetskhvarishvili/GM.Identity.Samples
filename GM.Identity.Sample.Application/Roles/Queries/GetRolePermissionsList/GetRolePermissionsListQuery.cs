@@ -23,6 +23,7 @@ public class GetRolePermissionsListQueryHandler(IUnitOfWork unitOfWork)
     {
         var countSpec = new RolePermissionSpecification(
             request.RoleId);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .RolePermissionRepository
@@ -31,7 +32,8 @@ public class GetRolePermissionsListQueryHandler(IUnitOfWork unitOfWork)
                 cancellationToken);
         
         var spec = new RolePermissionSpecification(request.RoleId, request.CurrentPage, request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         var entities = await unitOfWork.RolePermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>

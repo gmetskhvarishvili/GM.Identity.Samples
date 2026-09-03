@@ -19,7 +19,7 @@ public class OperationSpecification : BaseSpecification<Operation>
     }
 
     public OperationSpecification(Guid? id, string? name, string? description, int currentPage, int pageSize,
-        string orderBy)
+        string? orderBy)
         : this(id, name, description)
     {
         ApplyPaging(currentPage, pageSize);

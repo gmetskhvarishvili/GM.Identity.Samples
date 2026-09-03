@@ -15,7 +15,7 @@ public class ClientSpecification : BaseSpecification<Client>
             AddCriteria(s => s.Name.Contains(name));
     }
 
-    public ClientSpecification(Guid? id, string? name, int currentPage, int pageSize, string orderBy)
+    public ClientSpecification(Guid? id, string? name, int currentPage, int pageSize, string? orderBy)
         : this(id, name)
     {
         ApplyPaging(currentPage, pageSize);

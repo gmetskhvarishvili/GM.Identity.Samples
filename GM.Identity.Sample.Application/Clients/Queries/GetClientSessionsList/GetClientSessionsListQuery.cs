@@ -33,6 +33,7 @@ public class GetClientSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.ClientId,
             request.IsRevoked,
             request.IsExpired);
+        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var totalCount = await unitOfWork
             .ClientSessionRepository
@@ -47,7 +48,8 @@ public class GetClientSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.IsExpired, 
             request.CurrentPage,
             request.PageSize,
-            request.OrderBy ?? string.Empty);
+            request.OrderBy);
+        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
         
         var entities = await unitOfWork
             .ClientSessionRepository
@@ -63,7 +65,7 @@ public class GetClientSessionsListQueryHandler(IUnitOfWork unitOfWork)
     }
 }
 
-public class ClientSessionDto
+public class ClientSessionDto : AuditableDto
 {
     public Guid Id { get; set; }
     public Guid ClientId { get; set; }

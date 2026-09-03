@@ -148,6 +148,13 @@
             <param name="cancellationToken"></param>
             <returns>Client Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Common.AuditableModel">
+            <summary>
+            Base for API read models returned by list and details endpoints. Carries the audit timestamps
+            as preformatted strings (dd/MM/yyyy HH:mm:ss), copied straight from the application DTOs which
+            already format them.
+            </summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Operations.GetOperationsListModel">
             <summary>
             Get Operations List

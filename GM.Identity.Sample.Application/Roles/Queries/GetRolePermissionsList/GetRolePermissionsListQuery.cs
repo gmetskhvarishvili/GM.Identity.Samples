@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Application.Permissions.Queries.GetPermissionsList;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -21,19 +22,13 @@ public class GetRolePermissionsListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<PermissionDto>> Handle(GetRolePermissionsListQuery request,
         CancellationToken cancellationToken)
     {
-        var countSpec = new RolePermissionSpecification(
-            request.RoleId);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .RolePermissionRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
-        
-        var spec = new RolePermissionSpecification(request.RoleId, request.CurrentPage, request.PageSize,
-            request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
+        var dateRange = request.ToAuditDateRange();
+
+        var countSpec = new RolePermissionSpecification(request.RoleId,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.RolePermissionRepository.CountAsync(countSpec, cancellationToken);
+
+        var spec = new RolePermissionSpecification(request.RoleId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
         var entities = await unitOfWork.RolePermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>

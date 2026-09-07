@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Application.Scopes.Queries.GetScopesList;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -26,19 +27,13 @@ public class GetClientScopesListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<ScopeDto>> Handle(GetClientScopesListQuery request, CancellationToken cancellationToken)
     {
-        var countSpec = new ClientScopeSpecification(
-            request.ClientId);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .ClientScopeRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
-        
-        var spec = new ClientScopeSpecification(request.ClientId, request.CurrentPage, request.PageSize,
-            request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
+        var dateRange = request.ToAuditDateRange();
+
+        var countSpec = new ClientScopeSpecification(request.ClientId,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.ClientScopeRepository.CountAsync(countSpec, cancellationToken);
+
+        var spec = new ClientScopeSpecification(request.ClientId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
         var entities = await unitOfWork.ClientScopeRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ScopeDto>

@@ -4,7 +4,8 @@ namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.Client
 
 public class ClientSpecification : BaseSpecification<Client>
 {
-    public ClientSpecification(Guid? id, string? name)
+    public ClientSpecification(Guid? id, string? name,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
@@ -13,13 +14,7 @@ public class ClientSpecification : BaseSpecification<Client>
 
         if (!string.IsNullOrWhiteSpace(name))
             AddCriteria(s => s.Name.Contains(name));
-    }
 
-    public ClientSpecification(Guid? id, string? name, int currentPage, int pageSize, string? orderBy)
-        : this(id, name)
-    {
-        ApplyPaging(currentPage, pageSize);
-
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

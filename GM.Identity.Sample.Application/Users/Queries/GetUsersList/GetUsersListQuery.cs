@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -21,19 +22,14 @@ public class GetUsersListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<UserDto>> Handle(GetUsersListQuery request, CancellationToken cancellationToken)
     {
-        var countSpec = new UserSpecification(
-            request.Id, request.Email, request.Username);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .UserRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
-        
-        var spec = new UserSpecification(request.Id, request.Email, request.Username, request.CurrentPage, request.PageSize,
-            request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
+        var dateRange = request.ToAuditDateRange();
+
+        var countSpec = new UserSpecification(request.Id, request.Email, request.Username,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.UserRepository.CountAsync(countSpec, cancellationToken);
+
+        var spec = new UserSpecification(request.Id, request.Email, request.Username,
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
         var entities = await unitOfWork.UserRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<UserDto>

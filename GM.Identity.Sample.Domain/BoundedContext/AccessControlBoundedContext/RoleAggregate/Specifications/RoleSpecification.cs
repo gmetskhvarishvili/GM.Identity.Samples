@@ -4,7 +4,8 @@ namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.R
 
 public class RoleSpecification : BaseSpecification<Role>
 {
-    public RoleSpecification(Guid? id, string? name)
+    public RoleSpecification(Guid? id, string? name,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
@@ -13,13 +14,7 @@ public class RoleSpecification : BaseSpecification<Role>
 
         if (!string.IsNullOrWhiteSpace(name))
             AddCriteria(s => s.Name.Contains(name));
-    }
-    
-    public RoleSpecification(Guid? id, string? name, int currentPage, int pageSize, string? orderBy)
-    : this(id, name)
-    {
-        ApplyPaging(currentPage, pageSize);
-        
-        ApplyOrdering(orderBy);
+
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

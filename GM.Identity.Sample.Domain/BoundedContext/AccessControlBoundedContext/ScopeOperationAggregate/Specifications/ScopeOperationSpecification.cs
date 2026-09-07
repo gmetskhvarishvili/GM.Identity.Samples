@@ -4,24 +4,19 @@ namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.S
 
 public class ScopeOperationSpecification : BaseSpecification<ScopeOperation>
 {
-    public ScopeOperationSpecification(Guid? scopeId)
+    public ScopeOperationSpecification(Guid? scopeId,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
         if (scopeId.HasValue && scopeId.Value != Guid.Empty)
             AddCriteria(s => s.ScopeId == scopeId);
-        
+
         AddCriteria(s => s.Operation.IsActive && !s.Operation.IsDeleted && !s.Operation.IsHidden);
 
         AddInclude(x => x.Scope);
         AddInclude(x => x.Operation);
-    }
-    
-    public ScopeOperationSpecification(Guid? scopeId, int currentPage, int pageSize, string? orderBy)
-    : this(scopeId)
-    {
-        ApplyPaging(currentPage, pageSize);
 
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

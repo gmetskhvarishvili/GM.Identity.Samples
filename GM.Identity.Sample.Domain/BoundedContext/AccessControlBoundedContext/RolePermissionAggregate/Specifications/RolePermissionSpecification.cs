@@ -4,24 +4,19 @@ namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.R
 
 public class RolePermissionSpecification : BaseSpecification<RolePermission>
 {
-    public RolePermissionSpecification(Guid? roleId)
+    public RolePermissionSpecification(Guid? roleId,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
         if (roleId.HasValue && roleId.Value != Guid.Empty)
             AddCriteria(s => s.RoleId == roleId);
-        
+
         AddCriteria(s => s.Permission.IsActive && !s.Permission.IsDeleted && !s.Permission.IsHidden);
 
         AddInclude(x => x.Role);
         AddInclude(x => x.Permission);
-    }
-    
-    public RolePermissionSpecification(Guid? roleId, int currentPage, int pageSize, string? orderBy)
-    : this(roleId)
-    {
-        ApplyPaging(currentPage, pageSize);
 
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

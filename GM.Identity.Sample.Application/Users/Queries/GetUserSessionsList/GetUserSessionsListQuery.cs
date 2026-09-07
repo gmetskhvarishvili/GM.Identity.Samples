@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -29,34 +30,25 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<UserSessionDto>> Handle(GetUserSessionsListQuery request, CancellationToken cancellationToken)
     {
+        var dateRange = request.ToAuditDateRange();
+
         var countSpec = new UserSessionSpecification(
             request.Id,
             request.UserId,
             request.ClientId,
             request.IsRevoked,
-            request.IsExpired);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .UserSessionRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
-        
+            request.IsExpired,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.UserSessionRepository.CountAsync(countSpec, cancellationToken);
+
         var spec = new UserSessionSpecification(
-            request.Id, 
+            request.Id,
             request.UserId,
             request.ClientId,
             request.IsRevoked,
-            request.IsExpired, 
-            request.CurrentPage,
-            request.PageSize,
-            request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var entities = await unitOfWork
-            .UserSessionRepository
-            .ListAsync(spec, cancellationToken);
+            request.IsExpired,
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var entities = await unitOfWork.UserSessionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<UserSessionDto>
         {

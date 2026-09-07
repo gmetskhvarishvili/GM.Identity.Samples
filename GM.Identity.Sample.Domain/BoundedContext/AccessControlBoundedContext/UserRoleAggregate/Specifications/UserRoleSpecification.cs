@@ -4,9 +4,11 @@ namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.U
 
 public class UserRoleSpecification : BaseSpecification<UserRole>
 {
-    public UserRoleSpecification(Guid? userId)
+    public UserRoleSpecification(Guid? userId,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
+
         AddCriteria(s => s.Role.IsActive && !s.Role.IsDeleted && !s.Role.IsHidden);
 
         if (userId.HasValue && userId.Value != Guid.Empty)
@@ -14,13 +16,7 @@ public class UserRoleSpecification : BaseSpecification<UserRole>
 
         AddInclude(x => x.Role);
         AddInclude(x => x.User);
-    }
 
-    public UserRoleSpecification(Guid? userId, int currentPage, int pageSize, string? orderBy)
-        : this(userId)
-    {
-        ApplyPaging(currentPage, pageSize);
-
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

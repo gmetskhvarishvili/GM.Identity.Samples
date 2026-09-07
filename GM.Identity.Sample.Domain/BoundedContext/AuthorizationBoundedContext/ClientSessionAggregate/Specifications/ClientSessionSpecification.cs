@@ -8,7 +8,10 @@ public class ClientSessionSpecification : BaseSpecification<ClientSession>
         Guid? id,
         Guid? clientId,
         bool? isRevoked,
-        bool? isExpired)
+        bool? isExpired,
+        AuditDateRange dateRange,
+        PagingOptions paging,
+        OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
@@ -21,27 +24,15 @@ public class ClientSessionSpecification : BaseSpecification<ClientSession>
         if (isRevoked != null)
             AddCriteria(s => s.IsRevoked == isRevoked);
 
-        if (isExpired == null) return;
+        if (isExpired != null)
+        {
+            var datetimeNow = DateTime.UtcNow;
+            if (isExpired == true)
+                AddCriteria(s => s.ExpiresAt <= datetimeNow);
+            else
+                AddCriteria(s => s.ExpiresAt > datetimeNow);
+        }
 
-        var datetimeNow = DateTime.UtcNow;
-        if (isExpired == true)
-            AddCriteria(s => s.ExpiresAt <= datetimeNow);
-        else
-            AddCriteria(s => s.ExpiresAt > datetimeNow);
-    }
-
-    public ClientSessionSpecification(
-        Guid? id,
-        Guid? clientId,
-        bool? isRevoked,
-        bool? isExpired,
-        int currentPage,
-        int pageSize,
-        string? orderBy)
-        : this(id, clientId, isRevoked, isExpired)
-    {
-        ApplyPaging(currentPage, pageSize);
-
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

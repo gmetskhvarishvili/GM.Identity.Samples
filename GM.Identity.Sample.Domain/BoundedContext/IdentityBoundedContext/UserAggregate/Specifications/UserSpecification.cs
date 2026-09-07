@@ -4,7 +4,8 @@ namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAg
 
 public class UserSpecification : BaseSpecification<User>
 {
-    public UserSpecification(Guid? id, string? email, string? username)
+    public UserSpecification(Guid? id, string? email, string? username,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
@@ -16,13 +17,7 @@ public class UserSpecification : BaseSpecification<User>
 
         if (!string.IsNullOrWhiteSpace(username))
             AddCriteria(s => s.UserName.Contains(username));
-    }
-    
-    public UserSpecification(Guid? id, string? email, string? username, int currentPage, int pageSize, string? orderBy)
-    : this(id, email, username)
-    {
-        ApplyPaging(currentPage, pageSize);
 
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

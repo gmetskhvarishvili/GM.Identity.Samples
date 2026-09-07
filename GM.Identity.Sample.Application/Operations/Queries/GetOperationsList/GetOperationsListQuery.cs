@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -21,20 +22,14 @@ public class GetOperationsListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<OperationDto>> Handle(GetOperationsListQuery request, CancellationToken cancellationToken)
     {
-        var countSpec = new OperationSpecification(
-            request.Id, 
-            request.Name,
-            request.Description);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .OperationRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
-        
-        var spec = new OperationSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
+        var dateRange = request.ToAuditDateRange();
+
+        var countSpec = new OperationSpecification(request.Id, request.Name, request.Description,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.OperationRepository.CountAsync(countSpec, cancellationToken);
+
+        var spec = new OperationSpecification(request.Id, request.Name, request.Description,
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
         var entities = await unitOfWork.OperationRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<OperationDto>

@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -21,21 +22,14 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<PermissionDto>> Handle(GetPermissionsListQuery request, CancellationToken cancellationToken)
     {
-        var countSpec = new PermissionSpecification(
-            request.Id, 
-            request.Name,
-            request.Description);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .PermissionRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
+        var dateRange = request.ToAuditDateRange();
 
-        
-        var spec = new PermissionSpecification(request.Id, request.Name, request.Description, request.CurrentPage, request.PageSize, request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
+        var countSpec = new PermissionSpecification(request.Id, request.Name, request.Description,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.PermissionRepository.CountAsync(countSpec, cancellationToken);
+
+        var spec = new PermissionSpecification(request.Id, request.Name, request.Description,
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
         var entities = await unitOfWork.PermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>
@@ -54,4 +48,3 @@ public class PermissionDto : AuditableDto
     public string? Name { get; set; }
     public string? Description { get; set; }
 }
-

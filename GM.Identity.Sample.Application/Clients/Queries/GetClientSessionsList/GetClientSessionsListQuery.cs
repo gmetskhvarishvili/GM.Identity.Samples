@@ -1,5 +1,6 @@
 using FluentValidation;
 using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -28,32 +29,23 @@ public class GetClientSessionsListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<ClientSessionDto>> Handle(GetClientSessionsListQuery request, CancellationToken cancellationToken)
     {
+        var dateRange = request.ToAuditDateRange();
+
         var countSpec = new ClientSessionSpecification(
             request.Id,
             request.ClientId,
             request.IsRevoked,
-            request.IsExpired);
-        countSpec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var totalCount = await unitOfWork
-            .ClientSessionRepository
-            .CountAsync(
-                countSpec,
-                cancellationToken);
-        
+            request.IsExpired,
+            dateRange, PagingOptions.None, OrderingOptions.None);
+        var totalCount = await unitOfWork.ClientSessionRepository.CountAsync(countSpec, cancellationToken);
+
         var spec = new ClientSessionSpecification(
-            request.Id, 
+            request.Id,
             request.ClientId,
             request.IsRevoked,
-            request.IsExpired, 
-            request.CurrentPage,
-            request.PageSize,
-            request.OrderBy);
-        spec.ApplyAuditDateRangeFilter(request.CreatedAtFrom, request.CreatedAtTo, request.UpdatedAtFrom, request.UpdatedAtTo);
-        
-        var entities = await unitOfWork
-            .ClientSessionRepository
-            .ListAsync(spec, cancellationToken);
+            request.IsExpired,
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var entities = await unitOfWork.ClientSessionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ClientSessionDto>
         {

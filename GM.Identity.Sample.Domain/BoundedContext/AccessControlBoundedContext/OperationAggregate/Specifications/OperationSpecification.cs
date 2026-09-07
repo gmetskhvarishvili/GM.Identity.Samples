@@ -4,7 +4,8 @@ namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.O
 
 public class OperationSpecification : BaseSpecification<Operation>
 {
-    public OperationSpecification(Guid? id, string? name, string? description)
+    public OperationSpecification(Guid? id, string? name, string? description,
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
     {
         AddVisibilityFilter();
 
@@ -16,14 +17,7 @@ public class OperationSpecification : BaseSpecification<Operation>
 
         if (!string.IsNullOrWhiteSpace(description))
             AddCriteria(s => s.Description.Contains(description));
-    }
 
-    public OperationSpecification(Guid? id, string? name, string? description, int currentPage, int pageSize,
-        string? orderBy)
-        : this(id, name, description)
-    {
-        ApplyPaging(currentPage, pageSize);
-
-        ApplyOrdering(orderBy);
+        ApplyListQuery(dateRange, paging, ordering);
     }
 }

@@ -1,3 +1,6 @@
+﻿using GM.Identity.Sample.API.Common;
+
+using System;
 namespace GM.Identity.Sample.API.Permissions;
 
 public class PermissionDetailsModel : AuditableModel

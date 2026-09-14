@@ -1,5 +1,4 @@
-using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
+﻿using GM.EntityFramework.Domain.Abstractions;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,7 +12,9 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.AccessControl.ScopeOperationAggregate.Entities;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate;
 
 public class ScopeOperation
@@ -22,6 +23,10 @@ public class ScopeOperation
             UserRole, Role, RolePermission, Permission>,
         IAggregateRoot
 {
+    private ScopeOperation() // EF Core materialization
+    {
+    }
+
     private ScopeOperation(
         Guid scopeId,
         Guid operationId) : base(scopeId, operationId)
@@ -32,7 +37,6 @@ public class ScopeOperation
         Guid scopeId,
         Guid operationId)
     {
-        return new ScopeOperation
-            (scopeId, operationId);
+        return new ScopeOperation(scopeId, operationId);
     }
 }

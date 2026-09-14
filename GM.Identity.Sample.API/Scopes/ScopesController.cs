@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.API.Models;
 using GM.Identity.Sample.API.Operations;
@@ -13,6 +13,13 @@ using GM.Identity.Sample.Application.Scopes.Queries.GetScopesList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.Identity.Sample.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Scopes;
 
 /// <summary>
@@ -29,8 +36,10 @@ public class ScopesController : BaseController
     /// <param name="request">Scope Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Scope Id</returns>
+    [HasPermission(nameof(AddScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddScope))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddScope(
         [FromBody] CreateScopeModel request,
         CancellationToken cancellationToken)
@@ -47,8 +56,10 @@ public class ScopesController : BaseController
     /// <param name="request">Scope Operation Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Scope Id</returns>
+    [HasPermission(nameof(AddScopeOperation))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Operations", Name = nameof(AddScopeOperation))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddScopeOperation(
         [FromRoute] Guid id,
         [FromBody] CreateScopeOperationModel request,
@@ -67,6 +78,8 @@ public class ScopesController : BaseController
     /// <param name="request">Scope Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateScope))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -87,6 +100,8 @@ public class ScopesController : BaseController
     /// <param name="id">Scope Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteScope))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -109,6 +124,8 @@ public class ScopesController : BaseController
     /// <param name="operationId">Operation Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteScopeOperation))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Operations/{operationId}", Name = nameof(DeleteScopeOperation))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -132,6 +149,8 @@ public class ScopesController : BaseController
     /// <param name="request">Scope Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Scopes</returns>
+    [HasPermission(nameof(GetScopesList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetScopesList))]
     [ProducesResponseType(typeof(IEnumerable<ScopeModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetScopesList(
@@ -152,6 +171,8 @@ public class ScopesController : BaseController
     /// <param name="request">Scope Operation Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Scope Operations</returns>
+    [HasPermission(nameof(GetScopeOperations))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Operations", Name = nameof(GetScopeOperations))]
     [ProducesResponseType(typeof(IEnumerable<OperationModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -174,6 +195,8 @@ public class ScopesController : BaseController
     /// <param name="id">Scope Id to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Scope Details</returns>
+    [HasPermission(nameof(GetScopeDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetScopeDetails))]
     [ProducesResponseType(typeof(ScopeDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

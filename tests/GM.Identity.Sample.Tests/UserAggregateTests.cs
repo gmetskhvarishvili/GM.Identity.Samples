@@ -1,6 +1,7 @@
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
+﻿using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using Xunit;
 
+using System;
 namespace GM.Identity.Sample.Tests;
 
 public class UserAggregateTests

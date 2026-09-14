@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 namespace GM.Identity.Sample.Infrastructure.Options;
 
 public class OAuthProviderOptions

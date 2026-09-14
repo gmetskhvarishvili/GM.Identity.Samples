@@ -1,5 +1,4 @@
-using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
+﻿using GM.EntityFramework.Domain.Abstractions;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,7 +12,9 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.AccessControl.RolePermissionAggregate.Entities;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate;
 
 public class RolePermission : GMRolePermission
@@ -21,18 +22,20 @@ public class RolePermission : GMRolePermission
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
     UserRole, Role, RolePermission, Permission>, IAggregateRoot
 {
+    private RolePermission() // EF Core materialization
+    {
+    }
+
     private RolePermission(
         Guid roleId,
         Guid permissionId) : base(roleId, permissionId)
     {
     }
-    
+
     public static RolePermission Create(
         Guid roleId,
         Guid permissionId)
     {
-        return new RolePermission(
-            roleId,
-            permissionId);
+        return new RolePermission(roleId, permissionId);
     }
 }

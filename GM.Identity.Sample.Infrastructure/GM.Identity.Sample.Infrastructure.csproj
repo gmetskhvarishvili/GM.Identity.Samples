@@ -2,19 +2,26 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\GM.Identity.Sample.Application\GM.Identity.Sample.Application.csproj"/>
         <ProjectReference Include="..\GM.Identity.Sample.Domain\GM.Identity.Sample.Domain.csproj"/>
+        <ProjectReference Include="..\GM.Identity.Sample.Persistence\GM.Identity.Sample.Persistence.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="GM.HttpClient" Version="1.2.1" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0"/>
         <PackageReference Include="GM.Messaging" Version="1.2.1" />
+        <PackageReference Include="GM.Secrets" Version="1.0.1" />
+        <PackageReference Include="GM.HealthChecks.EntityFramework" Version="1.0.2" />
+        <PackageReference Include="GM.HealthChecks.Caching" Version="1.0.2" />
+        <PackageReference Include="GM.HealthChecks.DistributedLock" Version="1.0.2" />
+        <PackageReference Include="GM.Scheduling" Version="1.0.0" />
+        <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
     </ItemGroup>
 
 </Project>

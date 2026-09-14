@@ -1,5 +1,6 @@
-using GM.Identity.Sample.API.Operations;
+﻿using GM.Identity.Sample.API.Operations;
 
+using System;
 namespace GM.Identity.Sample.API.Scopes;
 
 public class ScopeOperationModel

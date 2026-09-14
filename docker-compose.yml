@@ -1,0 +1,97 @@
+# Full-stack local run for the GM.Identity samples: PostgreSQL + Redis + the Identity API and both
+# YARP gateways, all in containers.
+#
+#   docker compose up --build
+#
+# The service images restore the pinned GM.* packages from the repo-local ./nuget-local feed (see
+# NuGet.config) plus nuget.org, so the build is self-contained — no host .NET SDK or local feed needed.
+# Inside the compose network the services talk over HTTP by service name (the gateways proxy to
+# http://api:8080), so there are no dev certificates in play.
+#
+# URLs on the host: API http://localhost:7122 · Gateway http://localhost:7225 · Admin gateway
+# http://localhost:7226 (each serves Swagger UI at its root).
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gm-identity-postgres
+    environment:
+      POSTGRES_DB: GMIdentitySample
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123456"
+    ports:
+      - "5432:5432"
+    volumes:
+      - gm-identity-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d GMIdentitySample"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: gm-identity-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: API.Dockerfile
+    container_name: gm-identity-api
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__ApplicationDatabase: "Host=postgres;Port=5432;Database=GMIdentitySample;Username=postgres;Password=123456"
+      ConnectionStrings__Redis: "redis:6379"
+    ports:
+      - "7122:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Gateway.Dockerfile
+    container_name: gm-identity-gateway
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Redis: "redis:6379"
+      # Proxy to the API over the compose network (plain HTTP, no dev certs).
+      ReverseProxy__Clusters__identity-api__Destinations__primary__Address: "http://api:8080/"
+      Documentation__Backend: "http://api:8080/swagger/v1/swagger.json"
+    ports:
+      - "7225:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  admin-gateway:
+    build:
+      context: .
+      dockerfile: Admin.Gateway.Dockerfile
+    container_name: gm-identity-admin-gateway
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Redis: "redis:6379"
+      ReverseProxy__Clusters__identity-api__Destinations__primary__Address: "http://api:8080/"
+      Documentation__Backend: "http://api:8080/swagger/v1/swagger.json"
+    ports:
+      - "7226:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+volumes:
+  gm-identity-pgdata:

@@ -1,9 +1,13 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Clients.Commands.DeleteClientScope;
 
 public class DeleteClientScopeCommand : IRequest
@@ -21,7 +25,9 @@ public class DeleteClientScopeCommandValidator : AbstractValidator<DeleteClientS
     }
 }
 
-public class DeleteClientScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteClientScopeCommand>
+public class DeleteClientScopeCommandHandler(
+    IUnitOfWork unitOfWork,
+    IScopeCache scopeCache) : IRequestHandler<DeleteClientScopeCommand>
 {
     public async Task Handle(DeleteClientScopeCommand request, CancellationToken cancellationToken)
     {
@@ -44,5 +50,8 @@ public class DeleteClientScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestH
         // Persist the aggregate
         unitOfWork.ClientScopeRepository.Remove(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Write-through: revoke the scope from the client in the projected set.
+        await scopeCache.RemoveClientScopeAsync(request.ClientId, request.ScopeId, cancellationToken);
     }
 }

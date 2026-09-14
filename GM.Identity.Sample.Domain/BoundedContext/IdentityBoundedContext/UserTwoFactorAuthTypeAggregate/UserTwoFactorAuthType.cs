@@ -1,5 +1,4 @@
-using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
+﻿using GM.EntityFramework.Domain.Abstractions;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,7 +12,9 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
+using GM.Identity.Domain.Identity.UserTwoFactorAuthTypeAggregate.Entities;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 
 public class UserTwoFactorAuthType : GMUserTwoFactorAuthType
@@ -21,6 +22,10 @@ public class UserTwoFactorAuthType : GMUserTwoFactorAuthType
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
     UserRole, Role, RolePermission, Permission>, IAggregateRoot
 {
+    private UserTwoFactorAuthType() // EF Core materialization
+    {
+    }
+
     private UserTwoFactorAuthType(
         Guid userId,
         int twoFactorAuthTypeId) : base(userId, twoFactorAuthTypeId)
@@ -33,7 +38,6 @@ public class UserTwoFactorAuthType : GMUserTwoFactorAuthType
         Guid userId,
         int twoFactorAuthTypeId)
     {
-        return new UserTwoFactorAuthType
-            (userId, twoFactorAuthTypeId);
+        return new UserTwoFactorAuthType(userId, twoFactorAuthTypeId);
     }
 }

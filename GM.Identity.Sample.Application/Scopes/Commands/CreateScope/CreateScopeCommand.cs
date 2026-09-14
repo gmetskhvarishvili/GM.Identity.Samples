@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Scopes.Commands.CreateScopeOperation;
 using GM.Identity.Sample.Common.Resources;
@@ -7,9 +7,14 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Scope
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 namespace GM.Identity.Sample.Application.Scopes.Commands.CreateScope;
 
-public class CreateScopeCommand : IRequest<string>
+public class CreateScopeCommand : IRequest<Guid>
 {
     public string? Name { get; set; }
     
@@ -24,10 +29,10 @@ public class CreateScopeCommandValidator : AbstractValidator<CreateScopeCommand>
     }
 }
 
-public class CreateScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateScopeCommand, string>
+public class CreateScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateScopeCommand, Guid>
 {
 
-    public async Task<string> Handle(CreateScopeCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateScopeCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.ScopeRepository.ExistsAsync(
                 x => x.Name == request.Name
@@ -60,6 +65,6 @@ public class CreateScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler
         await unitOfWork.ScopeRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id.ToString();
+        return entity.Id;
     }
 }

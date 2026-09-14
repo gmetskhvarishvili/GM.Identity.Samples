@@ -1,6 +1,7 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Mapster;
 
+using System;
 namespace GM.Identity.Sample.Application.Common;
 
 /// <summary>

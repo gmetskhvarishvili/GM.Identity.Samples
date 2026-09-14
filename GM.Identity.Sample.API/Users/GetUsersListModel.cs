@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Models;
 
+using System;
 namespace GM.Identity.Sample.API.Users;
 
 public class GetUsersListModel : GetBaseListModel

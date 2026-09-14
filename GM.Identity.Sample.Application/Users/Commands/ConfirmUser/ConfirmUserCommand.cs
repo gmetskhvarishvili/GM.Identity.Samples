@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
@@ -9,6 +9,9 @@ using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using ValidationException = FluentValidation.ValidationException;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 
 public class ConfirmUserCommand : IRequest

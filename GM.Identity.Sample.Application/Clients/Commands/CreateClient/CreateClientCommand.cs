@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Clients.Commands.CreateClientScope;
 using GM.Identity.Sample.Common.Resources;
@@ -7,9 +7,14 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 namespace GM.Identity.Sample.Application.Clients.Commands.CreateClient;
 
-public class CreateClientCommand : IRequest<string>
+public class CreateClientCommand : IRequest<Guid>
 {
     public string? Secret { get; set; }
     public string? Name { get; set; }
@@ -26,9 +31,9 @@ public class CreateClientCommandValidator : AbstractValidator<CreateClientComman
     }
 }
 
-public class CreateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateClientCommand, string>
+public class CreateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateClientCommand, Guid>
 {
-    public async Task<string> Handle(CreateClientCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.ClientRepository.ExistsAsync(
                 x => x.Name == request.Name
@@ -67,6 +72,6 @@ public class CreateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
         await unitOfWork.ClientRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id.ToString();
+        return entity.Id;
     }
 }

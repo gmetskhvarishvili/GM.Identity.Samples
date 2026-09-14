@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
@@ -7,6 +7,9 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.API.Accounts;
 
 /// <summary>
@@ -40,6 +43,8 @@ public class AccountsController : BaseController
             ClientId = request.ClientId,
             ClientSecret = request.ClientSecret,
             GrantType = request.GrantType,
+            RefreshToken = request.RefreshToken,
+            Code = request.Code,
         };
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);

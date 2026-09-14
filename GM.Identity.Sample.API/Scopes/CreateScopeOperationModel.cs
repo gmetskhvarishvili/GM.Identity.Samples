@@ -1,5 +1,6 @@
-using FluentValidation;
+﻿using FluentValidation;
 
+using System;
 namespace GM.Identity.Sample.API.Scopes;
 
 public class CreateScopeOperationModel

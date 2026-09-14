@@ -1,14 +1,18 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using ValidationException = GM.Exceptions.ValidationException;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Scopes.Commands.CreateScopeOperation;
 
-public class CreateScopeOperationCommand : IRequest<string>
+public class CreateScopeOperationCommand : IRequest<Guid>
 {
     public Guid ScopeId { get; set; }
     public Guid OperationId { get; set; }
@@ -23,10 +27,12 @@ public class CreateScopeOperationCommandValidator : AbstractValidator<CreateScop
     }
 }
 
-public class CreateScopeOperationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateScopeOperationCommand, string>
+public class CreateScopeOperationCommandHandler(
+    IUnitOfWork unitOfWork,
+    IScopeCache scopeCache) : IRequestHandler<CreateScopeOperationCommand, Guid>
 {
 
-    public async Task<string> Handle(CreateScopeOperationCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateScopeOperationCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.ScopeOperationRepository.ExistsAsync(
                 x => x.ScopeId == request.ScopeId
@@ -51,6 +57,9 @@ public class CreateScopeOperationCommandHandler(IUnitOfWork unitOfWork) : IReque
         await unitOfWork.ScopeOperationRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id.ToString();
+        // Write-through: add the operation to the scope's projected set.
+        await scopeCache.AddScopeOperationAsync(request.ScopeId, request.OperationId, cancellationToken);
+
+        return entity.Id;
     }
 }

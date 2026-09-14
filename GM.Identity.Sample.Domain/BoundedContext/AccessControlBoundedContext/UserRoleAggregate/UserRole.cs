@@ -1,5 +1,4 @@
-using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
+﻿using GM.EntityFramework.Domain.Abstractions;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,7 +12,9 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.AccessControl.UserRoleAggregate.Entities;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 
 public class UserRole : GMUserRole
@@ -21,18 +22,21 @@ public class UserRole : GMUserRole
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
     UserRole, Role, RolePermission, Permission>, IAggregateRoot
 {
+    private UserRole() // EF Core materialization
+    {
+    }
+
     private UserRole(
         Guid userId,
         Guid roleId) : base(userId, roleId)
     {
     }
-    
+
     public static UserRole Create(
         Guid userId,
         Guid roleId)
     {
-        return new UserRole
-            (userId, roleId);
+        return new UserRole(userId, roleId);
     }
 }
 

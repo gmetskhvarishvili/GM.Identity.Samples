@@ -1,3 +1,6 @@
+﻿using GM.Identity.Sample.API.Common;
+
+using System;
 namespace GM.Identity.Sample.API.Users;
 
 public class UserDetailsModel : AuditableModel

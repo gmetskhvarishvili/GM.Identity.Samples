@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Roles.Commands.CreateRolePermission;
 using GM.Identity.Sample.Common.Resources;
@@ -7,9 +7,14 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleP
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 namespace GM.Identity.Sample.Application.Roles.Commands.CreateRole;
 
-public class CreateRoleCommand : IRequest<string>
+public class CreateRoleCommand : IRequest<Guid>
 {
     public string? Name { get; set; }
     
@@ -24,10 +29,10 @@ public class CreateRoleCommandValidator : AbstractValidator<CreateRoleCommand>
     }
 }
 
-public class CreateRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateRoleCommand, string>
+public class CreateRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateRoleCommand, Guid>
 {
 
-    public async Task<string> Handle(CreateRoleCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateRoleCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.RoleRepository.ExistsAsync(
                 x => x.Name == request.Name
@@ -60,6 +65,6 @@ public class CreateRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
         await unitOfWork.RoleRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id.ToString();
+        return entity.Id;
     }
 }

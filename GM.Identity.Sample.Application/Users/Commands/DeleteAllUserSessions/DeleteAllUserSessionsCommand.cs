@@ -1,8 +1,13 @@
-using FluentValidation;
+﻿using FluentValidation;
+using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 
 public class DeleteAllUserSessionsCommand : IRequest
@@ -18,7 +23,9 @@ public class DeleteAllUserSessionsCommandValidator : AbstractValidator<DeleteAll
     }
 }
 
-public class DeleteAllUserSessionsCommandHandler(IUnitOfWork unitOfWork)
+public class DeleteAllUserSessionsCommandHandler(
+    IUnitOfWork unitOfWork,
+    ISessionCache sessionCache)
     : IRequestHandler<DeleteAllUserSessionsCommand>
 {
     public async Task Handle(DeleteAllUserSessionsCommand request, CancellationToken cancellationToken)
@@ -38,5 +45,9 @@ public class DeleteAllUserSessionsCommandHandler(IUnitOfWork unitOfWork)
         // Persist the aggregate
         unitOfWork.UserSessionRepository.UpdateRange(entities);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Invalidate every cached session immediately (don't wait for their TTLs).
+        foreach (var entity in entities)
+            await sessionCache.RemoveAsync(entity.TokenHash, cancellationToken);
     }
 }

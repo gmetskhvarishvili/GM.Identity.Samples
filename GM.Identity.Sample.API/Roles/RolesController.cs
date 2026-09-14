@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.API.Models;
 using GM.Identity.Sample.API.Permissions;
@@ -13,6 +13,13 @@ using GM.Identity.Sample.Application.Roles.Queries.GetRolesList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.Identity.Sample.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Roles;
 
 /// <summary>
@@ -29,8 +36,10 @@ public class RolesController : BaseController
     /// <param name="request">Role Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Id</returns>
+    [HasPermission(nameof(AddRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddRole))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddRole(
         [FromBody] CreateRoleModel request,
         CancellationToken cancellationToken)
@@ -47,8 +56,10 @@ public class RolesController : BaseController
     /// <param name="request">Role Permission Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Id</returns>
+    [HasPermission(nameof(AddRolePermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Permissions", Name = nameof(AddRolePermission))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddRolePermission(
         [FromRoute] Guid id,
         [FromBody] CreateRolePermissionModel request,
@@ -67,6 +78,8 @@ public class RolesController : BaseController
     /// <param name="request">Role Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -87,6 +100,8 @@ public class RolesController : BaseController
     /// <param name="id">Role Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -109,6 +124,8 @@ public class RolesController : BaseController
     /// <param name="permissionId">Permission Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteRolePermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Permissions/{permissionId}", Name = nameof(DeleteRolePermission))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -132,6 +149,8 @@ public class RolesController : BaseController
     /// <param name="request">Role Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Roles</returns>
+    [HasPermission(nameof(GetRolesList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetRolesList))]
     [ProducesResponseType(typeof(IEnumerable<RoleModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRolesList(
@@ -152,6 +171,8 @@ public class RolesController : BaseController
     /// <param name="request">Role Permission Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Permissions</returns>
+    [HasPermission(nameof(GetRolePermissions))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Permissions", Name = nameof(GetRolePermissions))]
     [ProducesResponseType(typeof(IEnumerable<PermissionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -174,6 +195,8 @@ public class RolesController : BaseController
     /// <param name="id">Role Id to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Details</returns>
+    [HasPermission(nameof(GetRoleDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetRoleDetails))]
     [ProducesResponseType(typeof(RoleDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Application.Permissions.Queries.GetPermissionsList;
@@ -7,6 +7,11 @@ using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 namespace GM.Identity.Sample.Application.Roles.Queries.GetRolePermissionsList;
 
 public class GetRolePermissionsListQuery : GetBaseListQuery, IRequest<PagedListDto<PermissionDto>>

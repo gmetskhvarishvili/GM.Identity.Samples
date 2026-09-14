@@ -1,5 +1,4 @@
-using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
+﻿using GM.EntityFramework.Domain.Abstractions;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,7 +12,9 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.Authorization.ClientSessionAggregate.Entities;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
 
 public class ClientSession
@@ -22,6 +23,10 @@ public class ClientSession
             UserRole, Role, RolePermission, Permission>,
         IAggregateRoot
 {
+    private ClientSession() // EF Core materialization
+    {
+    }
+
     private ClientSession(
         Guid clientId,
         string tokenHash,
@@ -34,9 +39,6 @@ public class ClientSession
         string tokenHash,
         DateTime expiresAt)
     {
-        return new ClientSession(
-            clientId,
-            tokenHash,
-            expiresAt);
+        return new ClientSession(clientId, tokenHash, expiresAt);
     }
 }

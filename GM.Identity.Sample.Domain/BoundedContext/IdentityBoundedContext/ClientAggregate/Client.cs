@@ -1,5 +1,4 @@
 using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,13 +12,21 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Sample.Domain.SeedWork;
+using GM.Identity.Domain.Identity.ClientAggregate.Entities;
+
+using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
 
 public class Client : GMClient<Client, ClientSession, ClientScope, Scope, ScopeOperation, Operation,
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
-    UserRole, Role, RolePermission, Permission>, IAggregateRoot
+    UserRole, Role, RolePermission, Permission>, IAggregateRoot, IHasTenant
 {
+    private Client() // EF Core materialization
+    {
+    }
+
     private Client(
         string name)
         : base(
@@ -30,7 +37,12 @@ public class Client : GMClient<Client, ClientSession, ClientScope, Scope, ScopeO
     public static Client Create(
         string name)
     {
-        return new Client(
-            name);
+        return new Client(name);
     }
+
+    /// <summary>The tenant this client belongs to, or <c>null</c> for a global (cross-tenant) row.</summary>
+    public Guid? TenantId { get; private set; }
+
+    /// <summary>Assigns the owning tenant (stamped by the persistence layer on insert when unset).</summary>
+    public void AssignTenant(Guid? tenantId) => TenantId = tenantId;
 }

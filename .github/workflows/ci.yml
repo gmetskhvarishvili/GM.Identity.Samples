@@ -8,6 +8,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Real backing stores so the end-to-end (WAF) tests actually run instead of no-opping. They are
+    # published on localhost with the default ports, matching the connection strings in
+    # GM.Identity.Sample.API/appsettings.json — so no test configuration override is needed.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: GMIdentitySample
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: "123456"
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d GMIdentitySample"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,6 +45,8 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      # Restore uses the repo NuGet.config: nuget.org + the bundled ./nuget-local feed holding the pinned
+      # GM.* versions not yet on nuget.org, so CI is self-contained.
       - name: Restore
         run: dotnet restore
 

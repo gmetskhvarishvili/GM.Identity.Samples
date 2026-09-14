@@ -1,6 +1,7 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
+using System;
 namespace GM.Identity.Sample.Application.Common.Security;
 
 public static class PkceHelper

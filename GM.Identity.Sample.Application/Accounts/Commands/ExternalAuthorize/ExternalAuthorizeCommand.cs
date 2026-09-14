@@ -1,6 +1,8 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
+using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
@@ -12,8 +14,14 @@ using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ValidationException = FluentValidation.ValidationException;
 
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 
 public class ExternalAuthorizeCommand : IRequest<AuthorizeResponseDto>
@@ -40,19 +48,22 @@ public class ExternalAuthorizeCommandValidator : AbstractValidator<ExternalAutho
 
 public class ExternalAuthorizeCommandHandler(
     IOAuthService oAuthService,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ISessionCache sessionCache,
+    IOptions<AuthOptions> options)
     : IRequestHandler<ExternalAuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(ExternalAuthorizeCommand request, CancellationToken cancellationToken)
     {
+        // Authentication is cross-tenant (see AuthorizeCommand): resolve the client/user across tenants.
         var client = await unitOfWork.ClientRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
                 x => x.Id == request.ClientId &&
                      x.IsActive &&
                      !x.IsDeleted &&
                      !x.IsHidden,
-                true,
-                null,
                 cancellationToken);
 
         if (client == null)
@@ -76,13 +87,13 @@ public class ExternalAuthorizeCommandHandler(
             cancellationToken);
         
         var user = await unitOfWork.UserRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
-                x => x.Email ==email &&
+                x => x.Email == email &&
                      x.IsActive &&
                      !x.IsDeleted &&
                      !x.IsHidden,
-                true,
-                null,
                 cancellationToken);
 
         if (user == null)
@@ -102,25 +113,51 @@ public class ExternalAuthorizeCommandHandler(
             
             user = User
                 .Create(email, email, null);
-            
+
             await unitOfWork.UserRepository.AddAsync(user, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        var token = TokenGenerator.Generate();
-        var expiration = DateTime.UtcNow.AddDays(30);
+        // Two-factor step-up: an existing user enrolled in a 2FA method must complete a second factor
+        // before a session is issued — return a challenge naming the enrolled methods. (A just-created
+        // external user has none, so this only gates users who previously configured 2FA.) The second
+        // factor's verification mechanism is intentionally left as a follow-up step.
+        var twoFactorTypeIds = await unitOfWork.UserTwoFactorAuthTypeRepository
+            .Query(false, null)
+            .Where(x => x.UserId == user.Id && x.IsActive && !x.IsDeleted && !x.IsHidden)
+            .Select(x => x.TwoFactorAuthTypeId)
+            .ToListAsync(cancellationToken);
+        if (twoFactorTypeIds.Count > 0)
+            return AuthorizeResponseDto.TwoFactorChallenge(twoFactorTypeIds);
 
-        await unitOfWork.UserSessionRepository.AddAsync(
-            UserSession.Create(
-                user.Id,
-                client.Id,
-                request.Provider,
-                TokenGenerator.Hash(token),
-                expiration
-            ), cancellationToken);
+        // Issue a short-lived access token + a rotating refresh token, exactly like the password grant:
+        // the session's absolute expiry is the refresh lifetime, while the Redis access entry carries the
+        // shorter access TTL. The refresh grant (grant_type=refresh_token) then rotates these too.
+        var settings = options.Value;
+        var now = DateTime.UtcNow;
+        var accessToken = TokenGenerator.Generate();
+        var refreshToken = TokenGenerator.Generate();
+        var accessExpiry = now.AddMinutes(settings.AccessTokenMinutes);
+        var refreshExpiry = now.AddDays(settings.RefreshTokenDays);
+        var accessHash = TokenGenerator.Hash(accessToken);
 
+        var session = UserSession.Create(
+            user.Id,
+            client.Id,
+            request.Provider,
+            accessHash,
+            refreshExpiry,
+            TokenGenerator.Hash(refreshToken));
+
+        await unitOfWork.UserSessionRepository.AddAsync(session, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new AuthorizeResponseDto(token, expiration, "bearer");
+        // Publish the access session to Redis (keyed by the access token hash) for gateway-side validation.
+        await sessionCache.SetAsync(
+            accessHash,
+            new SessionInfo(user.Id, session.Id, client.Id, accessExpiry),
+            cancellationToken);
+
+        return new AuthorizeResponseDto(accessToken, accessExpiry, "bearer", refreshToken, refreshExpiry);
     }
 }

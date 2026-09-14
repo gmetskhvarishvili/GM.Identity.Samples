@@ -1,10 +1,14 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Clients.Queries.GetClientDetails;
 
 public class GetClientDetailsQuery: IRequest<ClientDetailsDto>

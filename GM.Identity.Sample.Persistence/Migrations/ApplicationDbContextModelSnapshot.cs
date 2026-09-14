@@ -23,6 +23,78 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GM.EntityFramework.Persistence.Events.StoredDomainEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AggregateId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AggregateType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ChannelId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Culture")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CorrelationId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("AggregateType", "AggregateId", "OccurredOn");
+
+                    b.ToTable("DomainEvents", "domainEvents");
+                });
+
             modelBuilder.Entity("GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.ClientScope", b =>
                 {
                     b.Property<Guid>("Id")
@@ -34,6 +106,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -56,6 +131,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
@@ -74,6 +152,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -99,10 +180,18 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Operations", "accessControl");
                 });
@@ -116,6 +205,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -141,10 +233,18 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Permissions", "accessControl");
                 });
@@ -157,6 +257,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -178,10 +281,18 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Roles", "accessControl");
                 });
@@ -194,6 +305,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -219,6 +333,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PermissionId");
@@ -237,6 +354,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -250,10 +370,18 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Scope", "application");
                 });
@@ -266,6 +394,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -291,6 +422,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OperationId");
@@ -308,6 +442,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -329,6 +466,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -354,6 +494,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -388,6 +531,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
@@ -401,14 +547,32 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ChannelId")
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("ClientId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Culture")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -433,8 +597,17 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<string>("Provider")
                         .HasColumnType("text");
 
+                    b.Property<string>("RefreshTokenHash")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("TokenHash")
                         .IsRequired()
@@ -446,6 +619,12 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
@@ -469,6 +648,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -500,10 +682,18 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Clients", "identity");
                 });
@@ -515,6 +705,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
@@ -543,6 +736,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -576,6 +772,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
@@ -627,14 +826,22 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime?>("PhoneNumberConfirmedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Users", "identity");
                 });
@@ -647,6 +854,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -668,6 +878,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");

@@ -1,9 +1,13 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 
 public class DeleteUserRoleCommand : IRequest
@@ -21,7 +25,9 @@ public class DeleteUserRoleCommandValidator : AbstractValidator<DeleteUserRoleCo
     }
 }
 
-public class DeleteUserRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteUserRoleCommand>
+public class DeleteUserRoleCommandHandler(
+    IUnitOfWork unitOfWork,
+    IPermissionCache permissionCache) : IRequestHandler<DeleteUserRoleCommand>
 {
     public async Task Handle(DeleteUserRoleCommand request, CancellationToken cancellationToken)
     {
@@ -44,5 +50,8 @@ public class DeleteUserRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHand
         // Persist the aggregate
         unitOfWork.UserRoleRepository.Remove(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Write-through to the Redis RBAC projection.
+        await permissionCache.RemoveUserRoleAsync(request.UserId, request.RoleId, cancellationToken);
     }
 }

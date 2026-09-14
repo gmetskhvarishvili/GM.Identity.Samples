@@ -1,5 +1,6 @@
-using GM.Identity.Sample.API.Permissions;
+﻿using GM.Identity.Sample.API.Permissions;
 
+using System;
 namespace GM.Identity.Sample.API.Roles;
 
 public class RolePermissionModel

@@ -17,8 +17,12 @@ using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMes
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Identity.Sample.Persistence.Repositories;
+using GM.Caching.Redis;
+using GM.DistributedLock.Redis;
+using GM.EntityFramework.Persistence;
 using GM.Messaging.Persistence.Outbox;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,9 +32,21 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddEntityFrameworkNpgsql();
-        
-        services.AddDbContextPool<ApplicationDbContext>((serviceProvider, options) =>
+        var redis = configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redis))
+        {
+            services.AddGMRedisCaching(options =>
+            {
+                options.ConnectionString = redis;
+                options.KeyPrefix = "gm-identity:";
+            });
+            services.AddGMRedisDistributedLock(options => options.ConnectionString = redis);
+        }
+
+        // Not pooled: the tenant global query filter (see ApplicationDbContext) references the ambient
+        // ICurrentActor, so each context must resolve it per scope. Pooling reuses instances and only
+        // supports a DbContextOptions-only constructor, which would prevent injecting the actor.
+        services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
             options.UseNpgsql(configuration.GetConnectionString("ApplicationDatabase"),
                 o =>
@@ -38,7 +54,13 @@ public static class DependencyInjection
                     o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     o.CommandTimeout(60);
                 });
-            options.UseInternalServiceProvider(serviceProvider);
+
+            // Tenant-owned aggregates (IHasTenant) carry a global query filter but their required
+            // dependents don't; that pairing is intentional here, so silence EF's advisory warning.
+            options.ConfigureWarnings(w =>
+                w.Ignore(CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
+
+            options.AddGMActorAuditing(serviceProvider);
         });
 
         services.AddTransient<IOutboxMessageRepository, OutboxMessageRepository>();
@@ -58,7 +80,7 @@ public static class DependencyInjection
         services.AddTransient<IUserSessionRepository, UserSessionRepository>();
         services.AddTransient<IUserTwoFactorAuthTypeRepository, UserTwoFactorAuthTypeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
-        
+
         services.AddTransient<OutboxMessageRepository>();
         services.AddTransient<IOutboxMessageRepository>(sp => sp.GetRequiredService<OutboxMessageRepository>());
         services.AddTransient<IOutboxDbContext<OutboxMessage>>(sp => sp.GetRequiredService<OutboxMessageRepository>());

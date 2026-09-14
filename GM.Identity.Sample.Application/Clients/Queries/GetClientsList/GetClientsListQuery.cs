@@ -1,11 +1,16 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 namespace GM.Identity.Sample.Application.Clients.Queries.GetClientsList;
 
 public class GetClientsListQuery: GetBaseListQuery, IRequest<PagedListDto<ClientDto>>

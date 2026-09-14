@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.API.Models;
 using GM.Identity.Sample.API.Scopes;
@@ -16,6 +16,13 @@ using GM.Identity.Sample.Application.Clients.Queries.GetClientsList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.Identity.Sample.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Clients;
 
 /// <summary>
@@ -32,8 +39,10 @@ public class ClientsController : BaseController
     /// <param name="request">Client Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Id</returns>
+    [HasPermission(nameof(AddClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddClient))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddClient(
         [FromBody] CreateClientModel request,
         CancellationToken cancellationToken)
@@ -50,6 +59,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Scope Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(AddClientScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Scopes", Name = nameof(AddClientScope))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddClientScope(
@@ -70,6 +81,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateClient))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -90,6 +103,8 @@ public class ClientsController : BaseController
     /// <param name="id">Client Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteClient))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -112,6 +127,8 @@ public class ClientsController : BaseController
     /// <param name="scopeId">Scope Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClientScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Scopes/{scopeId}", Name = nameof(DeleteClientScope))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -135,6 +152,8 @@ public class ClientsController : BaseController
     /// <param name="id">Client Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClientSessions))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions", Name = nameof(DeleteClientSessions))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -157,6 +176,8 @@ public class ClientsController : BaseController
     /// <param name="sessionId">Session Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClientSession))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions/{sessionId}", Name = nameof(DeleteClientSession))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -180,6 +201,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Roles</returns>
+    [HasPermission(nameof(GetClientsList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetClientsList))]
     [ProducesResponseType(typeof(IEnumerable<ClientModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClientsList(
@@ -200,6 +223,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Scope Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Scopes</returns>
+    [HasPermission(nameof(GetClientScopes))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Scopes", Name = nameof(GetClientScopes))]
     [ProducesResponseType(typeof(IEnumerable<ClientModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -223,6 +248,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Session Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Sessions</returns>
+    [HasPermission(nameof(GetClientSessions))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Sessions", Name = nameof(GetClientSessions))]
     [ProducesResponseType(typeof(IEnumerable<ClientSessionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -245,6 +272,8 @@ public class ClientsController : BaseController
     /// <param name="id">Client Id to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Details</returns>
+    [HasPermission(nameof(GetClientDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetClientDetails))]
     [ProducesResponseType(typeof(ClientDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

@@ -1,8 +1,10 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Mediator.Contracts;
 using Mapster;
 
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 
 public class GetOAuthRedirectUriQuery : IRequest<string>

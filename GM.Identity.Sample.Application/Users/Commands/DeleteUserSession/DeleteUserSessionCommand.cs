@@ -1,9 +1,13 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 
 public class DeleteUserSessionCommand : IRequest
@@ -21,7 +25,9 @@ public class DeleteUserSessionCommandValidator : AbstractValidator<DeleteUserSes
     }
 }
 
-public class DeleteUserSessionCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteUserSessionCommand>
+public class DeleteUserSessionCommandHandler(
+    IUnitOfWork unitOfWork,
+    ISessionCache sessionCache) : IRequestHandler<DeleteUserSessionCommand>
 {
     public async Task Handle(DeleteUserSessionCommand request, CancellationToken cancellationToken)
     {
@@ -42,9 +48,12 @@ public class DeleteUserSessionCommandHandler(IUnitOfWork unitOfWork) : IRequestH
         }
         
         entity.Revoke();
-        
+
         // Persist the aggregate
         unitOfWork.UserSessionRepository.Update(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Invalidate the cached session immediately (don't wait for its TTL).
+        await sessionCache.RemoveAsync(entity.TokenHash, cancellationToken);
     }
 }

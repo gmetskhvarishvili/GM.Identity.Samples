@@ -1,5 +1,4 @@
 using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,6 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.Identity.TwoFactorAuthTypeAggregate.Entities;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 
@@ -21,6 +21,10 @@ public class TwoFactorAuthType : GMTwoFactorAuthType
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
     UserRole, Role, RolePermission, Permission>, IAggregateRoot
 {
+    private TwoFactorAuthType() // EF Core materialization
+    {
+    }
+
     private TwoFactorAuthType(
         string name,
         string displayName) : base(name, displayName)
@@ -31,7 +35,6 @@ public class TwoFactorAuthType : GMTwoFactorAuthType
         string name,
         string displayName)
     {
-        return new TwoFactorAuthType
-            (name, displayName);
+        return new TwoFactorAuthType(name, displayName);
     }
 }

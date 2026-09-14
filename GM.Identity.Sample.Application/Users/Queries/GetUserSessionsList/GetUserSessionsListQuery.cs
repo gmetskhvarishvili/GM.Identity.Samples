@@ -1,11 +1,16 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 namespace GM.Identity.Sample.Application.Users.Queries.GetUserSessionsList;
 
 public class GetUserSessionsListQuery : GetBaseListQuery, IRequest<PagedListDto<UserSessionDto>>
@@ -68,4 +73,14 @@ public class UserSessionDto : AuditableDto
     public bool IsRevoked { get;  set; }
     public DateTime? RevokedAt { get;  set; }
     public DateTime ExpiresAt { get; set; }
+
+    // Request/tracing context captured when the session was created (see UserSession : ICapturesActorContext).
+    public Guid? TenantId { get; set; }
+    public string? ChannelId { get; set; }
+    public string? Culture { get; set; }
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
+    public string? CorrelationId { get; set; }
+    public string? IdempotencyKey { get; set; }
+    public string? Source { get; set; }
 }

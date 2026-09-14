@@ -1,17 +1,23 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 namespace GM.Identity.Sample.Application.Users.Commands.CreateUser;
 
-public class CreateUserCommand : IRequest<string>
+public class CreateUserCommand : IRequest<Guid>
 {
     public string? Username { get; set; }
     public string? Email { get; set; }
@@ -19,6 +25,9 @@ public class CreateUserCommand : IRequest<string>
     public string? Password { get; set; }
 
     public IEnumerable<CreateUserRoleCommand>? UserRoles { get; set; }
+
+    /// <summary>Ids of the 2FA methods to enrol the user in (see the TwoFactorAuthType reference data).</summary>
+    public IEnumerable<int>? TwoFactorAuthTypeIds { get; set; }
 }
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
@@ -32,9 +41,9 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 }
 
 public class CreateUserCommandHandler(
-    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, string>
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, Guid>
 {
-    public async Task<string> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.UserRepository.ExistsAsync(
                 x => x.Email == request.Email
@@ -69,6 +78,17 @@ public class CreateUserCommandHandler(
             entity.AddRoles(items);
         }
 
+        // Enrol the user in any requested 2FA methods (same child-collection pattern as roles). Login then
+        // references these: a user with an enrolled method must clear a second-factor challenge.
+        if (request.TwoFactorAuthTypeIds?.Any() == true)
+        {
+            var twoFactorItems = request.TwoFactorAuthTypeIds
+                .Select(typeId => UserTwoFactorAuthType.Create(entity.Id, typeId))
+                .ToArray();
+
+            entity.AddTwoFactorAuthType(twoFactorItems);
+        }
+
         // Persist the aggregate
         await unitOfWork.UserRepository.AddAsync(entity, cancellationToken);
         
@@ -84,6 +104,6 @@ public class CreateUserCommandHandler(
         
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id.ToString();
+        return entity.Id;
     }
 }

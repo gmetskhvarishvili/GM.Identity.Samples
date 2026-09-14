@@ -1,6 +1,7 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.API.Models;
+using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
@@ -21,6 +22,13 @@ using GM.Identity.Sample.Application.Users.Queries.GetUsersList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.Identity.Sample.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Users;
 
 /// <summary>
@@ -31,6 +39,69 @@ namespace GM.Identity.Sample.API.Users;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class UsersController : BaseController
 {
+    // ---- Current user (self) — owner-scoped, no admin permission required. The user id comes from the
+    // gateway-forwarded X-User-Id header (ICurrentActor), never from the route, so a caller can only ever
+    // read/change their own data. These back the gateway's /me and /me/sessions routes. ----
+
+    /// <summary>
+    /// Get the current user's own details.
+    /// </summary>
+    [HttpGet("me", Name = nameof(GetCurrentUser))]
+    [ProducesResponseType(typeof(UserDetailsModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUser(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var response = await Mediator.Send(new GetUserDetailsQuery { Id = userId }, cancellationToken);
+        return Ok(response.Adapt<UserDetailsModel>());
+    }
+
+    /// <summary>
+    /// Get the current user's own sessions.
+    /// </summary>
+    [HttpGet("me/Sessions", Name = nameof(GetCurrentUserSessions))]
+    [ProducesResponseType(typeof(IEnumerable<UserSessionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUserSessions(
+        [FromServices] ICurrentActor currentActor,
+        [FromQuery] GetUserSessionsListModel request,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var query = request.Adapt<GetUserSessionsListQuery>();
+        query.UserId = userId;
+        var response = await Mediator.Send(query, cancellationToken);
+        var result = response.Items.Adapt<IEnumerable<UserSessionModel>>();
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Change the current user's own password.
+    /// </summary>
+    [HttpPut("me/Password", Name = nameof(UpdateCurrentUserPassword))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> UpdateCurrentUserPassword(
+        [FromServices] ICurrentActor currentActor,
+        [FromBody] UpdateUserPasswordModel request,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var command = request.Adapt<UpdateUserPasswordCommand>();
+        command.Id = userId;
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
     /// <summary>
     /// Add User
     /// </summary>
@@ -38,7 +109,7 @@ public class UsersController : BaseController
     /// <param name="cancellationToken"></param>
     /// <returns>User Id</returns>
     [HttpPost(Name = nameof(AddUser))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddUser(
         [FromBody] CreateUserModel request,
         CancellationToken cancellationToken)
@@ -55,6 +126,8 @@ public class UsersController : BaseController
     /// <param name="request">User Role Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(AddUserRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Roles", Name = nameof(AddUserRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddUserRole(
@@ -153,6 +226,8 @@ public class UsersController : BaseController
     /// <param name="request">User Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateUser))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -174,6 +249,8 @@ public class UsersController : BaseController
     /// <param name="request">User Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateUserPassword))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}/Password", Name = nameof(UpdateUserPassword))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -194,6 +271,8 @@ public class UsersController : BaseController
     /// <param name="id">User Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteUser))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -216,6 +295,8 @@ public class UsersController : BaseController
     /// <param name="roleId">Role Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUserRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Roles/{roleId}", Name = nameof(DeleteUserRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -239,6 +320,8 @@ public class UsersController : BaseController
     /// <param name="id">User Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUserSessions))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions", Name = nameof(DeleteUserSessions))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -261,6 +344,8 @@ public class UsersController : BaseController
     /// <param name="sessionId">User Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUserSession))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions/{sessionId}", Name = nameof(DeleteUserSession))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -285,6 +370,8 @@ public class UsersController : BaseController
     /// <param name="request">User Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Roles</returns>
+    [HasPermission(nameof(GetUsersList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetUsersList))]
     [ProducesResponseType(typeof(IEnumerable<UserModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUsersList(
@@ -305,6 +392,8 @@ public class UsersController : BaseController
     /// <param name="request">User Role Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Roles</returns>
+    [HasPermission(nameof(GetUserRoles))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Roles", Name = nameof(GetUserRoles))]
     [ProducesResponseType(typeof(IEnumerable<RoleModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -328,6 +417,8 @@ public class UsersController : BaseController
     /// <param name="request">User Session Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Sessions</returns>
+    [HasPermission(nameof(GetUserSessions))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Sessions", Name = nameof(GetUserSessions))]
     [ProducesResponseType(typeof(IEnumerable<UserSessionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -350,6 +441,8 @@ public class UsersController : BaseController
     /// <param name="id">User Id to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Details</returns>
+    [HasPermission(nameof(GetUserDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetUserDetails))]
     [ProducesResponseType(typeof(UserDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

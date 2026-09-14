@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
+using System;
 namespace GM.Identity.Sample.API.Accounts;
 
 public class AuthorizeModel
@@ -19,6 +20,12 @@ public class AuthorizeModel
 
     [FromForm(Name = "grant_type")]
     public string GrantType { get; set; } = null!;
+
+    [FromForm(Name = "refresh_token")]
+    public string? RefreshToken { get; set; }
+
+    [FromForm(Name = "code")]
+    public string? Code { get; set; }
 }
 
 public class AuthorizeModelValidator : AbstractValidator<AuthorizeModel>

@@ -1,5 +1,4 @@
-using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
+﻿using GM.EntityFramework.Domain.Abstractions;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate;
@@ -13,7 +12,9 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.AccessControl.ClientScopeAggregate.Entities;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 
 public class ClientScope
@@ -22,6 +23,12 @@ public class ClientScope
             UserRole, Role, RolePermission, Permission>
         , IAggregateRoot
 {
+    // Parameterless constructor for EF Core materialization (preferred over the parameterized one,
+    // so loading a row raises no domain events).
+    private ClientScope()
+    {
+    }
+
     private ClientScope(
         Guid clientId,
         Guid scopeId) : base(clientId, scopeId)
@@ -32,7 +39,6 @@ public class ClientScope
         Guid clientId,
         Guid scopeId)
     {
-        return new ClientScope
-            (clientId, scopeId);
+        return new ClientScope(clientId, scopeId);
     }
 }

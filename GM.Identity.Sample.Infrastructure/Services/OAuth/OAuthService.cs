@@ -1,15 +1,25 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common.Security;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Infrastructure.Options;
+using GM.Secrets;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System;
+using System.Linq;
 namespace GM.Identity.Sample.Infrastructure.Services.OAuth;
 
-public class OAuthService(IOptions<OAuthOptions> options, IHttpClientFactory httpClientFactory) : IOAuthService
+public class OAuthService(
+    IOptions<OAuthOptions> options,
+    IHttpClientFactory httpClientFactory,
+    ISecretsService secrets) : IOAuthService
 {
     private static readonly Dictionary<string, string> VerifierStore = new();
     private readonly OAuthOptions _providers = options.Value;
@@ -44,12 +54,18 @@ public class OAuthService(IOptions<OAuthOptions> options, IHttpClientFactory htt
         if (!VerifierStore.Remove(request.State, out var codeVerifier))
            throw new CustomException("Missing or invalid state");
 
+        // Resolve the provider's client secret at exchange time through the secrets abstraction rather
+        // than reading it from bound options, so the backing store (config today, a vault tomorrow) is
+        // swappable without changing this call site.
+        var clientSecret = await secrets.GetRequiredSecretAsync(
+            $"OAuth:{request.Provider}:ClientSecret", cancellationToken);
+
         var client = httpClientFactory.CreateClient();
         var tokenResp = await client.PostAsync(_providers[request.Provider].TokenEndpoint,
             new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["client_id"] = _providers[request.Provider].ClientId,
-                ["client_secret"] = _providers[request.Provider].ClientSecret,
+                ["client_secret"] = clientSecret,
                 ["code"] = request.Code,
                 ["code_verifier"] = codeVerifier,
                 ["redirect_uri"] = request.RedirectUri,

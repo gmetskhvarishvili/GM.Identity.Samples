@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Operations.Commands.CreateOperation;
 using GM.Identity.Sample.Application.Operations.Commands.DeleteOperation;
@@ -8,6 +8,13 @@ using GM.Identity.Sample.Application.Operations.Queries.GetOperationsList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.Identity.Sample.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Operations;
 
 /// <summary>
@@ -24,8 +31,10 @@ public class OperationsController : BaseController
     /// <param name="request">Operation Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Operation Id</returns>
+    [HasPermission(nameof(AddOperation))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddOperation))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddOperation(
         [FromBody] CreateOperationModel request,
         CancellationToken cancellationToken)
@@ -42,6 +51,8 @@ public class OperationsController : BaseController
     /// <param name="request">Operation Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateOperation))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateOperation))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -62,6 +73,8 @@ public class OperationsController : BaseController
     /// <param name="id">Operation Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteOperation))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteOperation))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -83,6 +96,8 @@ public class OperationsController : BaseController
     /// <param name="request">Operation Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Operations</returns>
+    [HasPermission(nameof(GetOperationsList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetOperationsList))]
     [ProducesResponseType(typeof(IEnumerable<OperationModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOperationsList(
@@ -102,6 +117,8 @@ public class OperationsController : BaseController
     /// <param name="id">Operation Id to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Operation Details</returns>
+    [HasPermission(nameof(GetOperationDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetOperationDetails))]
     [ProducesResponseType(typeof(OperationDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

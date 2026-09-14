@@ -1,5 +1,6 @@
-using GM.EntityFramework.Domain.Specifications;
+﻿using GM.EntityFramework.Domain.Specifications;
 
+using System;
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Specifications;
 
 public class RolePermissionSpecification : BaseSpecification<RolePermission>

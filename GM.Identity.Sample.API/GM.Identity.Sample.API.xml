@@ -49,6 +49,40 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Authorization.HasPermissionAttribute">
+            <summary>
+            Requires the calling user to hold the named permission (by convention the action's own name) through
+            one of their roles. The user id is taken from the ambient <see cref="T:GM.EntityFramework.Domain.Common.ICurrentActor"/> (the
+            gateway-forwarded <c>X-User-Id</c> header or the token's NameIdentifier claim); the permission name is
+            resolved to its id and checked entirely from the Redis RBAC projection (<see cref="T:GM.Identity.Sample.Application.Common.Authorization.IPermissionCache"/>)
+            — no database round-trip. Returns 401 when there is no identity, 403 when the permission is unknown or
+            not granted. Repeatable to require several permissions (AND). The permission is seeded (name = action
+            name) by the startup seeder, which discovers it from this attribute.
+            </summary>
+            <example><c>[HasPermission(nameof(AddPermission))]</c></example>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Authorization.HasPermissionAttribute.PermissionName">
+            <summary>The required permission's name (read by the seeder to provision permissions).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Authorization.RequiresScopeAttribute">
+             <summary>
+             Requires the calling application (OAuth client) to be granted a scope that covers the named operation.
+             The client id is taken from the ambient <see cref="T:GM.EntityFramework.Domain.Common.ICurrentActor"/> (the gateway-forwarded
+             <c>X-Client-Id</c> header, set from the validated token's client) and the operation name is resolved to
+             its id and checked entirely from the Redis scope projection (<see cref="T:GM.Identity.Sample.Application.Common.Authorization.IScopeCache"/>) — no database
+             round-trip. A token is authorized when <b>any</b> scope granted to its client covers the operation,
+             enforcing the Client → Scope → Operation chain. Returns 401 when there is no client identity, 403 when
+             the operation is unknown or not covered.
+            
+             This is the client/application dimension of authorization and is orthogonal to
+             <see cref="T:GM.Identity.Sample.API.Authorization.HasPermissionAttribute"/> (the user dimension): an endpoint carrying both is reachable only
+             when the acting user holds the permission <em>and</em> the calling client is granted the scope.
+             </summary>
+             <example><c>[RequiresScope("read:identity")]</c></example>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Authorization.RequiresScopeAttribute.OperationName">
+            <summary>The operation the endpoint performs (must be covered by one of the client's scopes).</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientsController">
             <summary>
             Clients Controller
@@ -477,6 +511,9 @@
             <param name="cancellationToken"></param>
             <returns>Scope Details</returns>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.TwoFactorAuthTypeIds">
+            <summary>Ids of the 2FA methods to enrol the new user in.</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Users.GetUsersListModel.Id">
             <summary>
             The Id of the User
@@ -501,6 +538,21 @@
         <member name="T:GM.Identity.Sample.API.Users.UsersController">
             <summary>
             Users Controller
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetCurrentUser(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            Get the current user's own details.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetCurrentUserSessions(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.GetUserSessionsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get the current user's own sessions.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateCurrentUserPassword(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.UpdateUserPasswordModel,System.Threading.CancellationToken)">
+            <summary>
+            Change the current user's own password.
             </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.AddUser(GM.Identity.Sample.API.Users.CreateUserModel,System.Threading.CancellationToken)">
@@ -639,11 +691,6 @@
             <param name="id">User Id to Get</param>
             <param name="cancellationToken"></param>
             <returns>User Details</returns>
-        </member>
-        <member name="T:Program">
-            <summary>
-            Auto-generated public partial Program class for top-level statement apps.
-            </summary>
         </member>
         <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
             <summary>

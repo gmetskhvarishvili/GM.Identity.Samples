@@ -1,3 +1,5 @@
+﻿using System.Threading;
+using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 
 public interface IOTPService

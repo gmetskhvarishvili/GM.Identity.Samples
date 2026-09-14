@@ -1,0 +1,22 @@
+namespace GM.Identity.Sample.Application.Common;
+
+/// <summary>
+/// Authentication tuning bound from the <c>Auth</c> configuration section: access/refresh token lifetimes
+/// and the failed-login lockout policy.
+/// </summary>
+public sealed class AuthOptions
+{
+    public const string SectionName = "Auth";
+
+    /// <summary>Access-token lifetime in minutes (short-lived; refreshed via the refresh token).</summary>
+    public int AccessTokenMinutes { get; set; } = 15;
+
+    /// <summary>Refresh-token / session lifetime in days (absolute — rotation does not extend it).</summary>
+    public int RefreshTokenDays { get; set; } = 30;
+
+    /// <summary>Consecutive failed logins that trigger a lockout.</summary>
+    public int MaxFailedAccessAttempts { get; set; } = 5;
+
+    /// <summary>How long an account stays locked after too many failed logins, in minutes.</summary>
+    public int LockoutMinutes { get; set; } = 15;
+}

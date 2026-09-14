@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Permissions.Commands.CreatePermission;
 using GM.Identity.Sample.Application.Permissions.Commands.DeletePermission;
@@ -8,6 +8,13 @@ using GM.Identity.Sample.Application.Permissions.Queries.GetPermissionsList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.Identity.Sample.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Permissions;
 
 /// <summary>
@@ -24,8 +31,10 @@ public class PermissionsController : BaseController
     /// <param name="request">Permission Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Permission Id</returns>
+    [HasPermission(nameof(AddPermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddPermission))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddPermission(
         [FromBody] CreatePermissionModel request,
         CancellationToken cancellationToken)
@@ -42,6 +51,8 @@ public class PermissionsController : BaseController
     /// <param name="request">Permission Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdatePermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdatePermission))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -62,6 +73,8 @@ public class PermissionsController : BaseController
     /// <param name="id">Permission Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeletePermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeletePermission))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -83,6 +96,8 @@ public class PermissionsController : BaseController
     /// <param name="request">Permission Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Permissions</returns>
+    [HasPermission(nameof(GetPermissionsList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetPermissionsList))]
     [ProducesResponseType(typeof(IEnumerable<PermissionModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPermissionsList(
@@ -102,6 +117,8 @@ public class PermissionsController : BaseController
     /// <param name="id">Permission Id to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Permission Details</returns>
+    [HasPermission(nameof(GetPermissionDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetPermissionDetails))]
     [ProducesResponseType(typeof(PermissionDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]

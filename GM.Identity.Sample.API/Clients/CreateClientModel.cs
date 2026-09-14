@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Mediator.Contracts;
 
+using System.Collections.Generic;
 namespace GM.Identity.Sample.API.Clients;
 
 public class CreateClientModel : IRequest<string>

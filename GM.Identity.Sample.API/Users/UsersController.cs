@@ -18,6 +18,7 @@ using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
+using GM.Identity.Sample.Application.Users.Commands.ImpersonateUser;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
@@ -311,6 +312,33 @@ public class UsersController : BaseController
     {
         await Mediator.Send(new ConfirmUserTotpCommand { UserId = id, Code = request.Code }, cancellationToken);
         return Ok();
+    }
+
+    /// <summary>
+    /// Impersonate a user (support "log in as"): issues a session that authenticates as the target user, under
+    /// the admin's client, tagged with the acting admin for audit. Requires an authenticated admin session.
+    /// </summary>
+    [HasPermission(nameof(ImpersonateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Impersonate", Name = nameof(ImpersonateUser))]
+    [ProducesResponseType(typeof(ImpersonationTokenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ImpersonateUser(
+        [FromRoute] Guid id,
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } adminId || currentActor.ClientId is not { } clientId)
+            return Unauthorized();
+
+        var result = await Mediator.Send(new ImpersonateUserCommand
+        {
+            TargetUserId = id,
+            ClientId = clientId,
+            ImpersonatorUserId = adminId,
+        }, cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>Remove a user's authenticator-app (TOTP) device.</summary>

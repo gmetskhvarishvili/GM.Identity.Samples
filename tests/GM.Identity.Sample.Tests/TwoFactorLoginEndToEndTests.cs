@@ -103,7 +103,7 @@ public sealed class TwoFactorLoginEndToEndTests : IAsyncLifetime
             await response.Content.ReadAsStringAsync(), JsonOptions);
 
         Assert.NotNull(token);
-        Assert.True(token!.TwoFactorRequired);
+        Assert.True(token.TwoFactorRequired);
         Assert.True(string.IsNullOrEmpty(token.AccessToken));      // no session issued yet
         Assert.Contains(_twoFactorTypeId, token.TwoFactorAuthTypeIds ?? new List<int>());
     }

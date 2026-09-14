@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using GM.API.Startup;
 using GM.Identity;
-using GM.Identity.Sample.API.Authorization;
+using GM.API.Authorization;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Identity.Sample.Infrastructure;
 using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
@@ -66,7 +66,7 @@ using (var scope = app.Services.CreateScope())
                 // Permission names come from the [HasPermission] attributes on controller actions (one per
                 // gated action, name = action name). Reflection lives here in the API (the seed, in the
                 // Persistence layer, can't see the controllers). The Redis cache is optional (null = no Redis).
-                var permissionNames = typeof(HasPermissionAttribute).Assembly.GetTypes()
+                var permissionNames = typeof(Program).Assembly.GetTypes()
                     .Where(t => typeof(ControllerBase).IsAssignableFrom(t))
                     .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                     .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>())

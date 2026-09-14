@@ -2,7 +2,7 @@
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Common;
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;

@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Scheduling;
 using Microsoft.EntityFrameworkCore;

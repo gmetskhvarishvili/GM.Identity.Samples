@@ -12,7 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
-using GM.Identity.Sample.Domain.SeedWork;
+using GM.EntityFramework.Domain.Common;
 using GM.Identity.Domain.Identity.ClientAggregate.Entities;
 
 using System;

@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Testing;
 using GM.Testing.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;

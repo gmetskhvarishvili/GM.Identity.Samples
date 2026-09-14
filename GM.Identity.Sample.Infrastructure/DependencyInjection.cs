@@ -2,8 +2,8 @@ using GM.HealthChecks.Caching;
 using GM.HealthChecks.DistributedLock;
 using GM.HealthChecks.EntityFramework;
 using GM.HttpClient;
+using GM.Identity;
 using GM.Identity.Sample.Application.Common;
-using GM.Identity.Sample.Application.Common.Authorization;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Infrastructure.Authorization;
@@ -37,14 +37,13 @@ public static class DependencyInjection
             .AddGMCacheCheck()
             .AddGMDistributedLockCheck();
 
-        // RBAC-in-Redis authorization: the permission cache (over the IConnectionMultiplexer registered
-        // by AddGMRedisCaching) plus the reconciliation job that rebuilds it from the DB. Both require
-        // Redis, so they are only wired when a Redis connection string is configured.
+        // RBAC/scope/session authorization caches (GM.Identity, over the IConnectionMultiplexer registered
+        // by AddGMRedisCaching) plus the reconciliation jobs that rebuild them from the DB. Both require
+        // Redis, so they are only wired when a Redis connection string is configured. The caches are
+        // library types; the reconcile jobs stay in the sample (they bridge the caches to the app's repos).
         if (!string.IsNullOrWhiteSpace(configuration.GetConnectionString("Redis")))
         {
-            services.AddSingleton<IPermissionCache, RedisPermissionCache>();
-            services.AddSingleton<IScopeCache, RedisScopeCache>();
-            services.AddSingleton<ISessionCache, RedisSessionCache>();
+            services.AddGMIdentityRedisAuthorization();
             services.AddGMScheduling(builder =>
                 builder.ScanAssemblies(new[] { typeof(PermissionCacheReconciliationJob).Assembly }));
         }

@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using GM.Identity.Sample.API.Authorization;
+using GM.API.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 namespace GM.Identity.Sample.API.Clients;
 

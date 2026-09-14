@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Testing;

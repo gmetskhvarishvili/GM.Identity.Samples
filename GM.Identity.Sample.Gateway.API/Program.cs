@@ -12,7 +12,7 @@ using GM.HealthChecks;
 using GM.HealthChecks.Caching;
 using GM.HealthChecks.DistributedLock;
 using GM.Identity.Sample.Gateway.API;
-using GM.Identity.Sample.Gateway.API.Authorization;
+using GM.Identity.Authorization;
 using GM.RateLimiting.Http;
 using GM.RateLimiting.Redis;
 using Microsoft.AspNetCore.Authentication;

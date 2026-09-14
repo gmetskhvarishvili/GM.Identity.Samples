@@ -1,7 +1,7 @@
 using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;

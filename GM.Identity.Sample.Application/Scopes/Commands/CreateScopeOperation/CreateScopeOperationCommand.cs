@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Common.Authorization;
+using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate;
 using GM.Identity.Sample.Domain.SeedWork;

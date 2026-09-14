@@ -19,6 +19,7 @@ using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
+using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
 using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
@@ -149,6 +150,23 @@ public class UsersController : BaseController
             return Unauthorized();
 
         await Mediator.Send(new LogoutCurrentUserCommand { SessionId = sessionId }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Log the current user out everywhere — revokes all of their active sessions across every device.
+    /// </summary>
+    [HttpPost("me/Logout/All", Name = nameof(LogoutCurrentUserEverywhere))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LogoutCurrentUserEverywhere(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        await Mediator.Send(new LogoutAllUserSessionsCommand { UserId = userId }, cancellationToken);
         return Ok();
     }
 

@@ -597,6 +597,11 @@
             Log the current user out — revokes the session the presented token belongs to.
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.LogoutCurrentUserEverywhere(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            Log the current user out everywhere — revokes all of their active sessions across every device.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BlockUser(System.Guid,System.Threading.CancellationToken)">
             <summary>Block a user (and revoke their active sessions).</summary>
         </member>

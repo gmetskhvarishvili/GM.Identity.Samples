@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
+using GM.Identity.Sample.Application.Accounts.Commands.AuthorizeCode;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
@@ -49,8 +50,36 @@ public class AccountsController : BaseController
             GrantType = request.GrantType,
             RefreshToken = request.RefreshToken,
             Code = request.Code,
+            RedirectUri = request.RedirectUri,
+            CodeVerifier = request.CodeVerifier,
         };
         var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Authorization endpoint of the PKCE authorization-code flow. Authenticates the resource owner, validates
+    /// the client + registered redirect URI + PKCE challenge, and returns a short-lived authorization code plus
+    /// the redirect target (code + state). Exchange it at /connect/token with grant_type=authorization_code.
+    /// </summary>
+    [Consumes("application/x-www-form-urlencoded")]
+    [HttpPost("~/connect/authorize", Name = nameof(AuthorizeCode)), Produces("application/json")]
+    [ProducesResponseType(typeof(AuthorizeCodeResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AuthorizeCode(
+        AuthorizeCodeModel request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new AuthorizeCodeCommand
+        {
+            ClientId = request.ClientId,
+            RedirectUri = request.RedirectUri,
+            Scope = request.Scope,
+            State = request.State,
+            CodeChallenge = request.CodeChallenge,
+            CodeChallengeMethod = request.CodeChallengeMethod,
+            UserName = request.UserName,
+            Password = request.Password,
+        }, cancellationToken);
         return Ok(result);
     }
 

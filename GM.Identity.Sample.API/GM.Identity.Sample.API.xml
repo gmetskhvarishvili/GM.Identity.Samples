@@ -17,6 +17,13 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.AuthorizeCode(GM.Identity.Sample.API.Accounts.AuthorizeCodeModel,System.Threading.CancellationToken)">
+            <summary>
+            Authorization endpoint of the PKCE authorization-code flow. Authenticates the resource owner, validates
+            the client + registered redirect URI + PKCE challenge, and returns a short-lived authorization code plus
+            the redirect target (code + state). Exchange it at /connect/token with grant_type=authorization_code.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.RevokeToken(GM.Identity.Sample.API.Accounts.RevokeTokenModel,System.Threading.CancellationToken)">
             <summary>
             Revoke an opaque access or refresh token (OAuth token revocation, RFC 7009).
@@ -65,6 +72,9 @@
             <param name="request">Auth Connect UserSession Request Params</param>
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel">
+            <summary>Form body for the authorization endpoint of the PKCE authorization-code flow.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.IntrospectModel">
             <summary>Form body for the RFC 7662 token-introspection endpoint.</summary>

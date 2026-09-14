@@ -7,9 +7,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleP
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
@@ -34,6 +36,8 @@ public sealed class UnitOfWork(
     IUserRoleRepository userRoleRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
     IUserRecoveryCodeRepository userRecoveryCodeRepository,
+    IClientRedirectUriRepository clientRedirectUriRepository,
+    IAuthorizationCodeRepository authorizationCodeRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
     IRolePermissionRepository rolePermissionRepository,
@@ -50,6 +54,8 @@ public sealed class UnitOfWork(
     public IUserSessionRepository UserSessionRepository { get; } = userSessionRepository;
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; } = userTwoFactorAuthTypeRepository;
     public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; } = userRecoveryCodeRepository;
+    public IClientRedirectUriRepository ClientRedirectUriRepository { get; } = clientRedirectUriRepository;
+    public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;
     public IUserRepository UserRepository { get; } = userRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;

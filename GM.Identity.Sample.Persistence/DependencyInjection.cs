@@ -6,9 +6,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleP
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
@@ -83,6 +85,8 @@ public static class DependencyInjection
         services.AddTransient<IUserSessionRepository, UserSessionRepository>();
         services.AddTransient<IUserTwoFactorAuthTypeRepository, UserTwoFactorAuthTypeRepository>();
         services.AddTransient<IUserRecoveryCodeRepository, UserRecoveryCodeRepository>();
+        services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
+        services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
         // Read-side over the durable domain-event log (the audit trail).

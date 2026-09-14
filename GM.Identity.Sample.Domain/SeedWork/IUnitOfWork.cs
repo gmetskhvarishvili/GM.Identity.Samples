@@ -7,9 +7,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleP
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
@@ -37,6 +39,8 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; }
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; }
     public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; }
+    public IClientRedirectUriRepository ClientRedirectUriRepository { get; }
+    public IAuthorizationCodeRepository AuthorizationCodeRepository { get; }
   
     public IUserRoleRepository UserRoleRepository { get; }
     public IRoleRepository RoleRepository { get; }

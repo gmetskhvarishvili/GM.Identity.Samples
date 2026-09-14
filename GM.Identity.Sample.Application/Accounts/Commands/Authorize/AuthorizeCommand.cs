@@ -1,6 +1,7 @@
 using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Common.Security;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
@@ -38,6 +39,12 @@ public class AuthorizeCommand : IRequest<AuthorizeResponseDto>
 
     /// <summary>The one-time code, supplied with <c>grant_type=two_factor</c> to complete a 2FA login.</summary>
     public string? Code { get; set; }
+
+    /// <summary>The redirect URI the authorization code was issued to (<c>grant_type=authorization_code</c>).</summary>
+    public string? RedirectUri { get; set; }
+
+    /// <summary>The PKCE code verifier proving possession of the authorization request (authorization_code grant).</summary>
+    public string? CodeVerifier { get; set; }
 }
 
 public class AuthorizeCommandValidator : AbstractValidator<AuthorizeCommand>
@@ -80,6 +87,7 @@ public class AuthorizeCommandHandler(
             "ClientCredentials" => await IssueClientTokenAsync(client.Id, now, settings, cancellationToken),
             "refresh_token" => await RefreshAsync(request, client.Id, now, settings, cancellationToken),
             "two_factor" => await TwoFactorGrantAsync(request, client.Id, now, settings, cancellationToken),
+            "authorization_code" => await AuthorizationCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
             _ => await PasswordGrantAsync(request, client.Id, now, settings, cancellationToken),
         };
     }
@@ -274,6 +282,45 @@ public class AuthorizeCommandHandler(
 
         await sessionCache.RemoveAsync(existing.TokenHash, cancellationToken);
         return response;
+    }
+
+    // Exchanges a PKCE authorization code for a session. Verifies the code is live, was issued to this client
+    // and redirect URI, and that the caller holds the matching code verifier (BASE64URL(SHA256(verifier)) ==
+    // the stored challenge). The code is single-use.
+    private async Task<AuthorizeResponseDto> AuthorizationCodeGrantAsync(
+        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Code)
+            || string.IsNullOrWhiteSpace(request.RedirectUri)
+            || string.IsNullOrWhiteSpace(request.CodeVerifier))
+        {
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+        }
+
+        var codeHash = TokenGenerator.Hash(request.Code);
+        var authCode = await unitOfWork.AuthorizationCodeRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.CodeHash == codeHash, cancellationToken);
+
+        if (authCode == null
+            || authCode.IsConsumed
+            || authCode.IsExpired(now)
+            || authCode.ClientId != clientId
+            || !string.Equals(authCode.RedirectUri, request.RedirectUri, StringComparison.Ordinal)
+            || !string.Equals(PkceHelper.GenerateCodeChallenge(request.CodeVerifier), authCode.CodeChallenge, StringComparison.Ordinal))
+        {
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+        }
+
+        // Single-use: spend the code before issuing the session.
+        authCode.Consume();
+        unitOfWork.AuthorizationCodeRepository.Update(authCode);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return await IssueUserSessionAsync(
+            authCode.UserId, clientId, provider: null, now, settings,
+            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
     }
 
     private async Task<AuthorizeResponseDto> IssueUserSessionAsync(

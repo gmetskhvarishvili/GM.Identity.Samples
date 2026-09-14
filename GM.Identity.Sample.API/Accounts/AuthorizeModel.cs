@@ -26,6 +26,12 @@ public class AuthorizeModel
 
     [FromForm(Name = "code")]
     public string? Code { get; set; }
+
+    [FromForm(Name = "redirect_uri")]
+    public string? RedirectUri { get; set; }
+
+    [FromForm(Name = "code_verifier")]
+    public string? CodeVerifier { get; set; }
 }
 
 public class AuthorizeModelValidator : AbstractValidator<AuthorizeModel>

@@ -48,10 +48,15 @@ public class ChangeCurrentUserPasswordCommandHandler(
         if (!PasswordHasher.Verify(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
 
+        // Reject reuse of the current or a recent password.
+        await unitOfWork.EnsureNotReusedAsync(
+            user.Id, request.NewPassword, user.PasswordHash, user.PasswordSalt, cancellationToken);
+
         var (hash, salt) = PasswordHasher.Hash(request.NewPassword);
         user.UpdatePassword(hash, salt);
 
         unitOfWork.UserRepository.Update(user);
+        await unitOfWork.RecordAsync(user.Id, hash, salt, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await unitOfWork.RevokeAllUserSessionsAsync(sessionCache, user.Id, cancellationToken);

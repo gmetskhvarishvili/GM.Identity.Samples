@@ -14,6 +14,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
@@ -40,6 +41,7 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; }
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; }
     public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; }
+    public IUserPasswordHistoryRepository UserPasswordHistoryRepository { get; }
     public IUserTotpDeviceRepository UserTotpDeviceRepository { get; }
     public IClientRedirectUriRepository ClientRedirectUriRepository { get; }
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; }

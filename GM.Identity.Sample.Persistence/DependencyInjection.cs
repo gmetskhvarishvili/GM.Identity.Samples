@@ -11,6 +11,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
@@ -87,6 +88,7 @@ public static class DependencyInjection
         services.AddTransient<IUserTwoFactorAuthTypeRepository, UserTwoFactorAuthTypeRepository>();
         services.AddTransient<IUserRecoveryCodeRepository, UserRecoveryCodeRepository>();
         services.AddTransient<IUserTotpDeviceRepository, UserTotpDeviceRepository>();
+        services.AddTransient<IUserPasswordHistoryRepository, UserPasswordHistoryRepository>();
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();

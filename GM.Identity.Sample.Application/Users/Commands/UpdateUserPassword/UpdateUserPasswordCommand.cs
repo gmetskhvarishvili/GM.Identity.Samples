@@ -51,13 +51,18 @@ public class UpdateUserPasswordCommandHandler(
                 request.Id);
         }
 
+        // Reject reuse of the current or a recent password before changing anything.
+        await unitOfWork.EnsureNotReusedAsync(
+            entity.Id, request.Password, entity.PasswordHash, entity.PasswordSalt, cancellationToken);
+
         var (hash, salt) = PasswordHasher
             .Hash(request.Password);
-        
+
         entity.UpdatePassword(hash, salt);
 
         // Persist the aggregate
         unitOfWork.UserRepository.Update(entity);
+        await unitOfWork.RecordAsync(entity.Id, hash, salt, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // A password change invalidates every existing session — force re-authentication everywhere.

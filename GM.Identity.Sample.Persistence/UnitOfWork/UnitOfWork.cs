@@ -12,6 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
@@ -37,6 +38,7 @@ public sealed class UnitOfWork(
     IUserRoleRepository userRoleRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
     IUserRecoveryCodeRepository userRecoveryCodeRepository,
+    IUserPasswordHistoryRepository userPasswordHistoryRepository,
     IUserTotpDeviceRepository userTotpDeviceRepository,
     IClientRedirectUriRepository clientRedirectUriRepository,
     IAuthorizationCodeRepository authorizationCodeRepository,
@@ -56,6 +58,7 @@ public sealed class UnitOfWork(
     public IUserSessionRepository UserSessionRepository { get; } = userSessionRepository;
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; } = userTwoFactorAuthTypeRepository;
     public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; } = userRecoveryCodeRepository;
+    public IUserPasswordHistoryRepository UserPasswordHistoryRepository { get; } = userPasswordHistoryRepository;
     public IUserTotpDeviceRepository UserTotpDeviceRepository { get; } = userTotpDeviceRepository;
     public IClientRedirectUriRepository ClientRedirectUriRepository { get; } = clientRedirectUriRepository;
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;

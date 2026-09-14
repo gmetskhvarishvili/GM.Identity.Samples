@@ -528,6 +528,9 @@
             <param name="cancellationToken"></param>
             <returns>Scope Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTotpModel">
+            <summary>Body for confirming an authenticator-app enrolment: a code produced by the app.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel">
             <summary>Body for confirming a pending 2FA enrolment: the one-time setup code the user received.</summary>
         </member>
@@ -617,6 +620,18 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
             <summary>Remove a second-factor enrolment from a user.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.SetupUserTotp(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Begin authenticator-app (TOTP) enrolment. Returns the shared secret and the otpauth:// URI to render as
+            a QR code. The device is pending until confirmed with a code.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTotp(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserTotpModel,System.Threading.CancellationToken)">
+            <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTotp(System.Guid,System.Threading.CancellationToken)">
+            <summary>Remove a user's authenticator-app (TOTP) device.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GenerateRecoveryCodes(System.Guid,System.Threading.CancellationToken)">
             <summary>

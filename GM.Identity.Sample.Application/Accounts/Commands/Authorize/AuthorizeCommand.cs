@@ -97,14 +97,16 @@ public class AuthorizeCommandHandler(
     {
         var user = await AuthenticateUserAsync(request, now, settings, cancellationToken);
 
-        // Two-factor step-up: if the user is enrolled in any 2FA method, the password alone does not mint a
-        // session. Send the one-time code (via the outbox, like contact confirmation) and return a challenge
-        // naming the enrolled methods; the caller completes login with grant_type=two_factor + the code.
+        // Two-factor step-up: if the user has any confirmed second factor — a contact OTP method or an
+        // authenticator-app (TOTP) device — the password alone does not mint a session. For contact methods we
+        // send the one-time code (via the outbox); TOTP needs no send (the app generates it). Return a
+        // challenge; the caller completes login with grant_type=two_factor + the code.
         var twoFactorTypeIds = await GetEnrolledTwoFactorTypeIdsAsync(user.Id, cancellationToken);
-        if (twoFactorTypeIds.Count > 0)
+        var hasTotp = await GetConfirmedTotpSecretAsync(user.Id, cancellationToken) != null;
+        if (twoFactorTypeIds.Count > 0 || hasTotp)
         {
             var subject = TwoFactorSubject(user);
-            if (!string.IsNullOrWhiteSpace(subject))
+            if (twoFactorTypeIds.Count > 0 && !string.IsNullOrWhiteSpace(subject))
             {
                 await unitOfWork.OutboxMessageRepository.AddAsync(
                     OutboxMessage.From(user.Id,
@@ -132,21 +134,22 @@ public class AuthorizeCommandHandler(
         var user = await AuthenticateUserAsync(request, now, settings, cancellationToken);
 
         var twoFactorTypeIds = await GetEnrolledTwoFactorTypeIdsAsync(user.Id, cancellationToken);
-        if (twoFactorTypeIds.Count == 0)
+        var totpSecret = await GetConfirmedTotpSecretAsync(user.Id, cancellationToken);
+        if (twoFactorTypeIds.Count == 0 && totpSecret == null)
             throw new ValidationException("This account has no second factor configured.");
 
+        // The submitted value can be an authenticator-app (TOTP) code, the one-time code sent to the user's
+        // contact, or one of their single-use backup codes. Try each in turn; only if none matches is the
+        // second factor rejected.
         var subject = TwoFactorSubject(user);
-        if (string.IsNullOrWhiteSpace(subject))
-            throw new ValidationException("This account has no contact to validate the second factor against.");
+        var verified =
+            (totpSecret != null && Totp.Verify(totpSecret, request.Code))
+            || (twoFactorTypeIds.Count > 0 && !string.IsNullOrWhiteSpace(subject)
+                && await TryVerifyOtpAsync(subject, request.Code, cancellationToken))
+            || await TryConsumeRecoveryCodeAsync(user.Id, request.Code, cancellationToken);
 
-        // The submitted value is either the one-time code sent to the user's contact, or one of their
-        // single-use backup codes. Try the OTP first; if it doesn't validate, fall back to consuming a
-        // recovery code. Only if neither matches is the second factor rejected.
-        if (!await TryVerifyOtpAsync(subject, request.Code, cancellationToken)
-            && !await TryConsumeRecoveryCodeAsync(user.Id, request.Code, cancellationToken))
-        {
+        if (!verified)
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
-        }
 
         return await IssueUserSessionAsync(
             user.Id, clientId, provider: null, now, settings,
@@ -247,6 +250,16 @@ public class AuthorizeCommandHandler(
             .Where(x => x.UserId == userId && x.IsConfirmed && x.IsActive && !x.IsDeleted && !x.IsHidden)
             .Select(x => x.TwoFactorAuthTypeId)
             .ToListAsync(cancellationToken);
+
+    // The user's confirmed authenticator-app (TOTP) secret, or null if they have none. A pending (unconfirmed)
+    // device never gates login.
+    private async Task<string?> GetConfirmedTotpSecretAsync(Guid userId, CancellationToken cancellationToken) =>
+        await unitOfWork.UserTotpDeviceRepository
+            .Query(false, null)
+            .IgnoreQueryFilters()
+            .Where(x => x.UserId == userId && x.IsConfirmed && x.IsActive && !x.IsDeleted && !x.IsHidden)
+            .Select(x => x.SecretBase32)
+            .FirstOrDefaultAsync(cancellationToken);
 
     private async Task<AuthorizeResponseDto> RefreshAsync(
         AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)

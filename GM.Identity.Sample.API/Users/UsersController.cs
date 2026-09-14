@@ -11,11 +11,14 @@ using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
+using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
+using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
+using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
 using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
@@ -261,6 +264,45 @@ public class UsersController : BaseController
         await Mediator.Send(
             new DisableUserTwoFactorCommand { UserId = id, TwoFactorAuthTypeId = twoFactorAuthTypeId },
             cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Begin authenticator-app (TOTP) enrolment. Returns the shared secret and the otpauth:// URI to render as
+    /// a QR code. The device is pending until confirmed with a code.
+    /// </summary>
+    [HasPermission(nameof(SetupUserTotp))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Totp/Setup", Name = nameof(SetupUserTotp))]
+    [ProducesResponseType(typeof(SetupUserTotpResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetupUserTotp([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new SetupUserTotpCommand { UserId = id }, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+    [HasPermission(nameof(ConfirmUserTotp))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Totp/Confirm", Name = nameof(ConfirmUserTotp))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmUserTotp(
+        [FromRoute] Guid id, [FromBody] ConfirmUserTotpModel request, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new ConfirmUserTotpCommand { UserId = id, Code = request.Code }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Remove a user's authenticator-app (TOTP) device.</summary>
+    [HasPermission(nameof(DisableUserTotp))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpDelete("{id}/Totp", Name = nameof(DisableUserTotp))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DisableUserTotp([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new DisableUserTotpCommand { UserId = id }, cancellationToken);
         return Ok();
     }
 

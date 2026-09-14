@@ -9,6 +9,7 @@ using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
+using GM.Identity.Sample.Application.Users.Commands.DeleteCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
@@ -29,6 +30,7 @@ using GM.Identity.Sample.Application.Users.Commands.RecoverUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ResetUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
+using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
 using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
 using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 using GM.Identity.Sample.Application.Users.Queries.GetUserRolesList;
@@ -168,6 +170,41 @@ public class UsersController : BaseController
             return Unauthorized();
 
         await Mediator.Send(new LogoutAllUserSessionsCommand { UserId = userId }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Export everything this identity server holds about the current user (GDPR-style data portability):
+    /// profile, roles, 2FA enrolments, and active sessions. Secrets and password hashes are excluded.
+    /// </summary>
+    [HttpGet("me/Export", Name = nameof(ExportCurrentUserData))]
+    [ProducesResponseType(typeof(UserDataExportDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ExportCurrentUserData(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var result = await Mediator.Send(new ExportCurrentUserDataQuery { UserId = userId }, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Close the current user's own account (self-service). Soft-deletes the account and revokes all sessions.
+    /// </summary>
+    [HttpDelete("me", Name = nameof(DeleteCurrentUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> DeleteCurrentUser(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        await Mediator.Send(new DeleteCurrentUserCommand { UserId = userId }, cancellationToken);
         return Ok();
     }
 

@@ -17,6 +17,12 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.Register(GM.Identity.Sample.API.Accounts.RegisterModel,System.Threading.CancellationToken)">
+            <summary>
+            Public self-registration: creates a new account and sends an email confirmation code. Returns the new
+            user id. The account must confirm its email via the confirm flow.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.OpenIdConfiguration(System.Threading.CancellationToken)">
             <summary>
             OpenID Connect discovery document. Advertises this provider's endpoints and supported grants/scopes so
@@ -84,6 +90,9 @@
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.IntrospectModel">
             <summary>Form body for the RFC 7662 token-introspection endpoint.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.RegisterModel">
+            <summary>Self-registration request body.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientsController">
             <summary>
@@ -600,6 +609,17 @@
         <member name="M:GM.Identity.Sample.API.Users.UsersController.LogoutCurrentUserEverywhere(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>
             Log the current user out everywhere — revokes all of their active sessions across every device.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ExportCurrentUserData(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            Export everything this identity server holds about the current user (GDPR-style data portability):
+            profile, roles, 2FA enrolments, and active sessions. Secrets and password hashes are excluded.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DeleteCurrentUser(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            Close the current user's own account (self-service). Soft-deletes the account and revokes all sessions.
             </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BlockUser(System.Guid,System.Threading.CancellationToken)">

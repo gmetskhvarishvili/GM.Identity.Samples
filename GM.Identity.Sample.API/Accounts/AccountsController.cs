@@ -4,6 +4,7 @@ using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.AuthorizeCode;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
+using GM.Identity.Sample.Application.Accounts.Commands.RegisterUser;
 using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOpenIdConfiguration;
@@ -56,6 +57,28 @@ public class AccountsController : BaseController
         };
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Public self-registration: creates a new account and sends an email confirmation code. Returns the new
+    /// user id. The account must confirm its email via the confirm flow.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("~/register", Name = nameof(Register)), Produces("application/json")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterModel request,
+        CancellationToken cancellationToken)
+    {
+        var id = await Mediator.Send(new RegisterUserCommand
+        {
+            Username = request.Username,
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber,
+            Password = request.Password,
+        }, cancellationToken);
+        return Ok(id);
     }
 
     /// <summary>

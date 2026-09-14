@@ -189,6 +189,12 @@ public class AuthorizeCommandHandler(
             var willLock = user.AccessFailedCount + 1 >= settings.MaxFailedAccessAttempts;
             user.IncreaseAccessFailedCount(willLock, now.AddMinutes(settings.LockoutMinutes));
             unitOfWork.UserRepository.Update(user);
+
+            // Alert the user when this failure actually trips the lockout (possible break-in attempt).
+            if (willLock)
+                await unitOfWork.QueueSecurityAlertAsync(
+                    user.Id, user.Email, user.PhoneNumber, SecurityAlertTypes.AccountLockedOut, cancellationToken);
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
         }

@@ -3,6 +3,7 @@ using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,11 @@ public class SetUserBlockCommandHandler(
             user.Block();
         else
             user.UnBlock();
+
+        // Notify the user their account was blocked (queued before save so it commits with the change).
+        if (request.Block)
+            await unitOfWork.QueueSecurityAlertAsync(
+                user.Id, user.Email, user.PhoneNumber, SecurityAlertTypes.AccountBlocked, cancellationToken);
 
         unitOfWork.UserRepository.Update(user);
         await unitOfWork.SaveChangesAsync(cancellationToken);

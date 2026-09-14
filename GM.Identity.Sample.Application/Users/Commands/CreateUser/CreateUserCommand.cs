@@ -10,6 +10,7 @@ using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMes
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using Microsoft.Extensions.Options;
 
 using System;
 using System.Collections.Generic;
@@ -42,10 +43,13 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 }
 
 public class CreateUserCommandHandler(
-    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, Guid>
+    IUnitOfWork unitOfWork,
+    IOptions<PasswordPolicyOptions> passwordPolicy) : IRequestHandler<CreateUserCommand, Guid>
 {
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
+        PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
+
         if (await unitOfWork.UserRepository.ExistsAsync(
                 x => x.Email == request.Email
                      && x.IsActive

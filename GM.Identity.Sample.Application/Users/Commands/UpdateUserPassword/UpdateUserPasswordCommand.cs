@@ -3,8 +3,10 @@ using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using Microsoft.Extensions.Options;
 
 using System;
 using System.Threading;
@@ -28,11 +30,14 @@ public class UpdateUserPasswordCommandValidator : AbstractValidator<UpdateUserPa
 
 public class UpdateUserPasswordCommandHandler(
     IUnitOfWork unitOfWork,
-    ISessionCache sessionCache)
+    ISessionCache sessionCache,
+    IOptions<PasswordPolicyOptions> passwordPolicy)
     : IRequestHandler<UpdateUserPasswordCommand>
 {
     public async Task Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
     {
+        PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
+
         // the root aggregate
         var entity = await unitOfWork.UserRepository
             .FirstOrDefaultAsync(x => x.Id == request.Id
@@ -63,6 +68,8 @@ public class UpdateUserPasswordCommandHandler(
         // Persist the aggregate
         unitOfWork.UserRepository.Update(entity);
         await unitOfWork.RecordAsync(entity.Id, hash, salt, cancellationToken);
+        await unitOfWork.QueueSecurityAlertAsync(
+            entity.Id, entity.Email, entity.PhoneNumber, SecurityAlertTypes.PasswordChanged, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // A password change invalidates every existing session — force re-authentication everywhere.

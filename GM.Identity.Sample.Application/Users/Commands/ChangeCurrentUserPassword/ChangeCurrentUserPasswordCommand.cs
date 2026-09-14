@@ -3,8 +3,10 @@ using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using Microsoft.Extensions.Options;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System;
@@ -34,10 +36,13 @@ public class ChangeCurrentUserPasswordCommandValidator : AbstractValidator<Chang
 
 public class ChangeCurrentUserPasswordCommandHandler(
     IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IRequestHandler<ChangeCurrentUserPasswordCommand>
+    ISessionCache sessionCache,
+    IOptions<PasswordPolicyOptions> passwordPolicy) : IRequestHandler<ChangeCurrentUserPasswordCommand>
 {
     public async Task Handle(ChangeCurrentUserPasswordCommand request, CancellationToken cancellationToken)
     {
+        PasswordPolicy.Validate(request.NewPassword, passwordPolicy.Value);
+
         var user = await unitOfWork.UserRepository
             .FirstOrDefaultAsync(x => x.Id == request.UserId && x.IsActive && !x.IsDeleted && !x.IsHidden,
                 true, null, cancellationToken);
@@ -57,6 +62,8 @@ public class ChangeCurrentUserPasswordCommandHandler(
 
         unitOfWork.UserRepository.Update(user);
         await unitOfWork.RecordAsync(user.Id, hash, salt, cancellationToken);
+        await unitOfWork.QueueSecurityAlertAsync(
+            user.Id, user.Email, user.PhoneNumber, SecurityAlertTypes.PasswordChanged, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await unitOfWork.RevokeAllUserSessionsAsync(sessionCache, user.Id, cancellationToken);

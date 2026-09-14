@@ -25,6 +25,7 @@ public static class DependencyInjection
     {
         services.Configure<OAuthOptions>(configuration.GetSection("OAuth"));
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
+        services.Configure<PasswordPolicyOptions>(configuration.GetSection(PasswordPolicyOptions.SectionName));
 
         services.AddScoped<IOAuthService, OAuthService>();
         services.AddScoped<IOTPService, OTPService>();

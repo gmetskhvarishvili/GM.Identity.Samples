@@ -22,6 +22,18 @@
             Revoke an opaque access or refresh token (OAuth token revocation, RFC 7009).
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.Introspect(GM.Identity.Sample.API.Accounts.IntrospectModel,System.Threading.CancellationToken)">
+            <summary>
+            OAuth 2.0 token introspection (RFC 7662). The calling client authenticates and learns whether a token
+            is active plus its metadata; an inactive/unknown token returns <c>{ "active": false }</c>.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.UserInfo(System.Threading.CancellationToken)">
+            <summary>
+            OpenID Connect userinfo: returns the standard claims of the user represented by the bearer access token
+            in the Authorization header. Answers 401 when the token is missing, invalid, expired, or not a user token.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.GoogleConnect(GM.Identity.Sample.API.Accounts.AuthConnectModel,System.Threading.CancellationToken)">
             <summary>
             Google Connect
@@ -53,6 +65,9 @@
             <param name="request">Auth Connect UserSession Request Params</param>
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.IntrospectModel">
+            <summary>Form body for the RFC 7662 token-introspection endpoint.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientsController">
             <summary>

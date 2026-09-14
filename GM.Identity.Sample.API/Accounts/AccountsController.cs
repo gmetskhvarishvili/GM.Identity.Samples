@@ -2,13 +2,16 @@
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
+using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
+using GM.Identity.Sample.Application.Accounts.Queries.GetUserInfo;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 namespace GM.Identity.Sample.API.Accounts;
@@ -68,6 +71,45 @@ public class AccountsController : BaseController
             ClientSecret = request.ClientSecret,
         }, cancellationToken);
         return Ok();
+    }
+
+    /// <summary>
+    /// OAuth 2.0 token introspection (RFC 7662). The calling client authenticates and learns whether a token
+    /// is active plus its metadata; an inactive/unknown token returns <c>{ "active": false }</c>.
+    /// </summary>
+    [Consumes("application/x-www-form-urlencoded")]
+    [HttpPost("~/connect/introspect", Name = nameof(Introspect)), Produces("application/json")]
+    [ProducesResponseType(typeof(IntrospectionResultDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Introspect(
+        IntrospectModel request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new IntrospectTokenCommand
+        {
+            Token = request.Token,
+            ClientId = request.ClientId,
+            ClientSecret = request.ClientSecret,
+        }, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// OpenID Connect userinfo: returns the standard claims of the user represented by the bearer access token
+    /// in the Authorization header. Answers 401 when the token is missing, invalid, expired, or not a user token.
+    /// </summary>
+    [HttpGet("~/connect/userinfo", Name = nameof(UserInfo)), Produces("application/json")]
+    [ProducesResponseType(typeof(UserInfoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> UserInfo(CancellationToken cancellationToken)
+    {
+        var authorization = Request.Headers.Authorization.ToString();
+        const string bearerPrefix = "Bearer ";
+        var accessToken = authorization.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase)
+            ? authorization[bearerPrefix.Length..].Trim()
+            : null;
+
+        var result = await Mediator.Send(new GetUserInfoQuery { AccessToken = accessToken }, cancellationToken);
+        return result is null ? Unauthorized() : Ok(result);
     }
 
     /// <summary>

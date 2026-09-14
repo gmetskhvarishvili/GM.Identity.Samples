@@ -63,7 +63,16 @@ public class UpdateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
                 request.Email!);
         }
 
+        // A changed contact is no longer verified — reset its confirmation so it must be re-confirmed.
+        var emailChanged = !string.Equals(entity.Email, request.Email, StringComparison.OrdinalIgnoreCase);
+        var phoneChanged = !string.Equals(entity.PhoneNumber, request.PhoneNumber, StringComparison.Ordinal);
+
         entity.Update(request.Username!, request.Email!, request.PhoneNumber);
+
+        if (emailChanged)
+            entity.ResetEmailConfirmation();
+        if (phoneChanged)
+            entity.ResetPhoneNumberConfirmation();
 
         // Persist the aggregate
         unitOfWork.UserRepository.Update(entity);

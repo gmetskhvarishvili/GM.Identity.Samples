@@ -3,6 +3,7 @@ using GM.API.Controllers;
 using GM.API.Models;
 using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
+using GM.Identity.Sample.Application.Users.Commands.ChangeCurrentUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
@@ -10,11 +11,20 @@ using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
+using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
+using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
+using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
+using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
+using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
+using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
+using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
+using GM.Identity.Sample.Application.Users.Commands.UnlockUser;
 using GM.Identity.Sample.Application.Users.Commands.RecoverUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ResetUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
+using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
 using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 using GM.Identity.Sample.Application.Users.Queries.GetUserRolesList;
 using GM.Identity.Sample.Application.Users.Queries.GetUserSessionsList;
@@ -90,16 +100,183 @@ public class UsersController : BaseController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UpdateCurrentUserPassword(
         [FromServices] ICurrentActor currentActor,
-        [FromBody] UpdateUserPasswordModel request,
+        [FromBody] ChangeCurrentUserPasswordModel request,
         CancellationToken cancellationToken)
     {
         if (currentActor.UserId is not { } userId)
             return Unauthorized();
 
-        var command = request.Adapt<UpdateUserPasswordCommand>();
+        var command = request.Adapt<ChangeCurrentUserPasswordCommand>();
+        command.UserId = userId;
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Update the current user's own profile (username / email / phone).
+    /// </summary>
+    [HttpPut("me/Profile", Name = nameof(UpdateCurrentUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> UpdateCurrentUser(
+        [FromServices] ICurrentActor currentActor,
+        [FromBody] UpdateUserModel request,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var command = request.Adapt<UpdateUserCommand>();
         command.Id = userId;
         await Mediator.Send(command, cancellationToken);
         return Ok();
+    }
+
+    /// <summary>
+    /// Log the current user out — revokes the session the presented token belongs to.
+    /// </summary>
+    [HttpPost("me/Logout", Name = nameof(LogoutCurrentUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LogoutCurrentUser(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.SessionId is not { } sessionId)
+            return Unauthorized();
+
+        await Mediator.Send(new LogoutCurrentUserCommand { SessionId = sessionId }, cancellationToken);
+        return Ok();
+    }
+
+    // ---- Account state (admin) — block/unblock, activate/deactivate, unlock. Each finds the user
+    // regardless of active/blocked state; the session-revoking ones take effect immediately. ----
+
+    /// <summary>Block a user (and revoke their active sessions).</summary>
+    [HasPermission(nameof(BlockUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Block", Name = nameof(BlockUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> BlockUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserBlockCommand { UserId = id, Block = true }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Unblock a user.</summary>
+    [HasPermission(nameof(UnblockUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Unblock", Name = nameof(UnblockUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnblockUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserBlockCommand { UserId = id, Block = false }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Deactivate a user (and revoke their active sessions).</summary>
+    [HasPermission(nameof(DeactivateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Deactivate", Name = nameof(DeactivateUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserActiveCommand { UserId = id, Active = false }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Reactivate a user.</summary>
+    [HasPermission(nameof(ReactivateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Activate", Name = nameof(ReactivateUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReactivateUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserActiveCommand { UserId = id, Active = true }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Clear a user's failed-login lockout.</summary>
+    [HasPermission(nameof(UnlockUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Unlock", Name = nameof(UnlockUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnlockUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new UnlockUserCommand { UserId = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Enrol a user in a second-factor method (subsequent logins then require a 2FA challenge).</summary>
+    [HasPermission(nameof(EnableUserTwoFactor))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/TwoFactor/{twoFactorAuthTypeId:int}", Name = nameof(EnableUserTwoFactor))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> EnableUserTwoFactor(
+        [FromRoute] Guid id, [FromRoute] int twoFactorAuthTypeId, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(
+            new EnableUserTwoFactorCommand { UserId = id, TwoFactorAuthTypeId = twoFactorAuthTypeId },
+            cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Confirm a pending second-factor enrolment with the one-time setup code (this activates it).</summary>
+    [HasPermission(nameof(ConfirmUserTwoFactor))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/TwoFactor/{twoFactorAuthTypeId:int}/Confirm", Name = nameof(ConfirmUserTwoFactor))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmUserTwoFactor(
+        [FromRoute] Guid id,
+        [FromRoute] int twoFactorAuthTypeId,
+        [FromBody] ConfirmUserTwoFactorModel request,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(
+            new ConfirmUserTwoFactorCommand
+            {
+                UserId = id,
+                TwoFactorAuthTypeId = twoFactorAuthTypeId,
+                Code = request.Code,
+            },
+            cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Remove a second-factor enrolment from a user.</summary>
+    [HasPermission(nameof(DisableUserTwoFactor))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpDelete("{id}/TwoFactor/{twoFactorAuthTypeId:int}", Name = nameof(DisableUserTwoFactor))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DisableUserTwoFactor(
+        [FromRoute] Guid id, [FromRoute] int twoFactorAuthTypeId, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(
+            new DisableUserTwoFactorCommand { UserId = id, TwoFactorAuthTypeId = twoFactorAuthTypeId },
+            cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// (Re)generate a user's single-use backup codes. Returns the new codes exactly once — they replace any
+    /// existing set and are never recoverable afterwards.
+    /// </summary>
+    [HasPermission(nameof(GenerateRecoveryCodes))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/RecoveryCodes", Name = nameof(GenerateRecoveryCodes))]
+    [ProducesResponseType(typeof(RecoveryCodesModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GenerateRecoveryCodes([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var codes = await Mediator.Send(new GenerateRecoveryCodesCommand { UserId = id }, cancellationToken);
+        return Ok(new RecoveryCodesModel { Codes = codes });
     }
 
     /// <summary>
@@ -431,6 +608,30 @@ public class UsersController : BaseController
         query.UserId = id;
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<UserSessionModel>>();
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get a user's audit trail — the domain-event history recorded for that user, newest first and paged.
+    /// </summary>
+    /// <param name="id">User Id whose audit trail to read</param>
+    /// <param name="request">Paging options</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The user's recorded domain events</returns>
+    [HasPermission(nameof(GetUserAuditTrail))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
+    [HttpGet("{id}/AuditTrail", Name = nameof(GetUserAuditTrail))]
+    [ProducesResponseType(typeof(IEnumerable<UserAuditTrailModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserAuditTrail(
+        [FromRoute] Guid id,
+        [FromQuery] GetUserAuditTrailModel request,
+        CancellationToken cancellationToken)
+    {
+        var query = request.Adapt<GetUserAuditTrailQuery>();
+        query.UserId = id;
+        var response = await Mediator.Send(query, cancellationToken);
+        var result = response.Items.Adapt<IEnumerable<UserAuditTrailModel>>();
         AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
         return Ok(result);
     }

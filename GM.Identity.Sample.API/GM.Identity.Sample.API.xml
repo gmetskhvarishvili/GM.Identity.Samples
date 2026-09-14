@@ -17,6 +17,11 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.RevokeToken(GM.Identity.Sample.API.Accounts.RevokeTokenModel,System.Threading.CancellationToken)">
+            <summary>
+            Revoke an opaque access or refresh token (OAuth token revocation, RFC 7009).
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.GoogleConnect(GM.Identity.Sample.API.Accounts.AuthConnectModel,System.Threading.CancellationToken)">
             <summary>
             Google Connect
@@ -87,6 +92,21 @@
             <param name="id">Client Id to Delete</param>
             <param name="cancellationToken"></param>
             <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.RotateClientSecret(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Rotate a client's secret. Returns the new plaintext secret exactly once and revokes the client's active
+            sessions, so tokens minted under the old secret stop working immediately.
+            </summary>
+            <param name="id">Client Id whose secret to rotate</param>
+            <param name="cancellationToken"></param>
+            <returns>The new client secret (shown only once)</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeactivateClient(System.Guid,System.Threading.CancellationToken)">
+            <summary>Deactivate a client — it can no longer authenticate, and its active sessions are revoked.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.ActivateClient(System.Guid,System.Threading.CancellationToken)">
+            <summary>Reactivate a previously deactivated client.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeleteClientScope(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
@@ -477,8 +497,14 @@
             <param name="cancellationToken"></param>
             <returns>Scope Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel">
+            <summary>Body for confirming a pending 2FA enrolment: the one-time setup code the user received.</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.TwoFactorAuthTypeIds">
             <summary>Ids of the 2FA methods to enrol the new user in.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.GetUserAuditTrailModel">
+            <summary>Paging inputs for a user's audit-trail (domain-event history) query.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Users.GetUsersListModel.Id">
             <summary>
@@ -501,6 +527,12 @@
         <member name="M:GM.Identity.Sample.API.Users.GetUsersListModelValidator.#ctor">
             <inheritdoc />
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.RecoveryCodesModel">
+            <summary>The freshly generated recovery codes, returned exactly once. The user must store them now.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UserAuditTrailModel">
+            <summary>One recorded domain event in a user's audit trail, with the actor/request context it occurred under.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UsersController">
             <summary>
             Users Controller
@@ -516,9 +548,49 @@
             Get the current user's own sessions.
             </summary>
         </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateCurrentUserPassword(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.UpdateUserPasswordModel,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateCurrentUserPassword(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel,System.Threading.CancellationToken)">
             <summary>
             Change the current user's own password.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateCurrentUser(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.UpdateUserModel,System.Threading.CancellationToken)">
+            <summary>
+            Update the current user's own profile (username / email / phone).
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.LogoutCurrentUser(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            Log the current user out — revokes the session the presented token belongs to.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.BlockUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>Block a user (and revoke their active sessions).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UnblockUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>Unblock a user.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DeactivateUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>Deactivate a user (and revoke their active sessions).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ReactivateUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>Reactivate a user.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UnlockUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>Clear a user's failed-login lockout.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.EnableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
+            <summary>Enrol a user in a second-factor method (subsequent logins then require a 2FA challenge).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTwoFactor(System.Guid,System.Int32,GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel,System.Threading.CancellationToken)">
+            <summary>Confirm a pending second-factor enrolment with the one-time setup code (this activates it).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
+            <summary>Remove a second-factor enrolment from a user.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GenerateRecoveryCodes(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            (Re)generate a user's single-use backup codes. Returns the new codes exactly once — they replace any
+            existing set and are never recoverable afterwards.
             </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.AddUser(GM.Identity.Sample.API.Users.CreateUserModel,System.Threading.CancellationToken)">
@@ -649,6 +721,15 @@
             <param name="request">User Session Model to Get</param>
             <param name="cancellationToken"></param>
             <returns>User Sessions</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserAuditTrail(System.Guid,GM.Identity.Sample.API.Users.GetUserAuditTrailModel,System.Threading.CancellationToken)">
+            <summary>
+            Get a user's audit trail — the domain-event history recorded for that user, newest first and paged.
+            </summary>
+            <param name="id">User Id whose audit trail to read</param>
+            <param name="request">Paging options</param>
+            <param name="cancellationToken"></param>
+            <returns>The user's recorded domain events</returns>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserDetails(System.Guid,System.Threading.CancellationToken)">
             <summary>

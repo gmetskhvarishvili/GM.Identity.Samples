@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
@@ -36,7 +37,7 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     {
         RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
         RuleFor(x => x.Username).NotNull().NotEmpty();
-        RuleFor(x => x.Password).NotNull().NotEmpty();
+        RuleFor(x => x.Password).StrongPassword();
     }
 }
 

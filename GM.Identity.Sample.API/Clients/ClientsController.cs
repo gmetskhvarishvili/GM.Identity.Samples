@@ -8,6 +8,8 @@ using GM.Identity.Sample.Application.Clients.Commands.DeleteAllClientSessions;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClient;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClientScope;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClientSession;
+using GM.Identity.Sample.Application.Clients.Commands.RotateClientSecret;
+using GM.Identity.Sample.Application.Clients.Commands.SetClientActive;
 using GM.Identity.Sample.Application.Clients.Commands.UpdateClient;
 using GM.Identity.Sample.Application.Clients.Queries.GetClientDetails;
 using GM.Identity.Sample.Application.Clients.Queries.GetClientScopesList;
@@ -119,7 +121,51 @@ public class ClientsController : BaseController
         await Mediator.Send(command, cancellationToken);
         return Ok();
     }
-    
+
+    /// <summary>
+    /// Rotate a client's secret. Returns the new plaintext secret exactly once and revokes the client's active
+    /// sessions, so tokens minted under the old secret stop working immediately.
+    /// </summary>
+    /// <param name="id">Client Id whose secret to rotate</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The new client secret (shown only once)</returns>
+    [HasPermission(nameof(RotateClientSecret))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Secret/Rotate", Name = nameof(RotateClientSecret))]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RotateClientSecret(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var secret = await Mediator.Send(new RotateClientSecretCommand { ClientId = id }, cancellationToken);
+        return Ok(secret);
+    }
+
+    /// <summary>Deactivate a client — it can no longer authenticate, and its active sessions are revoked.</summary>
+    [HasPermission(nameof(DeactivateClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Deactivate", Name = nameof(DeactivateClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateClient([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetClientActiveCommand { ClientId = id, Active = false }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Reactivate a previously deactivated client.</summary>
+    [HasPermission(nameof(ActivateClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Activate", Name = nameof(ActivateClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ActivateClient([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetClientActiveCommand { ClientId = id, Active = true }, cancellationToken);
+        return Ok();
+    }
+
     /// <summary>
     /// Delete Client Scope
     /// </summary>

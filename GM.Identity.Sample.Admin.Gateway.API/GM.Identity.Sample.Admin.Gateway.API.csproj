@@ -12,7 +12,7 @@
 
         <!-- Redis-backed counter store + distributed lock for cross-instance rate limiting. -->
         <PackageReference Include="GM.Caching.Redis" Version="1.0.1" />
-        <PackageReference Include="GM.Identity" Version="1.4.0" />
+        <PackageReference Include="GM.Identity" Version="1.6.0" />
         <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
 
         <!-- Distributed tracing/metrics so a request is one trace across the gateway and the API. -->

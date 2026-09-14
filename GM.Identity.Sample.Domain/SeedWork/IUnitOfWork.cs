@@ -12,6 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 
@@ -35,6 +36,7 @@ public interface IUnitOfWork : IGenericUnitOfWork
    
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; }
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; }
+    public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; }
   
     public IUserRoleRepository UserRoleRepository { get; }
     public IRoleRepository RoleRepository { get; }

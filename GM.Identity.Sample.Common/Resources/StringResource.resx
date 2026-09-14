@@ -144,6 +144,9 @@
   <data name="UserRole" xml:space="preserve">
     <value>Role of User</value>
   </data>
+  <data name="TwoFactorAuthType" xml:space="preserve">
+    <value>Two-Factor Authentication Type</value>
+  </data>
   <data name="RoleId" xml:space="preserve">
     <value>Id of Role</value>
   </data>

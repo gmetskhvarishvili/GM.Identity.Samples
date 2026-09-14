@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Authorization;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -20,12 +22,13 @@ public class UpdateUserPasswordCommandValidator : AbstractValidator<UpdateUserPa
     public UpdateUserPasswordCommandValidator()
     {
         RuleFor(x => x.Id).NotNull().NotEmpty();
-        RuleFor(x => x.Password).NotNull().NotEmpty();
+        RuleFor(x => x.Password).StrongPassword();
     }
 }
 
 public class UpdateUserPasswordCommandHandler(
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ISessionCache sessionCache)
     : IRequestHandler<UpdateUserPasswordCommand>
 {
     public async Task Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
@@ -56,5 +59,8 @@ public class UpdateUserPasswordCommandHandler(
         // Persist the aggregate
         unitOfWork.UserRepository.Update(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // A password change invalidates every existing session — force re-authentication everywhere.
+        await unitOfWork.RevokeAllUserSessionsAsync(sessionCache, entity.Id, cancellationToken);
     }
 }

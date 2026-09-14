@@ -2,6 +2,7 @@
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
+using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -48,6 +49,25 @@ public class AccountsController : BaseController
         };
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Revoke an opaque access or refresh token (OAuth token revocation, RFC 7009).
+    /// </summary>
+    [Consumes("application/x-www-form-urlencoded")]
+    [HttpPost("~/connect/revoke", Name = nameof(RevokeToken)), Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RevokeToken(
+        RevokeTokenModel request,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RevokeTokenCommand
+        {
+            Token = request.Token,
+            ClientId = request.ClientId,
+            ClientSecret = request.ClientSecret,
+        }, cancellationToken);
+        return Ok();
     }
 
     /// <summary>

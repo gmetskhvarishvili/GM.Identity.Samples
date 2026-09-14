@@ -238,5 +238,14 @@ namespace GM.Identity.Sample.Common.Resources {
                 return ResourceManager.GetString("UserSession", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Two-Factor Authentication Type.
+        /// </summary>
+        public static string TwoFactorAuthType {
+            get {
+                return ResourceManager.GetString("TwoFactorAuthType", resourceCulture);
+            }
+        }
     }
 }

@@ -131,10 +131,14 @@ public class AuthorizeCommandHandler(
         if (string.IsNullOrWhiteSpace(subject))
             throw new ValidationException("This account has no contact to validate the second factor against.");
 
-        // Throws ValidationException if the code is wrong/expired.
-        await otpService.VerifyOTP(
-            new VerifyOTPDto { Subject = subject, Purpose = OtpPurpose.TwoFactor, Code = request.Code },
-            cancellationToken);
+        // The submitted value is either the one-time code sent to the user's contact, or one of their
+        // single-use backup codes. Try the OTP first; if it doesn't validate, fall back to consuming a
+        // recovery code. Only if neither matches is the second factor rejected.
+        if (!await TryVerifyOtpAsync(subject, request.Code, cancellationToken)
+            && !await TryConsumeRecoveryCodeAsync(user.Id, request.Code, cancellationToken))
+        {
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+        }
 
         return await IssueUserSessionAsync(
             user.Id, clientId, provider: null, now, settings,
@@ -181,18 +185,58 @@ public class AuthorizeCommandHandler(
         return user;
     }
 
+    // Validates the submitted value as the one-time code issued to the user's contact. Returns false (rather
+    // than throwing) so the caller can fall back to a recovery code.
+    private async Task<bool> TryVerifyOtpAsync(string subject, string code, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await otpService.VerifyOTP(
+                new VerifyOTPDto { Subject = subject, Purpose = OtpPurpose.TwoFactor, Code = code },
+                cancellationToken);
+            return true;
+        }
+        catch (ValidationException)
+        {
+            return false; // Not a valid OTP — the caller will try a recovery code.
+        }
+    }
+
+    // Spends a single-use recovery code if the submitted value matches an unused one. Cross-tenant, like the
+    // rest of the login path (the caller has no proven tenant yet).
+    private async Task<bool> TryConsumeRecoveryCodeAsync(Guid userId, string code, CancellationToken cancellationToken)
+    {
+        var hash = TokenGenerator.Hash(code);
+        var recoveryCode = await unitOfWork.UserRecoveryCodeRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(
+                x => x.UserId == userId && x.CodeHash == hash && x.UsedAt == null
+                     && x.IsActive && !x.IsDeleted && !x.IsHidden,
+                cancellationToken);
+
+        if (recoveryCode == null || !recoveryCode.Consume())
+            return false;
+
+        unitOfWork.UserRecoveryCodeRepository.Update(recoveryCode);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     // The payload the one-time code is issued/validated against — the email, falling back to the phone.
     private static string? TwoFactorSubject(User user) =>
         !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.PhoneNumber;
 
-    // The 2FA methods the user is currently enrolled in (active, non-deleted). Empty when the user has no
-    // second factor configured, in which case login proceeds straight to issuing a session.
+    // The 2FA methods the user is currently enrolled in AND has confirmed (active, non-deleted). Empty when
+    // the user has no confirmed second factor, in which case login proceeds straight to issuing a session.
+    // A pending (unconfirmed) enrolment deliberately does not gate login, so a user who cannot complete setup
+    // is never locked out.
     private async Task<IReadOnlyCollection<int>> GetEnrolledTwoFactorTypeIdsAsync(
         Guid userId, CancellationToken cancellationToken) =>
         await unitOfWork.UserTwoFactorAuthTypeRepository
             .Query(false, null)
             .IgnoreQueryFilters()
-            .Where(x => x.UserId == userId && x.IsActive && !x.IsDeleted && !x.IsHidden)
+            .Where(x => x.UserId == userId && x.IsConfirmed && x.IsActive && !x.IsDeleted && !x.IsHidden)
             .Select(x => x.TwoFactorAuthTypeId)
             .ToListAsync(cancellationToken);
 

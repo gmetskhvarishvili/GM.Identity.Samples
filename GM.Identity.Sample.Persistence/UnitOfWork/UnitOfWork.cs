@@ -12,6 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -32,6 +33,7 @@ public sealed class UnitOfWork(
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
+    IUserRecoveryCodeRepository userRecoveryCodeRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
     IRolePermissionRepository rolePermissionRepository,
@@ -47,6 +49,7 @@ public sealed class UnitOfWork(
     public IOperationRepository OperationRepository { get; } = operationRepository;
     public IUserSessionRepository UserSessionRepository { get; } = userSessionRepository;
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; } = userTwoFactorAuthTypeRepository;
+    public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; } = userRecoveryCodeRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;
     public IUserRepository UserRepository { get; } = userRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;

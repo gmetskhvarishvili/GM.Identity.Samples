@@ -11,12 +11,15 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
+using GM.Identity.Sample.Application.Infrastructure.Services.Audit;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Identity.Sample.Persistence.Repositories;
+using GM.Identity.Sample.Persistence.Services.Audit;
 using GM.Caching.Redis;
 using GM.DistributedLock.Redis;
 using GM.EntityFramework.Persistence;
@@ -79,7 +82,11 @@ public static class DependencyInjection
         services.AddTransient<IUserRoleRepository, UserRoleRepository>();
         services.AddTransient<IUserSessionRepository, UserSessionRepository>();
         services.AddTransient<IUserTwoFactorAuthTypeRepository, UserTwoFactorAuthTypeRepository>();
+        services.AddTransient<IUserRecoveryCodeRepository, UserRecoveryCodeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
+
+        // Read-side over the durable domain-event log (the audit trail).
+        services.AddTransient<IAuditTrailReader, AuditTrailReader>();
 
         services.AddTransient<OutboxMessageRepository>();
         services.AddTransient<IOutboxMessageRepository>(sp => sp.GetRequiredService<OutboxMessageRepository>());

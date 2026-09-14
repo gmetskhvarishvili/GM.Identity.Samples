@@ -6,6 +6,7 @@ using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
+using GM.Identity.Sample.Application.Accounts.Queries.GetOpenIdConfiguration;
 using GM.Identity.Sample.Application.Accounts.Queries.GetUserInfo;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -54,6 +55,20 @@ public class AccountsController : BaseController
             CodeVerifier = request.CodeVerifier,
         };
         var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// OpenID Connect discovery document. Advertises this provider's endpoints and supported grants/scopes so
+    /// clients can configure themselves. Tokens are opaque, so no JWKS/signing metadata is advertised.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("~/.well-known/openid-configuration", Name = nameof(OpenIdConfiguration)), Produces("application/json")]
+    [ProducesResponseType(typeof(OpenIdConfigurationDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> OpenIdConfiguration(CancellationToken cancellationToken)
+    {
+        var issuer = $"{Request.Scheme}://{Request.Host}";
+        var result = await Mediator.Send(new GetOpenIdConfigurationQuery(issuer), cancellationToken);
         return Ok(result);
     }
 

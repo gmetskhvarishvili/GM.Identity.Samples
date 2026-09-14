@@ -17,6 +17,12 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.OpenIdConfiguration(System.Threading.CancellationToken)">
+            <summary>
+            OpenID Connect discovery document. Advertises this provider's endpoints and supported grants/scopes so
+            clients can configure themselves. Tokens are opaque, so no JWKS/signing metadata is advertised.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.AuthorizeCode(GM.Identity.Sample.API.Accounts.AuthorizeCodeModel,System.Threading.CancellationToken)">
             <summary>
             Authorization endpoint of the PKCE authorization-code flow. Authenticates the resource owner, validates

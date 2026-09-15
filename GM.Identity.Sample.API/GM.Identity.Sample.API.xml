@@ -98,6 +98,21 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.ExternalConnect(System.String,GM.Identity.Sample.API.Accounts.AuthConnectModel,System.Threading.CancellationToken)">
+            <summary>
+            Generic external-login redirect for any configured provider — Microsoft, Apple, LinkedIn, GitHub, or an
+            enterprise OpenID Connect IdP (the <c>provider</c> route segment is the configuration key under <c>OAuth</c>).
+            Returns the provider's authorization URL to send the user agent to. Google/Facebook also have named
+            endpoints above for backward compatibility, but work here too.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.ExternalAuthorizeConnect(System.String,GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel,System.Threading.CancellationToken)">
+            <summary>
+            Generic external-login callback for any configured provider: exchanges the authorization code, resolves
+            the user's email (id_token for OIDC providers, userinfo for OAuth2 ones), provisions or matches the local
+            account, and issues a session.
+            </summary>
+        </member>
         <member name="F:GM.Identity.Sample.API.Accounts.AccountsController.SsoCookieName">
             <summary>Name of the browser cookie that carries the opaque single sign-on session value.</summary>
         </member>

@@ -316,6 +316,40 @@ public class AccountsController : BaseController
         return Ok(result);
     }
 
+    /// <summary>
+    /// Generic external-login redirect for any configured provider — Microsoft, Apple, LinkedIn, GitHub, or an
+    /// enterprise OpenID Connect IdP (the <c>provider</c> route segment is the configuration key under <c>OAuth</c>).
+    /// Returns the provider's authorization URL to send the user agent to. Google/Facebook also have named
+    /// endpoints above for backward compatibility, but work here too.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("~/connect/external/{provider}", Name = nameof(ExternalConnect))]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExternalConnect(
+        string provider, [FromQuery] AuthConnectModel request, CancellationToken cancellationToken)
+    {
+        var query = request.Adapt<GetOAuthRedirectUriQuery>();
+        query.Provider = provider;
+        var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Generic external-login callback for any configured provider: exchanges the authorization code, resolves
+    /// the user's email (id_token for OIDC providers, userinfo for OAuth2 ones), provisions or matches the local
+    /// account, and issues a session.
+    /// </summary>
+    [HttpPost("~/connect/external/{provider}/token", Name = nameof(ExternalAuthorizeConnect))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExternalAuthorizeConnect(
+        string provider, [FromBody] ExternalAuthorizeModel request, CancellationToken cancellationToken)
+    {
+        var command = request.Adapt<ExternalAuthorizeCommand>();
+        command.Provider = provider;
+        var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
     /// <summary>Name of the browser cookie that carries the opaque single sign-on session value.</summary>
     private const string SsoCookieName = "gm_sso";
 

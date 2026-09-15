@@ -27,7 +27,6 @@ public class GetOAuthRedirectUriQueryHandler(IOAuthService oAuthService)
 {
     public Task<string> Handle(GetOAuthRedirectUriQuery request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(oAuthService.GetRedirectUri(
-            request.Adapt<GetRedirectUriDto>()));
+        return oAuthService.GetRedirectUri(request.Adapt<GetRedirectUriDto>(), cancellationToken);
     }
 }

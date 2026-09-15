@@ -1,6 +1,6 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Common.Security;
+using GM.Identity;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;

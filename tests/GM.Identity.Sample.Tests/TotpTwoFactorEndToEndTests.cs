@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Common.Security;
+using GM.Identity;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;

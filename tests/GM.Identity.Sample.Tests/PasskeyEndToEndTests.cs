@@ -1,6 +1,6 @@
 using GM.Identity.Sample.Application.Accounts.Commands.BeginPasskeyAssertion;
 using GM.Identity.Sample.Application.Accounts.Commands.CompletePasskeyAssertion;
-using GM.Identity.Sample.Application.Common.Security;
+using GM.Identity;
 using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate;

@@ -16,7 +16,7 @@
         <PackageReference Include="GM.RateLimiting.Redis" Version="1.0.1" />
 
         <!-- Opaque bearer-token validation against the Redis session store (TokenGenerator.Hash + IConnectionMultiplexer). -->
-        <PackageReference Include="GM.Identity" Version="1.6.0" />
+        <PackageReference Include="GM.Identity" Version="1.7.0" />
         <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
 
         <!-- Liveness/readiness endpoints for the edge. -->

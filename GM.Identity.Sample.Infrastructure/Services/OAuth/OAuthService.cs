@@ -1,7 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Common.Security;
+using GM.Identity;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Infrastructure.Options;
 using GM.Secrets;

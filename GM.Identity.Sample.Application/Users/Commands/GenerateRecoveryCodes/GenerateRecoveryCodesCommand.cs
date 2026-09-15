@@ -1,7 +1,7 @@
 using FluentValidation;
 using GM.Exceptions;
+using GM.Identity;
 using GM.Identity.Authorization;
-using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate;
 using GM.Identity.Sample.Domain.SeedWork;

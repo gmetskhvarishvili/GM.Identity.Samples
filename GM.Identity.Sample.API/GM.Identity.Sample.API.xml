@@ -35,6 +35,12 @@
             clients can configure themselves. Tokens are opaque, so no JWKS/signing metadata is advertised.
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.Jwks(System.Threading.CancellationToken)">
+            <summary>
+            JSON Web Key Set: the OP's public signing keys, used by relying parties to verify back-channel logout
+            tokens (and, in future, id_tokens). Advertised as <c>jwks_uri</c> in the discovery document.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.AuthorizeCode(GM.Identity.Sample.API.Accounts.AuthorizeCodeModel,System.Threading.CancellationToken)">
             <summary>
             Authorization endpoint of the PKCE authorization-code flow. Authenticates the resource owner, validates

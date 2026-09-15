@@ -9,8 +9,10 @@ using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RegisterUser;
 using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
+using GM.Identity.Sample.Application.Accounts.Queries.GetJwks;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOpenIdConfiguration;
+using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
 using GM.Identity.Sample.Application.Accounts.Queries.GetUserInfo;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -130,6 +132,19 @@ public class AccountsController : BaseController
     }
 
     /// <summary>
+    /// JSON Web Key Set: the OP's public signing keys, used by relying parties to verify back-channel logout
+    /// tokens (and, in future, id_tokens). Advertised as <c>jwks_uri</c> in the discovery document.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("~/.well-known/jwks.json", Name = nameof(Jwks)), Produces("application/json")]
+    [ProducesResponseType(typeof(JsonWebKeySetDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Jwks(CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetJwksQuery(), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Authorization endpoint of the PKCE authorization-code flow. Authenticates the resource owner, validates
     /// the client + registered redirect URI + PKCE challenge, and returns a short-lived authorization code plus
     /// the redirect target (code + state). Exchange it at /connect/token with grant_type=authorization_code.
@@ -183,6 +198,7 @@ public class AccountsController : BaseController
             ClientId = request.ClientId,
             PostLogoutRedirectUri = request.PostLogoutRedirectUri,
             State = request.State,
+            Issuer = $"{Request.Scheme}://{Request.Host}",
         }, cancellationToken);
 
         // The SSO session is gone — remove its cookie from the browser.

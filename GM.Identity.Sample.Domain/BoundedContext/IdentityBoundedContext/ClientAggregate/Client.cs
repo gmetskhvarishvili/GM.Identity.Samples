@@ -45,4 +45,13 @@ public class Client : GMClient<Client, ClientSession, ClientScope, Scope, ScopeO
 
     /// <summary>Assigns the owning tenant (stamped by the persistence layer on insert when unset).</summary>
     public void AssignTenant(Guid? tenantId) => TenantId = tenantId;
+
+    /// <summary>
+    /// The client's OpenID Connect back-channel logout endpoint. When set, the OP POSTs a signed logout token
+    /// here on Single Logout so this relying party can terminate its own session. Null = the client does not
+    /// participate in back-channel logout.
+    /// </summary>
+    public string? BackchannelLogoutUri { get; private set; }
+
+    public void SetBackchannelLogoutUri(string? uri) => BackchannelLogoutUri = uri;
 }

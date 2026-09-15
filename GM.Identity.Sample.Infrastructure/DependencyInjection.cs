@@ -4,10 +4,12 @@ using GM.HealthChecks.EntityFramework;
 using GM.HttpClient;
 using GM.Identity;
 using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Infrastructure.Authorization;
 using GM.Identity.Sample.Infrastructure.Options;
+using GM.Identity.Sample.Infrastructure.Services.Logout;
 using GM.Identity.Sample.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Persistence.Context;
@@ -43,6 +45,13 @@ public static class DependencyInjection
         }
 
         services.AddScoped<IOAuthService, OAuthService>();
+
+        // OIDC back-channel logout: a stable OP signing key (published via JWKS so RPs can verify), the logout
+        // token generator, and the notifier that POSTs tokens to relying parties on Single Logout.
+        services.AddSingleton(new OidcSigningKey(configuration["Oidc:SigningKeyPem"]));
+        services.AddSingleton<IJwksProvider>(sp => sp.GetRequiredService<OidcSigningKey>());
+        services.AddSingleton<LogoutTokenGenerator>();
+        services.AddScoped<IBackchannelLogoutNotifier, BackchannelLogoutNotifier>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddGMHttpClient<IOTPAPIService, GMAPIClientOptions>(
             configuration.GetSection("ApiServices:OTPAPIService"),

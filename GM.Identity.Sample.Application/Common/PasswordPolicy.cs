@@ -1,5 +1,5 @@
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
+using GM.Identity;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System.Collections.Generic;

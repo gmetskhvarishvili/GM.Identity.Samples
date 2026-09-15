@@ -1,5 +1,5 @@
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
+using GM.Identity;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Persistence.Context;

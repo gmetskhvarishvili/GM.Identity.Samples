@@ -3,7 +3,7 @@ using GM.EntityFramework.Persistence;
 using GM.EntityFramework.Persistence.Extensions;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate;
-using GM.Identity.Sample.Persistence.Infrastructure;
+using GM.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 using System.Threading;

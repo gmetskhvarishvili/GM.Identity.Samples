@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
-using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
+using GM.Identity;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;

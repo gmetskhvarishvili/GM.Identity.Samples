@@ -2,7 +2,7 @@ using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
-using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
+using GM.Identity;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;

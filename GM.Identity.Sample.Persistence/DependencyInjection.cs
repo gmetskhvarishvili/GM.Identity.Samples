@@ -2,8 +2,10 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleHierarchyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.TimeBoundRoleGrantAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
@@ -84,6 +86,9 @@ public static class DependencyInjection
         services.AddTransient<IRolePermissionRepository, RolePermissionRepository>();
         services.AddTransient<IRoleRepository, RoleRepository>();
         services.AddTransient<IRoleHierarchyRepository, RoleHierarchyRepository>();
+        services.AddTransient<IGroupRepository, GroupRepository>();
+        services.AddTransient<IGroupRoleRepository, GroupRoleRepository>();
+        services.AddTransient<IUserGroupRepository, UserGroupRepository>();
         services.AddTransient<ITwoFactorAuthTypeRepository, TwoFactorAuthTypeRepository>();
         services.AddTransient<IUserSessionRepository, UserSessionRepository>();
         services.AddTransient<IUserRepository, UserRepository>();
@@ -95,6 +100,7 @@ public static class DependencyInjection
         services.AddTransient<IUserPasswordHistoryRepository, UserPasswordHistoryRepository>();
         services.AddTransient<IUserPendingContactChangeRepository, UserPendingContactChangeRepository>();
         services.AddTransient<IUserPermissionRepository, UserPermissionRepository>();
+        services.AddTransient<ITimeBoundRoleGrantRepository, TimeBoundRoleGrantRepository>();
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();

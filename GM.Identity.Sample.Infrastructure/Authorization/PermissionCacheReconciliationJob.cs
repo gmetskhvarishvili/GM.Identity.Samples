@@ -25,9 +25,38 @@ public sealed class PermissionCacheReconciliationJob(
         // Desired state from the DB (only live rows).
         var userRoles = (await unitOfWork.UserRoleRepository.GetAllAsync(true, null, cancellationToken))
             .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden);
-        var desiredUserRoles = userRoles
+        var roleIdsByUser = userRoles
             .GroupBy(x => x.UserId)
-            .ToDictionary(g => g.Key, g => (IReadOnlyCollection<Guid>)g.Select(x => x.RoleId).Distinct().ToList());
+            .ToDictionary(g => g.Key, g => g.Select(x => x.RoleId).ToHashSet());
+
+        // Group membership contributes the group's roles to each member.
+        var groupRoles = (await unitOfWork.GroupRoleRepository.GetAllAsync(true, null, cancellationToken))
+            .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden)
+            .GroupBy(x => x.GroupId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.RoleId).ToList());
+        var userGroups = (await unitOfWork.UserGroupRepository.GetAllAsync(true, null, cancellationToken))
+            .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden);
+        foreach (var membership in userGroups)
+        {
+            if (!groupRoles.TryGetValue(membership.GroupId, out var rolesOfGroup)) continue;
+            if (!roleIdsByUser.TryGetValue(membership.UserId, out var set))
+                roleIdsByUser[membership.UserId] = set = new HashSet<Guid>();
+            set.UnionWith(rolesOfGroup);
+        }
+
+        // Time-bound role grants that haven't expired contribute too.
+        var now = DateTime.UtcNow;
+        var temporaryGrants = (await unitOfWork.TimeBoundRoleGrantRepository.GetAllAsync(true, null, cancellationToken))
+            .Where(x => x.ExpiresAt > now && x.IsActive && !x.IsDeleted && !x.IsHidden);
+        foreach (var grant in temporaryGrants)
+        {
+            if (!roleIdsByUser.TryGetValue(grant.UserId, out var set))
+                roleIdsByUser[grant.UserId] = set = new HashSet<Guid>();
+            set.Add(grant.RoleId);
+        }
+
+        var desiredUserRoles = roleIdsByUser
+            .ToDictionary(kv => kv.Key, kv => (IReadOnlyCollection<Guid>)kv.Value.ToList());
 
         // Role permissions expanded along the hierarchy (a role inherits its ancestors' permissions).
         var ownRolePermissions = (await unitOfWork.RolePermissionRepository.GetAllAsync(true, null, cancellationToken))

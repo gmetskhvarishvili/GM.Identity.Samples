@@ -3,8 +3,10 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleHierarchyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.TimeBoundRoleGrantAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
@@ -40,6 +42,7 @@ public sealed class UnitOfWork(
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IUserPermissionRepository userPermissionRepository,
+    ITimeBoundRoleGrantRepository timeBoundRoleGrantRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
     IUserRecoveryCodeRepository userRecoveryCodeRepository,
     IUserPasswordHistoryRepository userPasswordHistoryRepository,
@@ -50,6 +53,9 @@ public sealed class UnitOfWork(
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
     IRoleHierarchyRepository roleHierarchyRepository,
+    IGroupRepository groupRepository,
+    IGroupRoleRepository groupRoleRepository,
+    IUserGroupRepository userGroupRepository,
     IRolePermissionRepository rolePermissionRepository,
     IPermissionRepository permissionRepository)
     : GenericUnitOfWork<ApplicationDbContext>(context), IUnitOfWork
@@ -73,8 +79,12 @@ public sealed class UnitOfWork(
     public IUserRepository UserRepository { get; } = userRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;
     public IUserPermissionRepository UserPermissionRepository { get; } = userPermissionRepository;
+    public ITimeBoundRoleGrantRepository TimeBoundRoleGrantRepository { get; } = timeBoundRoleGrantRepository;
     public IRoleRepository RoleRepository { get; } = roleRepository;
     public IRoleHierarchyRepository RoleHierarchyRepository { get; } = roleHierarchyRepository;
+    public IGroupRepository GroupRepository { get; } = groupRepository;
+    public IGroupRoleRepository GroupRoleRepository { get; } = groupRoleRepository;
+    public IUserGroupRepository UserGroupRepository { get; } = userGroupRepository;
     public IRolePermissionRepository RolePermissionRepository { get; } = rolePermissionRepository;
     public IPermissionRepository PermissionRepository { get; } = permissionRepository;
 }

@@ -215,6 +215,30 @@
             already format them.
             </summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Groups.CreateGroupModel">
+            <summary>Request body to create a group.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Groups.GroupsController">
+            <summary>
+            Groups Controller — manage groups (teams), the roles attached to them, and their members. Users inherit the
+            roles of every group they belong to.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.AddGroup(GM.Identity.Sample.API.Groups.CreateGroupModel,System.Threading.CancellationToken)">
+            <summary>Create a group.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.AddGroupRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Grant a role to a group.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.RemoveGroupRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Remove a role from a group.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.AddUserToGroup(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Add a user to a group.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.RemoveUserFromGroup(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Remove a user from a group.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Operations.GetOperationsListModel">
             <summary>
             Get Operations List
@@ -582,6 +606,9 @@
         <member name="M:GM.Identity.Sample.API.Users.GetUsersListModelValidator.#ctor">
             <inheritdoc />
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel">
+            <summary>Body for a time-bound role grant: when the temporary assignment expires.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.RecoveryCodesModel">
             <summary>The freshly generated recovery codes, returned exactly once. The user must store them now.</summary>
         </member>
@@ -675,6 +702,12 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTotp(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserTotpModel,System.Threading.CancellationToken)">
             <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantTimeBoundRole(System.Guid,System.Guid,GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel,System.Threading.CancellationToken)">
+            <summary>Grant a role to a user until an expiry time (temporary/elevated access).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeTimeBoundRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Revoke a time-bound role grant before it expires.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantUserPermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>Grant a permission directly to a user (in addition to role-derived permissions).</summary>

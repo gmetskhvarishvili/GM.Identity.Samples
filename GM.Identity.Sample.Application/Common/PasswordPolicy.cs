@@ -1,8 +1,11 @@
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Common;
 
@@ -31,5 +34,13 @@ public static class PasswordPolicy
 
         if (failures.Count > 0)
             throw new ValidationException($"Password must {string.Join(", ", failures)}.");
+    }
+
+    /// <summary>Throws <see cref="ValidationException"/> if the password appears in a known breach.</summary>
+    public static async Task EnsureNotBreachedAsync(
+        string? password, IBreachedPasswordChecker checker, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrEmpty(password) && await checker.IsBreachedAsync(password, cancellationToken))
+            throw new ValidationException("This password has appeared in a known data breach; choose a different one.");
     }
 }

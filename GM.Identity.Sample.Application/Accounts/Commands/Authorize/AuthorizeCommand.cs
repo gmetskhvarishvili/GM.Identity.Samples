@@ -203,6 +203,22 @@ public class AuthorizeCommandHandler(
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
         }
 
+        // Password-expiry policy: refuse login when the current password is older than the configured window,
+        // so the user must reset it. Based on the most recent recorded password change.
+        if (settings.PasswordExpiryDays > 0)
+        {
+            var lastChanged = await unitOfWork.UserPasswordHistoryRepository
+                .Query(false, null)
+                .IgnoreQueryFilters()
+                .Where(x => x.UserId == user.Id && x.IsActive && !x.IsDeleted && !x.IsHidden)
+                .OrderByDescending(x => x.SetAt)
+                .Select(x => (DateTime?)x.SetAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (lastChanged is { } changedAt && changedAt.AddDays(settings.PasswordExpiryDays) < now)
+                throw new ValidationException("Your password has expired and must be reset before signing in.");
+        }
+
         return user;
     }
 
@@ -390,7 +406,38 @@ public class AuthorizeCommandHandler(
         await sessionCache.SetAsync(
             accessHash, new SessionInfo(userId, session.Id, clientId, accessExpiry), cancellationToken);
 
+        if (userId is { } uid)
+            await EnforceConcurrentSessionCapAsync(uid, settings, now, cancellationToken);
+
         return new AuthorizeResponseDto(accessToken, accessExpiry, "bearer", refreshToken, refreshExpiry);
+    }
+
+    // Caps how many sessions a user may hold at once: once a new session pushes the count over the configured
+    // limit, the oldest live sessions are revoked (and evicted) so only the most recent N survive. Disabled
+    // when the limit is <= 0.
+    private async Task EnforceConcurrentSessionCapAsync(
+        Guid userId, AuthOptions settings, DateTime now, CancellationToken cancellationToken)
+    {
+        if (settings.MaxConcurrentSessionsPerUser <= 0)
+            return;
+
+        var live = await unitOfWork.UserSessionRepository
+            .Query(true, null)
+            .Where(x => x.UserId == userId && !x.IsRevoked && x.ExpiresAt > now)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var excess = live.Skip(settings.MaxConcurrentSessionsPerUser).ToList();
+        if (excess.Count == 0)
+            return;
+
+        foreach (var session in excess)
+            session.Revoke();
+        unitOfWork.UserSessionRepository.UpdateRange(excess);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        foreach (var session in excess)
+            await sessionCache.RemoveAsync(session.TokenHash, cancellationToken);
     }
 
     private async Task<AuthorizeResponseDto> IssueClientTokenAsync(

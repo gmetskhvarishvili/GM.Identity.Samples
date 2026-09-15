@@ -6,7 +6,9 @@ using GM.Identity;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
+using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
 using GM.Identity.Sample.Infrastructure.Authorization;
+using GM.Identity.Sample.Infrastructure.Services.PasswordSafety;
 using GM.Identity.Sample.Infrastructure.Options;
 using GM.Identity.Sample.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Infrastructure.Services.OTP;
@@ -30,6 +32,17 @@ public static class DependencyInjection
         // Key for PII-at-rest encryption (configure DataProtection:Key in production; dev key otherwise).
         services.AddSingleton(new EncryptionKeyProvider(configuration["DataProtection:Key"]));
         services.Configure<RetentionOptions>(configuration.GetSection(RetentionOptions.SectionName));
+
+        // Breached-password checking: HIBP when enabled, otherwise a no-op checker.
+        if (configuration.GetValue<bool>($"{PasswordPolicyOptions.SectionName}:{nameof(PasswordPolicyOptions.CheckForBreaches)}"))
+        {
+            services.AddHttpClient<IBreachedPasswordChecker, HibpBreachedPasswordChecker>(client =>
+                client.BaseAddress = new System.Uri("https://api.pwnedpasswords.com/"));
+        }
+        else
+        {
+            services.AddSingleton<IBreachedPasswordChecker, NullBreachedPasswordChecker>();
+        }
 
         services.AddScoped<IOAuthService, OAuthService>();
         services.AddScoped<IOTPService, OTPService>();

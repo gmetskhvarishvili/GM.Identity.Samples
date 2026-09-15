@@ -2,6 +2,7 @@ using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
@@ -42,11 +43,13 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
 
 public class RegisterUserCommandHandler(
     IUnitOfWork unitOfWork,
-    IOptions<PasswordPolicyOptions> passwordPolicy) : IRequestHandler<RegisterUserCommand, Guid>
+    IOptions<PasswordPolicyOptions> passwordPolicy,
+    IBreachedPasswordChecker breachedPasswordChecker) : IRequestHandler<RegisterUserCommand, Guid>
 {
     public async Task<Guid> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
+        await PasswordPolicy.EnsureNotBreachedAsync(request.Password, breachedPasswordChecker, cancellationToken);
 
         if (await unitOfWork.UserRepository.ExistsAsync(
                 x => x.Email == request.Email && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken))

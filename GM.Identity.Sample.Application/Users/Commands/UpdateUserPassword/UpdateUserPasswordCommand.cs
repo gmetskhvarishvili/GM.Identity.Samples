@@ -2,6 +2,7 @@
 using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -31,12 +32,14 @@ public class UpdateUserPasswordCommandValidator : AbstractValidator<UpdateUserPa
 public class UpdateUserPasswordCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IOptions<PasswordPolicyOptions> passwordPolicy)
+    IOptions<PasswordPolicyOptions> passwordPolicy,
+    IBreachedPasswordChecker breachedPasswordChecker)
     : IRequestHandler<UpdateUserPasswordCommand>
 {
     public async Task Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
     {
         PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
+        await PasswordPolicy.EnsureNotBreachedAsync(request.Password, breachedPasswordChecker, cancellationToken);
 
         // the root aggregate
         var entity = await unitOfWork.UserRepository

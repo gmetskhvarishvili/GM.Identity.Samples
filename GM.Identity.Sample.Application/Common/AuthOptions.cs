@@ -19,4 +19,10 @@ public sealed class AuthOptions
 
     /// <summary>How long an account stays locked after too many failed logins, in minutes.</summary>
     public int LockoutMinutes { get; set; } = 15;
+
+    /// <summary>Maximum concurrent sessions a user may hold; the oldest are revoked past this. 0 = unlimited.</summary>
+    public int MaxConcurrentSessionsPerUser { get; set; }
+
+    /// <summary>Days before a password must be changed; login is refused past this. 0 = never expires.</summary>
+    public int PasswordExpiryDays { get; set; }
 }

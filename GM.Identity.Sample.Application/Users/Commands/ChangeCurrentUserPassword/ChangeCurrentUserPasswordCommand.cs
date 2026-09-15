@@ -2,6 +2,7 @@ using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -37,11 +38,13 @@ public class ChangeCurrentUserPasswordCommandValidator : AbstractValidator<Chang
 public class ChangeCurrentUserPasswordCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IOptions<PasswordPolicyOptions> passwordPolicy) : IRequestHandler<ChangeCurrentUserPasswordCommand>
+    IOptions<PasswordPolicyOptions> passwordPolicy,
+    IBreachedPasswordChecker breachedPasswordChecker) : IRequestHandler<ChangeCurrentUserPasswordCommand>
 {
     public async Task Handle(ChangeCurrentUserPasswordCommand request, CancellationToken cancellationToken)
     {
         PasswordPolicy.Validate(request.NewPassword, passwordPolicy.Value);
+        await PasswordPolicy.EnsureNotBreachedAsync(request.NewPassword, breachedPasswordChecker, cancellationToken);
 
         var user = await unitOfWork.UserRepository
             .FirstOrDefaultAsync(x => x.Id == request.UserId && x.IsActive && !x.IsDeleted && !x.IsHidden,

@@ -14,4 +14,7 @@ public sealed class PasswordPolicyOptions
     public bool RequireLowercase { get; set; } = true;
     public bool RequireDigit { get; set; } = true;
     public bool RequireNonAlphanumeric { get; set; }
+
+    /// <summary>When true, new passwords are also checked against the Have I Been Pwned breach corpus.</summary>
+    public bool CheckForBreaches { get; set; }
 }

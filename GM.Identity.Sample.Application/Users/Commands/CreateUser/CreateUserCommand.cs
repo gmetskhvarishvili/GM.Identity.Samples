@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Infrastructure.Services.PasswordSafety;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
@@ -44,11 +45,13 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 
 public class CreateUserCommandHandler(
     IUnitOfWork unitOfWork,
-    IOptions<PasswordPolicyOptions> passwordPolicy) : IRequestHandler<CreateUserCommand, Guid>
+    IOptions<PasswordPolicyOptions> passwordPolicy,
+    IBreachedPasswordChecker breachedPasswordChecker) : IRequestHandler<CreateUserCommand, Guid>
 {
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
+        await PasswordPolicy.EnsureNotBreachedAsync(request.Password, breachedPasswordChecker, cancellationToken);
 
         if (await unitOfWork.UserRepository.ExistsAsync(
                 x => x.Email == request.Email

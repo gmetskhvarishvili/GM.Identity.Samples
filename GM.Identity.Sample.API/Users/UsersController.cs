@@ -12,6 +12,7 @@ using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
+using GM.Identity.Sample.Application.Users.Commands.ConfirmContactChange;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
@@ -22,6 +23,7 @@ using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
 using GM.Identity.Sample.Application.Users.Commands.ImpersonateUser;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
+using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
 using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
@@ -170,6 +172,46 @@ public class UsersController : BaseController
             return Unauthorized();
 
         await Mediator.Send(new LogoutAllUserSessionsCommand { UserId = userId }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Request a change to the current user's email or phone. Sends a one-time code to the NEW contact; the
+    /// change is not applied until it's confirmed.
+    /// </summary>
+    [HttpPost("me/Contact/Change", Name = nameof(RequestContactChange))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> RequestContactChange(
+        [FromServices] ICurrentActor currentActor,
+        [FromBody] RequestContactChangeModel request,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        await Mediator.Send(new RequestContactChangeCommand
+        {
+            UserId = userId,
+            ConfirmationType = request.ConfirmationType,
+            NewContact = request.NewContact,
+        }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Confirm a pending email/phone change with the code sent to the new contact (applies the change).</summary>
+    [HttpPost("me/Contact/Confirm", Name = nameof(ConfirmContactChange))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ConfirmContactChange(
+        [FromServices] ICurrentActor currentActor,
+        [FromBody] ConfirmContactChangeModel request,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        await Mediator.Send(new ConfirmContactChangeCommand { UserId = userId, Code = request.Code }, cancellationToken);
         return Ok();
     }
 

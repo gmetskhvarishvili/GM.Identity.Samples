@@ -1,0 +1,5 @@
+using GM.EntityFramework.Domain.Repositories;
+
+namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
+
+public interface IUserPendingContactChangeRepository : IGenericRepository<UserPendingContactChange>;

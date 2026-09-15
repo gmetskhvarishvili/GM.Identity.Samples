@@ -42,6 +42,13 @@
             the redirect target (code + state). Exchange it at /connect/token with grant_type=authorization_code.
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.EndSession(GM.Identity.Sample.API.Accounts.EndSessionModel,System.Threading.CancellationToken)">
+            <summary>
+            OpenID Connect end-session (logout) endpoint. Ends the browser's SSO session and performs Single Logout:
+            every application session established through it is revoked at once. Clears the SSO cookie and, when a
+            registered <c>post_logout_redirect_uri</c> is supplied, returns the redirect target.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.RevokeToken(GM.Identity.Sample.API.Accounts.RevokeTokenModel,System.Threading.CancellationToken)">
             <summary>
             Revoke an opaque access or refresh token (OAuth token revocation, RFC 7009).
@@ -91,8 +98,18 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="F:GM.Identity.Sample.API.Accounts.AccountsController.SsoCookieName">
+            <summary>Name of the browser cookie that carries the opaque single sign-on session value.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel">
             <summary>Form body for the authorization endpoint of the PKCE authorization-code flow.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Prompt">
+            <summary>OIDC prompt: <c>none</c> (silent-only) or <c>login</c> (force re-authentication).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.EndSessionModel">
+            <summary>Form body for the OpenID Connect end-session (logout) endpoint. The SSO session itself is taken
+            from the browser's SSO cookie, not the body.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.IntrospectModel">
             <summary>Form body for the RFC 7662 token-introspection endpoint.</summary>

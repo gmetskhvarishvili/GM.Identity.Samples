@@ -4,6 +4,7 @@ using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.AuthorizeCode;
 using GM.Identity.Sample.Application.Accounts.Commands.BeginPasskeyAssertion;
 using GM.Identity.Sample.Application.Accounts.Commands.CompletePasskeyAssertion;
+using GM.Identity.Sample.Application.Accounts.Commands.EndSession;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RegisterUser;
@@ -150,7 +151,43 @@ public class AccountsController : BaseController
             CodeChallengeMethod = request.CodeChallengeMethod,
             UserName = request.UserName,
             Password = request.Password,
+            Prompt = request.Prompt,
+            // The browser's SSO cookie (if any) enables silent authorization for a second, third, … client.
+            SsoCookie = Request.Cookies[SsoCookieName],
         }, cancellationToken);
+
+        // A fresh interactive login establishes a new SSO session — drop its cookie so subsequent client
+        // authorizations in this browser can be satisfied silently.
+        if (!string.IsNullOrEmpty(result.SsoCookie))
+            Response.Cookies.Append(SsoCookieName, result.SsoCookie, BuildSsoCookieOptions(result.SsoCookieExpiresAt));
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// OpenID Connect end-session (logout) endpoint. Ends the browser's SSO session and performs Single Logout:
+    /// every application session established through it is revoked at once. Clears the SSO cookie and, when a
+    /// registered <c>post_logout_redirect_uri</c> is supplied, returns the redirect target.
+    /// </summary>
+    [AllowAnonymous]
+    [Consumes("application/x-www-form-urlencoded")]
+    [HttpPost("~/connect/endsession", Name = nameof(EndSession)), Produces("application/json")]
+    [ProducesResponseType(typeof(EndSessionResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> EndSession(
+        EndSessionModel request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new EndSessionCommand
+        {
+            SsoCookie = Request.Cookies[SsoCookieName],
+            ClientId = request.ClientId,
+            PostLogoutRedirectUri = request.PostLogoutRedirectUri,
+            State = request.State,
+        }, cancellationToken);
+
+        // The SSO session is gone — remove its cookie from the browser.
+        Response.Cookies.Delete(SsoCookieName, BuildSsoCookieOptions(null));
+
         return Ok(result);
     }
 
@@ -278,4 +315,19 @@ public class AccountsController : BaseController
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>Name of the browser cookie that carries the opaque single sign-on session value.</summary>
+    private const string SsoCookieName = "gm_sso";
+
+    // Hardened options for the SSO cookie: not script-readable, HTTPS-only, and Lax so it survives the
+    // top-level redirects of the authorization-code flow while resisting cross-site use. Path-scoped to the
+    // OAuth endpoints. The expiry (when set) matches the SSO session's; delete passes null for immediate removal.
+    private static CookieOptions BuildSsoCookieOptions(DateTime? expiresAt) => new()
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Lax,
+        Path = "/connect",
+        Expires = expiresAt.HasValue ? new DateTimeOffset(expiresAt.Value, TimeSpan.Zero) : null,
+    };
 }

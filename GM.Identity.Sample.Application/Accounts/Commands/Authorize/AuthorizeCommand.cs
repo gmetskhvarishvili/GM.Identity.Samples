@@ -317,7 +317,7 @@ public class AuthorizeCommandHandler(
 
         var response = await IssueUserSessionAsync(
             existing.UserId, existing.ClientId, existing.Provider, now, settings,
-            refreshExpiry: existing.ExpiresAt, cancellationToken);
+            refreshExpiry: existing.ExpiresAt, cancellationToken, ssoSessionId: existing.SsoSessionId);
 
         await sessionCache.RemoveAsync(existing.TokenHash, cancellationToken);
         return response;
@@ -357,9 +357,12 @@ public class AuthorizeCommandHandler(
         unitOfWork.AuthorizationCodeRepository.Update(authCode);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        // Stamp the SSO session the code was minted under onto the issued session, so ending the SSO session
+        // (Single Logout) cascades to this app session.
         return await IssueUserSessionAsync(
             authCode.UserId, clientId, provider: null, now, settings,
-            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
+            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken,
+            ssoSessionId: authCode.SsoSessionId);
     }
 
     // Non-interactive login with a personal access token (API key). Validates the key, records its use, and
@@ -390,7 +393,7 @@ public class AuthorizeCommandHandler(
 
     private async Task<AuthorizeResponseDto> IssueUserSessionAsync(
         Guid? userId, Guid? clientId, string? provider, DateTime now, AuthOptions settings,
-        DateTime refreshExpiry, CancellationToken cancellationToken)
+        DateTime refreshExpiry, CancellationToken cancellationToken, Guid? ssoSessionId = null)
     {
         var accessToken = TokenGenerator.Generate();
         var refreshToken = TokenGenerator.Generate();
@@ -398,7 +401,7 @@ public class AuthorizeCommandHandler(
         var accessHash = TokenGenerator.Hash(accessToken);
 
         var session = UserSession.Create(
-            userId, clientId, provider, accessHash, refreshExpiry, TokenGenerator.Hash(refreshToken));
+            userId, clientId, provider, accessHash, refreshExpiry, TokenGenerator.Hash(refreshToken), ssoSessionId);
 
         await unitOfWork.UserSessionRepository.AddAsync(session, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

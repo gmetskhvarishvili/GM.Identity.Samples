@@ -2,11 +2,15 @@ using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System;
@@ -16,10 +20,18 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Accounts.Commands.AuthorizeCode;
 
 /// <summary>
-/// The authorization endpoint of the PKCE authorization-code flow. Validates the client, the registered
-/// redirect URI, and the PKCE challenge, authenticates the resource owner, and mints a short-lived single-use
-/// authorization code bound to all of them. In a browser deployment this sits behind a login + consent UI;
-/// here it takes the user's credentials directly so the flow is exercisable without a front-end.
+/// The authorization endpoint of the PKCE authorization-code flow, and the entry point for cross-application
+/// single sign-on. It works in two modes:
+/// <list type="bullet">
+/// <item><b>Silent (SSO):</b> when the caller presents a valid SSO session cookie (and does not force a fresh
+/// login), the resource owner is taken from that session — no credentials are needed. This is what lets a
+/// second, third, … client obtain a code without the user signing in again.</item>
+/// <item><b>Interactive:</b> otherwise the user's credentials are verified and a <b>new SSO session</b> is
+/// established (its opaque cookie is returned for the caller to set), so subsequent clients can go silent.</item>
+/// </list>
+/// The minted authorization code carries the SSO session id so the token exchange can stamp it on the issued
+/// <c>UserSession</c>, enabling Single Logout to cascade. <c>prompt=none</c> requires an existing SSO session
+/// (never prompts); <c>prompt=login</c> forces re-authentication even when one exists.
 /// </summary>
 public class AuthorizeCodeCommand : IRequest<AuthorizeCodeResponseDto>
 {
@@ -34,8 +46,15 @@ public class AuthorizeCodeCommand : IRequest<AuthorizeCodeResponseDto>
     /// <summary>PKCE method; only <c>S256</c> is supported.</summary>
     public string CodeChallengeMethod { get; set; } = "S256";
 
-    public string UserName { get; set; } = null!;
-    public string Password { get; set; } = null!;
+    /// <summary>Resource-owner credentials — required only when there is no usable SSO session.</summary>
+    public string? UserName { get; set; }
+    public string? Password { get; set; }
+
+    /// <summary>The opaque SSO cookie value presented by the browser, if any (enables silent authorization).</summary>
+    public string? SsoCookie { get; set; }
+
+    /// <summary>OIDC <c>prompt</c>: <c>none</c> = never prompt (fail if no SSO session); <c>login</c> = force re-auth.</summary>
+    public string? Prompt { get; set; }
 }
 
 public class AuthorizeCodeCommandValidator : AbstractValidator<AuthorizeCodeCommand>
@@ -46,12 +65,14 @@ public class AuthorizeCodeCommandValidator : AbstractValidator<AuthorizeCodeComm
         RuleFor(x => x.RedirectUri).NotNull().NotEmpty();
         RuleFor(x => x.CodeChallenge).NotNull().NotEmpty();
         RuleFor(x => x.CodeChallengeMethod).Equal("S256").WithMessage("Only the S256 PKCE method is supported.");
-        RuleFor(x => x.UserName).NotNull().NotEmpty();
-        RuleFor(x => x.Password).NotNull().NotEmpty();
+        // UserName/Password are validated in the handler: they are required only when the request cannot be
+        // satisfied silently from an SSO session cookie.
     }
 }
 
-public class AuthorizeCodeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<AuthorizeCodeCommand, AuthorizeCodeResponseDto>
+public class AuthorizeCodeCommandHandler(
+    IUnitOfWork unitOfWork,
+    IOptions<AuthOptions> options) : IRequestHandler<AuthorizeCodeCommand, AuthorizeCodeResponseDto>
 {
     // Authorization codes are short-lived by design (RFC 6749 §4.1.2 recommends <= 10 minutes; we use 1).
     private static readonly TimeSpan CodeLifetime = TimeSpan.FromMinutes(1);
@@ -74,23 +95,48 @@ public class AuthorizeCodeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
         if (!redirectRegistered)
             throw new ValidationException("The redirect URI is not registered for this client.");
 
-        // Authenticate the resource owner (cross-tenant, like the token endpoint).
-        var user = await unitOfWork.UserRepository
-            .Query(false, null)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.UserName == request.UserName && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);
+        var now = DateTime.UtcNow;
+        var settings = options.Value;
+        var forceLogin = string.Equals(request.Prompt, "login", StringComparison.OrdinalIgnoreCase);
+        var promptNone = string.Equals(request.Prompt, "none", StringComparison.OrdinalIgnoreCase);
 
-        if (user == null || user.IsBlocked
-            || (user.LockoutEnd is { } lockoutEnd && lockoutEnd > DateTime.UtcNow)
-            || !PasswordHasher.Verify(request.Password, user.PasswordHash, user.PasswordSalt))
+        // 1) Try to satisfy the request silently from an existing SSO session (unless a fresh login is forced).
+        SsoSession? ssoSession = null;
+        if (!forceLogin && !string.IsNullOrWhiteSpace(request.SsoCookie))
+            ssoSession = await ResolveSsoSessionAsync(request.SsoCookie!, now, cancellationToken);
+
+        Guid userId;
+        string? newSsoCookie = null;
+        DateTime? newSsoCookieExpiresAt = null;
+
+        if (ssoSession != null)
         {
-            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+            // Silent authorization: the SSO session names the resource owner. No credentials required.
+            userId = ssoSession.UserId;
+        }
+        else
+        {
+            // 2) No usable SSO session. prompt=none forbids prompting, so fail per OIDC.
+            if (promptNone)
+                throw new ValidationException("login_required: no active SSO session for silent authorization.");
+
+            // Interactive login: verify credentials and establish a new SSO session.
+            var user = await AuthenticateAsync(request, now, cancellationToken);
+            userId = user.Id;
+
+            newSsoCookie = TokenGenerator.Generate();
+            newSsoCookieExpiresAt = now.AddMinutes(settings.SsoSessionMinutes);
+            ssoSession = SsoSession.Create(
+                user.Id, TokenGenerator.Hash(newSsoCookie), authTime: now, expiresAt: newSsoCookieExpiresAt.Value);
+            await unitOfWork.SsoSessionRepository.AddAsync(ssoSession, cancellationToken);
         }
 
+        // 3) Mint the single-use authorization code, tagged with the SSO session for logout cascade.
         var code = TokenGenerator.Generate();
         var authCode = AuthorizationCode.Create(
-            request.ClientId, user.Id, TokenGenerator.Hash(code), request.RedirectUri,
-            request.Scope, request.CodeChallenge, request.CodeChallengeMethod, DateTime.UtcNow.Add(CodeLifetime));
+            request.ClientId, userId, TokenGenerator.Hash(code), request.RedirectUri,
+            request.Scope, request.CodeChallenge, request.CodeChallengeMethod,
+            now.Add(CodeLifetime), ssoSession.Id);
 
         await unitOfWork.AuthorizationCodeRepository.AddAsync(authCode, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -101,8 +147,59 @@ public class AuthorizeCodeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
         if (!string.IsNullOrEmpty(request.State))
             redirectTo += $"&state={Uri.EscapeDataString(request.State)}";
 
-        return new AuthorizeCodeResponseDto(code, request.State, redirectTo);
+        return new AuthorizeCodeResponseDto(code, request.State, redirectTo, newSsoCookie, newSsoCookieExpiresAt);
+    }
+
+    // Loads an active (non-revoked, unexpired) SSO session by its cookie hash, but only if the user it names is
+    // still active and not blocked — a since-blocked user must not keep riding an SSO session silently.
+    private async Task<SsoSession?> ResolveSsoSessionAsync(
+        string ssoCookie, DateTime now, CancellationToken cancellationToken)
+    {
+        var hash = TokenGenerator.Hash(ssoCookie);
+        var session = await unitOfWork.SsoSessionRepository
+            .Query(false, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.TokenHash == hash && x.RevokedAt == null && x.ExpiresAt > now
+                                      && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);
+        if (session == null)
+            return null;
+
+        var userActive = await unitOfWork.UserRepository
+            .Query(false, null)
+            .IgnoreQueryFilters()
+            .AnyAsync(x => x.Id == session.UserId && !x.IsBlocked
+                           && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);
+
+        return userActive ? session : null;
+    }
+
+    // Verifies the resource owner's credentials (cross-tenant, like the token endpoint). Requires that the
+    // request actually carried credentials, since the silent path did not apply.
+    private async Task<User> AuthenticateAsync(
+        AuthorizeCodeCommand request, DateTime now, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+
+        var user = await unitOfWork.UserRepository
+            .Query(false, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.UserName == request.UserName && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);
+
+        if (user == null || user.IsBlocked
+            || (user.LockoutEnd is { } lockoutEnd && lockoutEnd > now)
+            || !PasswordHasher.Verify(request.Password, user.PasswordHash, user.PasswordSalt))
+        {
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+        }
+
+        return user;
     }
 }
 
-public record AuthorizeCodeResponseDto(string Code, string? State, string RedirectTo);
+public record AuthorizeCodeResponseDto(
+    string Code,
+    string? State,
+    string RedirectTo,
+    string? SsoCookie = null,
+    DateTime? SsoCookieExpiresAt = null);

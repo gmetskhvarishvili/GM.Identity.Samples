@@ -13,6 +13,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserP
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
@@ -55,6 +56,7 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public IUserTotpDeviceRepository UserTotpDeviceRepository { get; }
     public IClientRedirectUriRepository ClientRedirectUriRepository { get; }
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; }
+    public ISsoSessionRepository SsoSessionRepository { get; }
     public IApiKeyRepository ApiKeyRepository { get; }
     public IUserConsentRepository UserConsentRepository { get; }
     public IUserPasskeyRepository UserPasskeyRepository { get; }

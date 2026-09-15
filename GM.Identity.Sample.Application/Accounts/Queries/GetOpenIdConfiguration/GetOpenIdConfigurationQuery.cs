@@ -41,6 +41,7 @@ public class GetOpenIdConfigurationQueryHandler(IUnitOfWork unitOfWork)
             TokenEndpoint = $"{issuer}/connect/token",
             IntrospectionEndpoint = $"{issuer}/connect/introspect",
             RevocationEndpoint = $"{issuer}/connect/revoke",
+            EndSessionEndpoint = $"{issuer}/connect/endsession",
             UserInfoEndpoint = $"{issuer}/connect/userinfo",
             ScopesSupported = scopes,
             ResponseTypesSupported = new[] { "code" },
@@ -59,6 +60,7 @@ public class OpenIdConfigurationDto
     [JsonPropertyName("token_endpoint")] public string TokenEndpoint { get; set; } = null!;
     [JsonPropertyName("introspection_endpoint")] public string IntrospectionEndpoint { get; set; } = null!;
     [JsonPropertyName("revocation_endpoint")] public string RevocationEndpoint { get; set; } = null!;
+    [JsonPropertyName("end_session_endpoint")] public string EndSessionEndpoint { get; set; } = null!;
     [JsonPropertyName("userinfo_endpoint")] public string UserInfoEndpoint { get; set; } = null!;
     [JsonPropertyName("scopes_supported")] public IReadOnlyCollection<string> ScopesSupported { get; set; } = new List<string>();
     [JsonPropertyName("response_types_supported")] public IReadOnlyCollection<string> ResponseTypesSupported { get; set; } = new List<string>();

@@ -25,4 +25,10 @@ public sealed class AuthOptions
 
     /// <summary>Days before a password must be changed; login is refused past this. 0 = never expires.</summary>
     public int PasswordExpiryDays { get; set; }
+
+    /// <summary>
+    /// Single sign-on session lifetime in minutes — how long one interactive login lets the browser obtain
+    /// authorization codes for other clients silently before it must re-authenticate. Defaults to 8 hours.
+    /// </summary>
+    public int SsoSessionMinutes { get; set; } = 480;
 }

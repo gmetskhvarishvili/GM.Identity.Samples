@@ -26,8 +26,12 @@ public class AuthorizeCodeModel
     public string CodeChallengeMethod { get; set; } = "S256";
 
     [FromForm(Name = "username")]
-    public string UserName { get; set; } = null!;
+    public string? UserName { get; set; }
 
     [FromForm(Name = "password")]
-    public string Password { get; set; } = null!;
+    public string? Password { get; set; }
+
+    /// <summary>OIDC prompt: <c>none</c> (silent-only) or <c>login</c> (force re-authentication).</summary>
+    [FromForm(Name = "prompt")]
+    public string? Prompt { get; set; }
 }

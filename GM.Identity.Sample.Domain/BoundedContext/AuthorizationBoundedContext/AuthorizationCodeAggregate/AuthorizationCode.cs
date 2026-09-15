@@ -18,7 +18,7 @@ public class AuthorizationCode : SoftDeletableEntity<Guid>, IAggregateRoot
 
     private AuthorizationCode(
         Guid clientId, Guid userId, string codeHash, string redirectUri,
-        string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt)
+        string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt, Guid? ssoSessionId)
     {
         Id = Guid.NewGuid();
         ClientId = clientId;
@@ -29,12 +29,14 @@ public class AuthorizationCode : SoftDeletableEntity<Guid>, IAggregateRoot
         CodeChallenge = codeChallenge;
         CodeChallengeMethod = codeChallengeMethod;
         ExpiresAt = expiresAt;
+        SsoSessionId = ssoSessionId;
     }
 
     public static AuthorizationCode Create(
         Guid clientId, Guid userId, string codeHash, string redirectUri,
-        string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt) =>
-        new(clientId, userId, codeHash, redirectUri, scope, codeChallenge, codeChallengeMethod, expiresAt);
+        string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt,
+        Guid? ssoSessionId = null) =>
+        new(clientId, userId, codeHash, redirectUri, scope, codeChallenge, codeChallengeMethod, expiresAt, ssoSessionId);
 
     public Guid ClientId { get; private set; }
     public Guid UserId { get; private set; }
@@ -45,6 +47,12 @@ public class AuthorizationCode : SoftDeletableEntity<Guid>, IAggregateRoot
     public string CodeChallengeMethod { get; private set; } = null!;
     public DateTime ExpiresAt { get; private set; }
     public DateTime? ConsumedAt { get; private set; }
+
+    /// <summary>
+    /// The SSO session this code was minted under, propagated to the <c>UserSession</c> at token exchange so
+    /// Single Logout can cascade. Null when the authorization did not go through an SSO browser session.
+    /// </summary>
+    public Guid? SsoSessionId { get; private set; }
 
     public bool IsConsumed => ConsumedAt.HasValue;
     public bool IsExpired(DateTime now) => ExpiresAt <= now;

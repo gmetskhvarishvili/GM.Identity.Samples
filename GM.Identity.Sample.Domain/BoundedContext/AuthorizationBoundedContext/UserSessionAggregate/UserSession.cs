@@ -38,6 +38,13 @@ public class UserSession : GMUserSession
     /// <summary>Hash of the refresh token that can renew this session's access token (null for none).</summary>
     public string? RefreshTokenHash { get; private set; }
 
+    /// <summary>
+    /// The single sign-on session this app session was established through, when the login went via the SSO
+    /// browser session at <c>/connect/authorize</c>. Null for sessions minted by non-SSO grants (password,
+    /// client-credentials, api_key, passkey). Ending the SSO session revokes every session that carries its id.
+    /// </summary>
+    public Guid? SsoSessionId { get; private set; }
+
     private UserSession() // EF Core materialization
     {
     }
@@ -48,7 +55,8 @@ public class UserSession : GMUserSession
         string? provider,
         string tokenHash,
         string? refreshTokenHash,
-        DateTime expiresAt) :
+        DateTime expiresAt,
+        Guid? ssoSessionId) :
         base(
             userId,
             clientId,
@@ -57,6 +65,7 @@ public class UserSession : GMUserSession
             expiresAt)
     {
         RefreshTokenHash = refreshTokenHash;
+        SsoSessionId = ssoSessionId;
     }
 
     public static UserSession Create(
@@ -65,8 +74,9 @@ public class UserSession : GMUserSession
         string? provider,
         string tokenHash,
         DateTime expiresAt,
-        string? refreshTokenHash = null)
+        string? refreshTokenHash = null,
+        Guid? ssoSessionId = null)
     {
-        return new UserSession(userId, clientId, provider, tokenHash, refreshTokenHash, expiresAt);
+        return new UserSession(userId, clientId, provider, tokenHash, refreshTokenHash, expiresAt, ssoSessionId);
     }
 }

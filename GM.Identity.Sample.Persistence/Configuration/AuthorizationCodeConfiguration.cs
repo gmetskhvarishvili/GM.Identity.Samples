@@ -19,6 +19,7 @@ public class AuthorizationCodeConfiguration : IEntityTypeConfiguration<Authoriza
         builder.Property(x => x.CodeChallengeMethod).IsRequired();
         builder.Property(x => x.ExpiresAt).IsRequired();
         builder.Property(x => x.ConsumedAt);
+        builder.Property(x => x.SsoSessionId);
 
         // The token exchange looks a code up by its hash.
         builder.HasIndex(x => x.CodeHash);

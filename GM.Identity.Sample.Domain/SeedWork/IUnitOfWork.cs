@@ -3,9 +3,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleHierarchyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
@@ -49,7 +51,9 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; }
   
     public IUserRoleRepository UserRoleRepository { get; }
+    public IUserPermissionRepository UserPermissionRepository { get; }
     public IRoleRepository RoleRepository { get; }
+    public IRoleHierarchyRepository RoleHierarchyRepository { get; }
     public IPermissionRepository PermissionRepository { get; }
     public IRolePermissionRepository RolePermissionRepository { get; }
     

@@ -6,6 +6,8 @@ using GM.Identity.Sample.Application.Roles.Commands.CreateRole;
 using GM.Identity.Sample.Application.Roles.Commands.CreateRolePermission;
 using GM.Identity.Sample.Application.Roles.Commands.DeleteRole;
 using GM.Identity.Sample.Application.Roles.Commands.DeleteRolePermission;
+using GM.Identity.Sample.Application.Roles.Commands.RemoveRoleParent;
+using GM.Identity.Sample.Application.Roles.Commands.SetRoleParent;
 using GM.Identity.Sample.Application.Roles.Commands.UpdateRole;
 using GM.Identity.Sample.Application.Roles.Queries.GetRoleDetails;
 using GM.Identity.Sample.Application.Roles.Queries.GetRolePermissionsList;
@@ -114,6 +116,30 @@ public class RolesController : BaseController
             Id = id
         };
         await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Set (or replace) a role's parent so it inherits the parent's permissions transitively.</summary>
+    [HasPermission(nameof(SetRoleParent))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Parent/{parentId}", Name = nameof(SetRoleParent))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetRoleParent(
+        [FromRoute] Guid id, [FromRoute] Guid parentId, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetRoleParentCommand { RoleId = id, ParentRoleId = parentId }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Remove a role's parent (it stops inheriting).</summary>
+    [HasPermission(nameof(RemoveRoleParent))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpDelete("{id}/Parent", Name = nameof(RemoveRoleParent))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RemoveRoleParent([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RemoveRoleParentCommand { RoleId = id }, cancellationToken);
         return Ok();
     }
 

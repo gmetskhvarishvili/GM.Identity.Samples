@@ -414,6 +414,12 @@
             <param name="cancellationToken"></param>
             <returns>Result</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.SetRoleParent(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Set (or replace) a role's parent so it inherits the parent's permissions transitively.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.RemoveRoleParent(System.Guid,System.Threading.CancellationToken)">
+            <summary>Remove a role's parent (it stops inheriting).</summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Roles.RolesController.DeleteRolePermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete Role Permission
@@ -669,6 +675,12 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTotp(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserTotpModel,System.Threading.CancellationToken)">
             <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantUserPermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Grant a permission directly to a user (in addition to role-derived permissions).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeUserPermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Revoke a directly-granted user permission.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ImpersonateUser(System.Guid,GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>

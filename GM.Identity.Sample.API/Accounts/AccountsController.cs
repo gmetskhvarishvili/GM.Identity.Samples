@@ -54,6 +54,7 @@ public class AccountsController : BaseController
             Code = request.Code,
             RedirectUri = request.RedirectUri,
             CodeVerifier = request.CodeVerifier,
+            ApiKey = request.ApiKey,
         };
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);

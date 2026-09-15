@@ -94,6 +94,20 @@
         <member name="T:GM.Identity.Sample.API.Accounts.RegisterModel">
             <summary>Self-registration request body.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Audit.AuditController">
+            <summary>
+            Audit Controller — global, filterable search over the durable domain-event log across every aggregate.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Audit.AuditController.SearchAuditTrail(GM.Identity.Sample.API.Audit.SearchAuditTrailModel,System.Threading.CancellationToken)">
+            <summary>Search the audit log by aggregate type, acting user, event type, and/or date range.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Audit.SearchAuditTrailModel">
+            <summary>Query filters for the global audit search (all optional).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Audit.AuditEntryModel">
+            <summary>One recorded domain event in the audit log.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientsController">
             <summary>
             Clients Controller
@@ -567,6 +581,9 @@
             <param name="cancellationToken"></param>
             <returns>Scope Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.BulkSetUserBlockModel">
+            <summary>Body for a bulk block/unblock operation.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTotpModel">
             <summary>Body for confirming an authenticator-app enrolment: a code produced by the app.</summary>
         </member>
@@ -578,6 +595,9 @@
         </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmContactChangeModel">
             <summary>The one-time code sent to the pending new contact.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.CreateApiKeyModel">
+            <summary>Body to create an API key: a label and an optional expiry.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.TwoFactorAuthTypeIds">
             <summary>Ids of the 2FA methods to enrol the new user in.</summary>
@@ -670,6 +690,9 @@
             Close the current user's own account (self-service). Soft-deletes the account and revokes all sessions.
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.BulkSetUserBlock(GM.Identity.Sample.API.Users.BulkSetUserBlockModel,System.Threading.CancellationToken)">
+            <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BlockUser(System.Guid,System.Threading.CancellationToken)">
             <summary>Block a user (and revoke their active sessions).</summary>
         </member>
@@ -702,6 +725,12 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTotp(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserTotpModel,System.Threading.CancellationToken)">
             <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.CreateApiKey(System.Guid,GM.Identity.Sample.API.Users.CreateApiKeyModel,System.Threading.CancellationToken)">
+            <summary>Issue a personal access token (API key) for a user. Returns the plaintext key exactly once.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeApiKey(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>Revoke one of a user's API keys.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantTimeBoundRole(System.Guid,System.Guid,GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel,System.Threading.CancellationToken)">
             <summary>Grant a role to a user until an expiry time (temporary/elevated access).</summary>

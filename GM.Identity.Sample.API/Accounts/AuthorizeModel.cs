@@ -32,6 +32,9 @@ public class AuthorizeModel
 
     [FromForm(Name = "code_verifier")]
     public string? CodeVerifier { get; set; }
+
+    [FromForm(Name = "api_key")]
+    public string? ApiKey { get; set; }
 }
 
 public class AuthorizeModelValidator : AbstractValidator<AuthorizeModel>

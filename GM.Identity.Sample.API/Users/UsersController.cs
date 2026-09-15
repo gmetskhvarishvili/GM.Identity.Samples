@@ -3,6 +3,7 @@ using GM.API.Controllers;
 using GM.API.Models;
 using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
+using GM.Identity.Sample.Application.Users.Commands.BulkSetUserBlock;
 using GM.Identity.Sample.Application.Users.Commands.ChangeCurrentUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
@@ -14,6 +15,8 @@ using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmContactChange;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
+using GM.Identity.Sample.Application.Users.Commands.CreateApiKey;
+using GM.Identity.Sample.Application.Users.Commands.RevokeApiKey;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
@@ -257,6 +260,19 @@ public class UsersController : BaseController
     // ---- Account state (admin) — block/unblock, activate/deactivate, unlock. Each finds the user
     // regardless of active/blocked state; the session-revoking ones take effect immediately. ----
 
+    /// <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
+    [HasPermission(nameof(BulkSetUserBlock))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("Bulk/Block", Name = nameof(BulkSetUserBlock))]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public async Task<IActionResult> BulkSetUserBlock(
+        [FromBody] BulkSetUserBlockModel request, CancellationToken cancellationToken)
+    {
+        var changed = await Mediator.Send(
+            new BulkSetUserBlockCommand { UserIds = request.UserIds, Block = request.Block }, cancellationToken);
+        return Ok(changed);
+    }
+
     /// <summary>Block a user (and revoke their active sessions).</summary>
     [HasPermission(nameof(BlockUser))]
     [RequiresScope(ScopeOperations.ManageIdentity)]
@@ -394,6 +410,33 @@ public class UsersController : BaseController
         [FromRoute] Guid id, [FromBody] ConfirmUserTotpModel request, CancellationToken cancellationToken)
     {
         await Mediator.Send(new ConfirmUserTotpCommand { UserId = id, Code = request.Code }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Issue a personal access token (API key) for a user. Returns the plaintext key exactly once.</summary>
+    [HasPermission(nameof(CreateApiKey))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/ApiKeys", Name = nameof(CreateApiKey))]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateApiKey(
+        [FromRoute] Guid id, [FromBody] CreateApiKeyModel request, CancellationToken cancellationToken)
+    {
+        var key = await Mediator.Send(
+            new CreateApiKeyCommand { UserId = id, Name = request.Name, ExpiresAt = request.ExpiresAt },
+            cancellationToken);
+        return Ok(key);
+    }
+
+    /// <summary>Revoke one of a user's API keys.</summary>
+    [HasPermission(nameof(RevokeApiKey))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpDelete("{id}/ApiKeys/{apiKeyId}", Name = nameof(RevokeApiKey))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RevokeApiKey(
+        [FromRoute] Guid id, [FromRoute] Guid apiKeyId, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RevokeApiKeyCommand { UserId = id, ApiKeyId = apiKeyId }, cancellationToken);
         return Ok();
     }
 

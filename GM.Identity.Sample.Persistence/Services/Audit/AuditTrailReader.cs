@@ -46,4 +46,44 @@ public class AuditTrailReader(ApplicationDbContext dbContext) : IAuditTrailReade
 
         return (items, totalCount);
     }
+
+    public async Task<(IReadOnlyList<AuditTrailEntry> Items, int TotalCount)> SearchAsync(
+        AuditTrailSearch search, int skip, int take, CancellationToken cancellationToken)
+    {
+        var query = dbContext.DomainEvents.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search.AggregateType))
+            query = query.Where(x => x.AggregateType == search.AggregateType);
+        if (search.ActorUserId is { } actor)
+            query = query.Where(x => x.UserId == actor);
+        if (!string.IsNullOrWhiteSpace(search.EventType))
+            query = query.Where(x => x.EventType == search.EventType);
+        if (search.OccurredFrom is { } from)
+            query = query.Where(x => x.OccurredOn >= from);
+        if (search.OccurredTo is { } to)
+            query = query.Where(x => x.OccurredOn <= to);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(x => x.OccurredOn)
+            .Skip(skip)
+            .Take(take)
+            .Select(x => new AuditTrailEntry
+            {
+                Id = x.Id,
+                EventType = x.EventType,
+                OccurredOn = x.OccurredOn,
+                UserId = x.UserId,
+                ClientId = x.ClientId,
+                TenantId = x.TenantId,
+                SessionId = x.SessionId,
+                IpAddress = x.IpAddress,
+                CorrelationId = x.CorrelationId,
+                Payload = x.Payload,
+            })
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
 }

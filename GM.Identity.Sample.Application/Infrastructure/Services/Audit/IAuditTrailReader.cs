@@ -20,6 +20,23 @@ public interface IAuditTrailReader
     /// <param name="aggregateId">The aggregate's identity as stamped on the envelope (e.g. the user id).</param>
     Task<(IReadOnlyList<AuditTrailEntry> Items, int TotalCount)> GetForAggregateAsync(
         string aggregateType, string aggregateId, int skip, int take, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Searches the whole audit log across aggregates (including clients), newest first, filtered by any
+    /// combination of aggregate type, acting user, event type, and occurred-on date range.
+    /// </summary>
+    Task<(IReadOnlyList<AuditTrailEntry> Items, int TotalCount)> SearchAsync(
+        AuditTrailSearch search, int skip, int take, CancellationToken cancellationToken);
+}
+
+/// <summary>Optional filters for a global audit search; any null filter is ignored.</summary>
+public class AuditTrailSearch
+{
+    public string? AggregateType { get; set; }
+    public Guid? ActorUserId { get; set; }
+    public string? EventType { get; set; }
+    public DateTime? OccurredFrom { get; set; }
+    public DateTime? OccurredTo { get; set; }
 }
 
 /// <summary>One recorded domain event, with the actor/request context captured when it was raised.</summary>

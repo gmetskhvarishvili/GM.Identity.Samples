@@ -45,6 +45,9 @@ public class AuthorizeCommand : IRequest<AuthorizeResponseDto>
 
     /// <summary>The PKCE code verifier proving possession of the authorization request (authorization_code grant).</summary>
     public string? CodeVerifier { get; set; }
+
+    /// <summary>A personal access token, supplied with <c>grant_type=api_key</c> for non-interactive login.</summary>
+    public string? ApiKey { get; set; }
 }
 
 public class AuthorizeCommandValidator : AbstractValidator<AuthorizeCommand>
@@ -88,6 +91,7 @@ public class AuthorizeCommandHandler(
             "refresh_token" => await RefreshAsync(request, client.Id, now, settings, cancellationToken),
             "two_factor" => await TwoFactorGrantAsync(request, client.Id, now, settings, cancellationToken),
             "authorization_code" => await AuthorizationCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
+            "api_key" => await ApiKeyGrantAsync(request, client.Id, now, settings, cancellationToken),
             _ => await PasswordGrantAsync(request, client.Id, now, settings, cancellationToken),
         };
     }
@@ -339,6 +343,32 @@ public class AuthorizeCommandHandler(
 
         return await IssueUserSessionAsync(
             authCode.UserId, clientId, provider: null, now, settings,
+            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
+    }
+
+    // Non-interactive login with a personal access token (API key). Validates the key, records its use, and
+    // issues a normal user session for its owner.
+    private async Task<AuthorizeResponseDto> ApiKeyGrantAsync(
+        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.ApiKey))
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+
+        var hash = TokenGenerator.Hash(request.ApiKey);
+        var apiKey = await unitOfWork.ApiKeyRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.KeyHash == hash && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);
+
+        if (apiKey == null || apiKey.IsExpired(now))
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+
+        apiKey.MarkUsed();
+        unitOfWork.ApiKeyRepository.Update(apiKey);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return await IssueUserSessionAsync(
+            apiKey.UserId, clientId, provider: "api_key", now, settings,
             refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
     }
 

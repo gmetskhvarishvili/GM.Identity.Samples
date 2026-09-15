@@ -17,6 +17,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
@@ -52,6 +53,7 @@ public sealed class UnitOfWork(
     IClientRedirectUriRepository clientRedirectUriRepository,
     IAuthorizationCodeRepository authorizationCodeRepository,
     IApiKeyRepository apiKeyRepository,
+    IUserConsentRepository userConsentRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
     IRoleHierarchyRepository roleHierarchyRepository,
@@ -78,6 +80,7 @@ public sealed class UnitOfWork(
     public IClientRedirectUriRepository ClientRedirectUriRepository { get; } = clientRedirectUriRepository;
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;
     public IApiKeyRepository ApiKeyRepository { get; } = apiKeyRepository;
+    public IUserConsentRepository UserConsentRepository { get; } = userConsentRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;
     public IUserRepository UserRepository { get; } = userRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;

@@ -27,6 +27,10 @@ public static class DependencyInjection
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<PasswordPolicyOptions>(configuration.GetSection(PasswordPolicyOptions.SectionName));
 
+        // Key for PII-at-rest encryption (configure DataProtection:Key in production; dev key otherwise).
+        services.AddSingleton(new EncryptionKeyProvider(configuration["DataProtection:Key"]));
+        services.Configure<RetentionOptions>(configuration.GetSection(RetentionOptions.SectionName));
+
         services.AddScoped<IOAuthService, OAuthService>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddGMHttpClient<IOTPAPIService, GMAPIClientOptions>(

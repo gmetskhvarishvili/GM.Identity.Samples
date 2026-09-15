@@ -1,6 +1,9 @@
 using GM.EntityFramework.Domain.Common;
 using GM.EntityFramework.Persistence;
 using GM.EntityFramework.Persistence.Extensions;
+using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate;
+using GM.Identity.Sample.Persistence.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 using System.Threading;
@@ -13,12 +16,15 @@ public class ApplicationDbContext : GenericDbContext
     public const string DefaultSchema = "application";
 
     private readonly ICurrentActor _currentActor;
+    private readonly EncryptionKeyProvider _encryptionKeyProvider;
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
-        ICurrentActor currentActor) : base(options)
+        ICurrentActor currentActor,
+        EncryptionKeyProvider encryptionKeyProvider) : base(options)
     {
         _currentActor = currentActor;
+        _encryptionKeyProvider = encryptionKeyProvider;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +32,11 @@ public class ApplicationDbContext : GenericDbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(DefaultSchema);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // PII-at-rest: encrypt the pending new email/phone (stored, never queried by value) with AES.
+        modelBuilder.Entity<UserPendingContactChange>()
+            .Property(x => x.NewContact)
+            .HasConversion(new EncryptedStringConverter(_encryptionKeyProvider.Key));
 
         // Multi-tenancy: scope every tenant-owned aggregate (IHasTenant) to the ambient tenant, resolved
         // per request from the gateway-forwarded X-Tenant-Id header via ICurrentActor. The mechanism lives

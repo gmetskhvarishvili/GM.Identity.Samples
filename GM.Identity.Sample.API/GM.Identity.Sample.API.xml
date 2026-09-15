@@ -629,6 +629,9 @@
         <member name="T:GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel">
             <summary>Body for a time-bound role grant: when the temporary assignment expires.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.RecordConsentModel">
+            <summary>Body to record acceptance of a consent document.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.RecoveryCodesModel">
             <summary>The freshly generated recovery codes, returned exactly once. The user must store them now.</summary>
         </member>
@@ -678,6 +681,12 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmContactChange(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.ConfirmContactChangeModel,System.Threading.CancellationToken)">
             <summary>Confirm a pending email/phone change with the code sent to the new contact (applies the change).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RecordCurrentUserConsent(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.RecordConsentModel,System.Threading.CancellationToken)">
+            <summary>Record the current user's acceptance of a consent document (e.g. Terms of Service).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetCurrentUserConsents(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>List the current user's recorded consent acceptances.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ExportCurrentUserData(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>

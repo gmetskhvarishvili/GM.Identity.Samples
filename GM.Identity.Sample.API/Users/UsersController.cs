@@ -30,6 +30,7 @@ using GM.Identity.Sample.Application.Users.Commands.RevokeTimeBoundRole;
 using GM.Identity.Sample.Application.Users.Commands.RevokeUserPermission;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
+using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
@@ -41,6 +42,7 @@ using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
 using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
 using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
+using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 using GM.Identity.Sample.Application.Users.Queries.GetUserRolesList;
 using GM.Identity.Sample.Application.Users.Queries.GetUserSessionsList;
@@ -220,6 +222,42 @@ public class UsersController : BaseController
 
         await Mediator.Send(new ConfirmContactChangeCommand { UserId = userId, Code = request.Code }, cancellationToken);
         return Ok();
+    }
+
+    /// <summary>Record the current user's acceptance of a consent document (e.g. Terms of Service).</summary>
+    [HttpPost("me/Consents", Name = nameof(RecordCurrentUserConsent))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> RecordCurrentUserConsent(
+        [FromServices] ICurrentActor currentActor,
+        [FromBody] RecordConsentModel request,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        await Mediator.Send(new RecordUserConsentCommand
+        {
+            UserId = userId,
+            ConsentType = request.ConsentType,
+            DocumentVersion = request.DocumentVersion,
+        }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>List the current user's recorded consent acceptances.</summary>
+    [HttpGet("me/Consents", Name = nameof(GetCurrentUserConsents))]
+    [ProducesResponseType(typeof(IReadOnlyList<UserConsentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUserConsents(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var result = await Mediator.Send(new GetUserConsentsQuery { UserId = userId }, cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

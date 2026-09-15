@@ -16,6 +16,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
@@ -105,6 +106,7 @@ public static class DependencyInjection
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<IApiKeyRepository, ApiKeyRepository>();
+        services.AddTransient<IUserConsentRepository, UserConsentRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
         // Read-side over the durable domain-event log (the audit trail).

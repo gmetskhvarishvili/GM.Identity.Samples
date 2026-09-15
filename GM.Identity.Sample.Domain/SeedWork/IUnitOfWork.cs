@@ -25,6 +25,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendin
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.EmailTemplateAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 
 namespace GM.Identity.Sample.Domain.SeedWork;
@@ -68,4 +69,5 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public IRolePermissionRepository RolePermissionRepository { get; }
     
     public IOutboxMessageRepository OutboxMessageRepository { get; }
+    public IEmailTemplateRepository EmailTemplateRepository { get; }
 }

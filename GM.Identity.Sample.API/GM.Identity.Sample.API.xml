@@ -229,6 +229,18 @@
             already format them.
             </summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController">
+            <summary>Email Templates Controller — manage the editable email templates (subject/body by key).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController.SaveEmailTemplate(System.String,GM.Identity.Sample.API.EmailTemplates.SaveEmailTemplateModel,System.Threading.CancellationToken)">
+            <summary>Create or update an email template (upsert by key).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController.GetEmailTemplates(System.Threading.CancellationToken)">
+            <summary>List all email templates.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.EmailTemplates.SaveEmailTemplateModel">
+            <summary>Body for creating/updating an email template.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Groups.CreateGroupModel">
             <summary>Request body to create a group.</summary>
         </member>
@@ -697,6 +709,12 @@
         <member name="M:GM.Identity.Sample.API.Users.UsersController.DeleteCurrentUser(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>
             Close the current user's own account (self-service). Soft-deletes the account and revokes all sessions.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.MergeUsers(System.Guid,System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Merge a source user into a target: moves the source's roles, groups, and direct permissions to the
+            target, revokes the source's sessions, and soft-deletes the source.
             </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BulkSetUserBlock(GM.Identity.Sample.API.Users.BulkSetUserBlockModel,System.Threading.CancellationToken)">

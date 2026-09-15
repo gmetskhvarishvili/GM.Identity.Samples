@@ -24,6 +24,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.EmailTemplateAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Application.Infrastructure.Services.Audit;
@@ -107,6 +108,7 @@ public static class DependencyInjection
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<IApiKeyRepository, ApiKeyRepository>();
         services.AddTransient<IUserConsentRepository, UserConsentRepository>();
+        services.AddTransient<IEmailTemplateRepository, EmailTemplateRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
         // Read-side over the durable domain-event log (the audit trail).

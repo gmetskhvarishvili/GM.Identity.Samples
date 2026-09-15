@@ -25,6 +25,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.EmailTemplateAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Identity.Sample.Persistence.Context;
@@ -54,6 +55,7 @@ public sealed class UnitOfWork(
     IAuthorizationCodeRepository authorizationCodeRepository,
     IApiKeyRepository apiKeyRepository,
     IUserConsentRepository userConsentRepository,
+    IEmailTemplateRepository emailTemplateRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
     IRoleHierarchyRepository roleHierarchyRepository,
@@ -81,6 +83,7 @@ public sealed class UnitOfWork(
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;
     public IApiKeyRepository ApiKeyRepository { get; } = apiKeyRepository;
     public IUserConsentRepository UserConsentRepository { get; } = userConsentRepository;
+    public IEmailTemplateRepository EmailTemplateRepository { get; } = emailTemplateRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;
     public IUserRepository UserRepository { get; } = userRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;

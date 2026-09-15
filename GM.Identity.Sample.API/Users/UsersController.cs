@@ -30,6 +30,7 @@ using GM.Identity.Sample.Application.Users.Commands.RevokeTimeBoundRole;
 using GM.Identity.Sample.Application.Users.Commands.RevokeUserPermission;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
+using GM.Identity.Sample.Application.Users.Commands.MergeUsers;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
@@ -297,6 +298,22 @@ public class UsersController : BaseController
 
     // ---- Account state (admin) — block/unblock, activate/deactivate, unlock. Each finds the user
     // regardless of active/blocked state; the session-revoking ones take effect immediately. ----
+
+    /// <summary>
+    /// Merge a source user into a target: moves the source's roles, groups, and direct permissions to the
+    /// target, revokes the source's sessions, and soft-deletes the source.
+    /// </summary>
+    [HasPermission(nameof(MergeUsers))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Merge/{sourceId}", Name = nameof(MergeUsers))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MergeUsers(
+        [FromRoute] Guid id, [FromRoute] Guid sourceId, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new MergeUsersCommand { TargetUserId = id, SourceUserId = sourceId }, cancellationToken);
+        return Ok();
+    }
 
     /// <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
     [HasPermission(nameof(BulkSetUserBlock))]

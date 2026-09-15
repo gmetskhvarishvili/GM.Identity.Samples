@@ -17,6 +17,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
@@ -55,6 +56,8 @@ public sealed class UnitOfWork(
     IAuthorizationCodeRepository authorizationCodeRepository,
     IApiKeyRepository apiKeyRepository,
     IUserConsentRepository userConsentRepository,
+    IUserPasskeyRepository userPasskeyRepository,
+    IPasskeyChallengeRepository passkeyChallengeRepository,
     IEmailTemplateRepository emailTemplateRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
@@ -83,6 +86,8 @@ public sealed class UnitOfWork(
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;
     public IApiKeyRepository ApiKeyRepository { get; } = apiKeyRepository;
     public IUserConsentRepository UserConsentRepository { get; } = userConsentRepository;
+    public IUserPasskeyRepository UserPasskeyRepository { get; } = userPasskeyRepository;
+    public IPasskeyChallengeRepository PasskeyChallengeRepository { get; } = passkeyChallengeRepository;
     public IEmailTemplateRepository EmailTemplateRepository { get; } = emailTemplateRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;
     public IUserRepository UserRepository { get; } = userRepository;

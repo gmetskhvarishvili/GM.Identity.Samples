@@ -2,6 +2,8 @@
 using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.AuthorizeCode;
+using GM.Identity.Sample.Application.Accounts.Commands.BeginPasskeyAssertion;
+using GM.Identity.Sample.Application.Accounts.Commands.CompletePasskeyAssertion;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RegisterUser;
@@ -80,6 +82,36 @@ public class AccountsController : BaseController
             Password = request.Password,
         }, cancellationToken);
         return Ok(id);
+    }
+
+    /// <summary>Begin a passkey login: returns a single-use challenge for the user's authenticator to sign.</summary>
+    [AllowAnonymous]
+    [HttpPost("~/connect/passkey/begin", Name = nameof(BeginPasskeyAssertion)), Produces("application/json")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    public async Task<IActionResult> BeginPasskeyAssertion(
+        [FromBody] BeginPasskeyModel request, CancellationToken cancellationToken)
+    {
+        var challenge = await Mediator.Send(new BeginPasskeyAssertionCommand { UserName = request.UserName }, cancellationToken);
+        return Ok(new { challenge });
+    }
+
+    /// <summary>Complete a passkey login: verifies the assertion and returns tokens.</summary>
+    [AllowAnonymous]
+    [HttpPost("~/connect/passkey/complete", Name = nameof(CompletePasskeyAssertion)), Produces("application/json")]
+    [ProducesResponseType(typeof(PasskeyTokenDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> CompletePasskeyAssertion(
+        [FromBody] CompletePasskeyModel request, CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new CompletePasskeyAssertionCommand
+        {
+            UserName = request.UserName,
+            ClientId = request.ClientId,
+            CredentialId = request.CredentialId,
+            AuthenticatorDataBase64Url = request.AuthenticatorData,
+            ClientDataJsonBase64Url = request.ClientDataJson,
+            SignatureBase64Url = request.Signature,
+        }, cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

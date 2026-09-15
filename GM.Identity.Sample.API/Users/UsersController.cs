@@ -32,6 +32,7 @@ using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.MergeUsers;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
+using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
 using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
 using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
@@ -466,6 +467,25 @@ public class UsersController : BaseController
     {
         await Mediator.Send(new ConfirmUserTotpCommand { UserId = id, Code = request.Code }, cancellationToken);
         return Ok();
+    }
+
+    /// <summary>Register a WebAuthn passkey for a user (stores the credential's public key).</summary>
+    [HasPermission(nameof(RegisterPasskey))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Passkeys", Name = nameof(RegisterPasskey))]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RegisterPasskey(
+        [FromRoute] Guid id, [FromBody] RegisterPasskeyModel request, CancellationToken cancellationToken)
+    {
+        var passkeyId = await Mediator.Send(new RegisterPasskeyCommand
+        {
+            UserId = id,
+            CredentialId = request.CredentialId,
+            PublicKeySpkiBase64 = request.PublicKeySpkiBase64,
+            Name = request.Name,
+        }, cancellationToken);
+        return Ok(passkeyId);
     }
 
     /// <summary>Issue a personal access token (API key) for a user. Returns the plaintext key exactly once.</summary>

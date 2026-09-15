@@ -23,6 +23,12 @@
             user id. The account must confirm its email via the confirm flow.
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.BeginPasskeyAssertion(GM.Identity.Sample.API.Accounts.BeginPasskeyModel,System.Threading.CancellationToken)">
+            <summary>Begin a passkey login: returns a single-use challenge for the user's authenticator to sign.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.CompletePasskeyAssertion(GM.Identity.Sample.API.Accounts.CompletePasskeyModel,System.Threading.CancellationToken)">
+            <summary>Complete a passkey login: verifies the assertion and returns tokens.</summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.OpenIdConfiguration(System.Threading.CancellationToken)">
             <summary>
             OpenID Connect discovery document. Advertises this provider's endpoints and supported grants/scopes so
@@ -90,6 +96,12 @@
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.IntrospectModel">
             <summary>Form body for the RFC 7662 token-introspection endpoint.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.BeginPasskeyModel">
+            <summary>Body to begin a passkey login.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.CompletePasskeyModel">
+            <summary>Body to complete a passkey login (WebAuthn assertion, all binary fields base64url).</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.RegisterModel">
             <summary>Self-registration request body.</summary>
@@ -647,6 +659,9 @@
         <member name="T:GM.Identity.Sample.API.Users.RecoveryCodesModel">
             <summary>The freshly generated recovery codes, returned exactly once. The user must store them now.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.RegisterPasskeyModel">
+            <summary>Body to register a passkey: the credential id, its ES256 public key (SPKI, base64), and a label.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UserAuditTrailModel">
             <summary>One recorded domain event in a user's audit trail, with the actor/request context it occurred under.</summary>
         </member>
@@ -752,6 +767,9 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTotp(System.Guid,GM.Identity.Sample.API.Users.ConfirmUserTotpModel,System.Threading.CancellationToken)">
             <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RegisterPasskey(System.Guid,GM.Identity.Sample.API.Users.RegisterPasskeyModel,System.Threading.CancellationToken)">
+            <summary>Register a WebAuthn passkey for a user (stores the credential's public key).</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.CreateApiKey(System.Guid,GM.Identity.Sample.API.Users.CreateApiKeyModel,System.Threading.CancellationToken)">
             <summary>Issue a personal access token (API key) for a user. Returns the plaintext key exactly once.</summary>

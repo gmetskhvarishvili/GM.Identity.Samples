@@ -1,4 +1,5 @@
 using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
+using GM.Identity.Sample.Infrastructure.Options;
 using GM.Identity.Sample.Infrastructure.Services.Logout;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -26,7 +27,7 @@ public sealed class BackchannelLogoutNotifierTests
         var handler = new CapturingHandler();
         var notifier = new BackchannelLogoutNotifier(
             new SingleClientFactory(handler),
-            new LogoutTokenGenerator(new OidcSigningKey(pem: null)),
+            new LogoutTokenGenerator(new OidcSigningKey(new OidcSigningOptions())),
             NullLogger<BackchannelLogoutNotifier>.Instance);
 
         var okTarget = new BackchannelLogoutTarget(Guid.NewGuid(), "https://rp-ok.example/logout", Guid.NewGuid(), Guid.NewGuid());

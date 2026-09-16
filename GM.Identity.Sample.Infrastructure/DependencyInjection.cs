@@ -48,7 +48,9 @@ public static class DependencyInjection
 
         // OIDC back-channel logout: a stable OP signing key (published via JWKS so RPs can verify), the logout
         // token generator, and the notifier that POSTs tokens to relying parties on Single Logout.
-        services.AddSingleton(new OidcSigningKey(configuration["Oidc:SigningKeyPem"]));
+        services.Configure<OidcSigningOptions>(configuration.GetSection(OidcSigningOptions.SectionName));
+        services.AddSingleton(sp => new OidcSigningKey(
+            sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<OidcSigningOptions>>().Value));
         services.AddSingleton<IJwksProvider>(sp => sp.GetRequiredService<OidcSigningKey>());
         services.AddSingleton<LogoutTokenGenerator>();
         services.AddSingleton<IIdTokenGenerator, IdTokenGenerator>();

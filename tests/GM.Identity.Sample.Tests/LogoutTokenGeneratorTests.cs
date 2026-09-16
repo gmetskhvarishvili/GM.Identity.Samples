@@ -1,3 +1,4 @@
+using GM.Identity.Sample.Infrastructure.Options;
 using GM.Identity.Sample.Infrastructure.Services.Logout;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -20,7 +21,7 @@ public sealed class LogoutTokenGeneratorTests
     [Fact]
     public async Task Generates_an_es256_logout_token_verifiable_against_the_published_jwks()
     {
-        var signingKey = new OidcSigningKey(pem: null);
+        var signingKey = new OidcSigningKey(new OidcSigningOptions());
         var generator = new LogoutTokenGenerator(signingKey);
 
         const string issuer = "https://op.example";

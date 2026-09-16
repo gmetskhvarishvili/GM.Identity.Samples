@@ -22,7 +22,8 @@ public sealed class IdTokenReader(OidcSigningKey signingKey) : IIdTokenReader
 
         var result = await new JsonWebTokenHandler().ValidateTokenAsync(idToken, new TokenValidationParameters
         {
-            IssuerSigningKey = signingKey.SigningCredentials.Key,
+            // Accept any published key (active or previous) so a hint signed before a key rotation still verifies.
+            IssuerSigningKeys = signingKey.ValidationKeys,
             ValidateIssuerSigningKey = true,
             ValidateLifetime = false,
             ValidateAudience = false,

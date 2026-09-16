@@ -1,5 +1,4 @@
-using GM.Identity.Sample.Infrastructure.Options;
-using GM.Identity.Sample.Infrastructure.Services.Logout;
+using GM.Identity.Oidc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;

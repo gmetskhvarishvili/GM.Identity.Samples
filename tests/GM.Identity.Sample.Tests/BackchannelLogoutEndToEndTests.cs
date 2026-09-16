@@ -1,6 +1,6 @@
 using GM.Identity;
 using GM.Identity.Sample.Application.Accounts.Commands.EndSession;
-using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
+using GM.Identity.Oidc;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;

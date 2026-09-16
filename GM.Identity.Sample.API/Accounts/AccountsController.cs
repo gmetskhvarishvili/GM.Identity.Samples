@@ -14,7 +14,7 @@ using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
 using GM.Identity.Sample.Application.Accounts.Queries.GetJwks;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOpenIdConfiguration;
-using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
+using GM.Identity.Oidc;
 using GM.Identity.Sample.Application.Accounts.Queries.GetUserInfo;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;

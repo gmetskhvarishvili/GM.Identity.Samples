@@ -1,6 +1,6 @@
 using GM.Identity;
 using GM.Identity.Authorization;
-using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
+using GM.Identity.Oidc;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;

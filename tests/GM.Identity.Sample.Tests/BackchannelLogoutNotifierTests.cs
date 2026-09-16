@@ -1,6 +1,4 @@
-using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
-using GM.Identity.Sample.Infrastructure.Options;
-using GM.Identity.Sample.Infrastructure.Services.Logout;
+using GM.Identity.Oidc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 

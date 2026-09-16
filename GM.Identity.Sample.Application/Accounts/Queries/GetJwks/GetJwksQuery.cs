@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
+using GM.Identity.Oidc;
 using GM.Mediator.Contracts;
 
 using System.Threading;

@@ -35,6 +35,9 @@ public class AuthorizeModel
 
     [FromForm(Name = "api_key")]
     public string? ApiKey { get; set; }
+
+    [FromForm(Name = "device_code")]
+    public string? DeviceCode { get; set; }
 }
 
 public class AuthorizeModelValidator : AbstractValidator<AuthorizeModel>

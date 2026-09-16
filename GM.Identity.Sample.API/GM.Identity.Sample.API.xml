@@ -48,6 +48,19 @@
             the redirect target (code + state). Exchange it at /connect/token with grant_type=authorization_code.
             </summary>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.DeviceAuthorization(GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel,System.Threading.CancellationToken)">
+            <summary>
+            Device authorization endpoint (RFC 8628). A browserless device authenticates as a client and receives a
+            device_code (to poll /connect/token with grant_type=urn:ietf:params:oauth:grant-type:device_code) and a
+            user_code for the user to approve at the verification URI.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.ApproveDevice(GM.Identity.Sample.API.Accounts.ApproveDeviceModel,System.Threading.CancellationToken)">
+            <summary>
+            Approves (or denies) a device user_code. The user authenticates with their credentials; on approval the
+            paired device's next poll receives tokens. In a browser deployment this sits behind the verification page.
+            </summary>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.EndSession(GM.Identity.Sample.API.Accounts.EndSessionModel,System.Threading.CancellationToken)">
             <summary>
             OpenID Connect end-session (logout) endpoint. Ends the browser's SSO session and performs Single Logout:
@@ -133,6 +146,12 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Consent">
             <summary>The user's approval of the requested scopes (for consent-requiring clients).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel">
+            <summary>Form body for the device authorization endpoint (client-authenticated).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.ApproveDeviceModel">
+            <summary>Form body for approving (or denying) a device user_code.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.EndSessionModel">
             <summary>Form body for the OpenID Connect end-session (logout) endpoint. The SSO session itself is taken

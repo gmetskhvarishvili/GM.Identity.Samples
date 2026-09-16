@@ -7,6 +7,7 @@ using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
@@ -52,6 +53,9 @@ public class AuthorizeCommand : IRequest<AuthorizeResponseDto>
 
     /// <summary>This OP's issuer (scheme+host), set by the controller; the <c>iss</c> of issued id_tokens.</summary>
     public string? Issuer { get; set; }
+
+    /// <summary>The device code, supplied with the device-authorization grant while polling the token endpoint.</summary>
+    public string? DeviceCode { get; set; }
 }
 
 public class AuthorizeCommandValidator : AbstractValidator<AuthorizeCommand>
@@ -96,6 +100,7 @@ public class AuthorizeCommandHandler(
             "refresh_token" => await RefreshAsync(request, client.Id, now, settings, cancellationToken),
             "two_factor" => await TwoFactorGrantAsync(request, client.Id, now, settings, cancellationToken),
             "authorization_code" => await AuthorizationCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
+            "urn:ietf:params:oauth:grant-type:device_code" => await DeviceCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
             "api_key" => await ApiKeyGrantAsync(request, client.Id, now, settings, cancellationToken),
             _ => await PasswordGrantAsync(request, client.Id, now, settings, cancellationToken),
         };
@@ -369,6 +374,54 @@ public class AuthorizeCommandHandler(
             authCode.UserId, clientId, provider: null, now, settings,
             refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken,
             ssoSessionId: authCode.SsoSessionId, issuer: request.Issuer, nonce: authCode.Nonce);
+    }
+
+    // Device Authorization Grant polling (RFC 8628 §3.4/§3.5): the browserless device exchanges its device_code
+    // for tokens once the user has approved. Returns the RFC error codes as validation failures while the device
+    // keeps polling — authorization_pending, slow_down (polled too fast), access_denied, expired_token.
+    private async Task<AuthorizeResponseDto> DeviceCodeGrantAsync(
+        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.DeviceCode))
+            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+
+        var hash = TokenGenerator.Hash(request.DeviceCode);
+        var deviceCode = await unitOfWork.DeviceCodeRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.DeviceCodeHash == hash, cancellationToken);
+
+        // Unknown or wrong-client device code → treat as expired (never leak which).
+        if (deviceCode == null || deviceCode.ClientId != clientId)
+            throw new ValidationException("expired_token");
+
+        if (deviceCode.IsExpired(now))
+        {
+            unitOfWork.DeviceCodeRepository.Remove(deviceCode);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            throw new ValidationException("expired_token");
+        }
+
+        if (deviceCode.Status == DeviceCodeStatus.Denied)
+            throw new ValidationException("access_denied");
+
+        var tooFast = deviceCode.RegisterPollAndCheckTooFast(now);
+
+        if (deviceCode.Status == DeviceCodeStatus.Approved && deviceCode.UserId is { } userId)
+        {
+            // Single-use: spend the device code before issuing the session.
+            unitOfWork.DeviceCodeRepository.Remove(deviceCode);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return await IssueUserSessionAsync(
+                userId, clientId, provider: "device", now, settings,
+                refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken, issuer: request.Issuer);
+        }
+
+        // Still pending — persist the poll timestamp and tell the device to keep (or slow) polling.
+        unitOfWork.DeviceCodeRepository.Update(deviceCode);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        throw new ValidationException(tooFast ? "slow_down" : "authorization_pending");
     }
 
     // Non-interactive login with a personal access token (API key). Validates the key, records its use, and

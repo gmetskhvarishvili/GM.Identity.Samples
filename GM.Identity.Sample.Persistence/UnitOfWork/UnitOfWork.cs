@@ -13,6 +13,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserP
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserClientConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
@@ -58,6 +59,7 @@ public sealed class UnitOfWork(
     IAuthorizationCodeRepository authorizationCodeRepository,
     ISsoSessionRepository ssoSessionRepository,
     IUserClientConsentRepository userClientConsentRepository,
+    IDeviceCodeRepository deviceCodeRepository,
     IApiKeyRepository apiKeyRepository,
     IUserConsentRepository userConsentRepository,
     IUserPasskeyRepository userPasskeyRepository,
@@ -90,6 +92,7 @@ public sealed class UnitOfWork(
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;
     public ISsoSessionRepository SsoSessionRepository { get; } = ssoSessionRepository;
     public IUserClientConsentRepository UserClientConsentRepository { get; } = userClientConsentRepository;
+    public IDeviceCodeRepository DeviceCodeRepository { get; } = deviceCodeRepository;
     public IApiKeyRepository ApiKeyRepository { get; } = apiKeyRepository;
     public IUserConsentRepository UserConsentRepository { get; } = userConsentRepository;
     public IUserPasskeyRepository UserPasskeyRepository { get; } = userPasskeyRepository;

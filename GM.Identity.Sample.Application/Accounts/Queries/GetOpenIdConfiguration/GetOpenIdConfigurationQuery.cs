@@ -43,6 +43,7 @@ public class GetOpenIdConfigurationQueryHandler(IUnitOfWork unitOfWork)
             RevocationEndpoint = $"{issuer}/connect/revoke",
             EndSessionEndpoint = $"{issuer}/connect/endsession",
             UserInfoEndpoint = $"{issuer}/connect/userinfo",
+            DeviceAuthorizationEndpoint = $"{issuer}/connect/device_authorization",
             JwksUri = $"{issuer}/.well-known/jwks.json",
             BackchannelLogoutSupported = true,
             BackchannelLogoutSessionSupported = true,
@@ -50,7 +51,11 @@ public class GetOpenIdConfigurationQueryHandler(IUnitOfWork unitOfWork)
             FrontchannelLogoutSessionSupported = true,
             ScopesSupported = scopes,
             ResponseTypesSupported = new[] { "code" },
-            GrantTypesSupported = new[] { "authorization_code", "refresh_token", "password", "ClientCredentials" },
+            GrantTypesSupported = new[]
+            {
+                "authorization_code", "refresh_token", "password", "ClientCredentials",
+                "urn:ietf:params:oauth:grant-type:device_code",
+            },
             CodeChallengeMethodsSupported = new[] { "S256" },
             TokenEndpointAuthMethodsSupported = new[] { "client_secret_post" },
             SubjectTypesSupported = new[] { "public" },
@@ -68,6 +73,7 @@ public class OpenIdConfigurationDto
     [JsonPropertyName("revocation_endpoint")] public string RevocationEndpoint { get; set; } = null!;
     [JsonPropertyName("end_session_endpoint")] public string EndSessionEndpoint { get; set; } = null!;
     [JsonPropertyName("userinfo_endpoint")] public string UserInfoEndpoint { get; set; } = null!;
+    [JsonPropertyName("device_authorization_endpoint")] public string DeviceAuthorizationEndpoint { get; set; } = null!;
     [JsonPropertyName("jwks_uri")] public string JwksUri { get; set; } = null!;
     [JsonPropertyName("backchannel_logout_supported")] public bool BackchannelLogoutSupported { get; set; }
     [JsonPropertyName("backchannel_logout_session_supported")] public bool BackchannelLogoutSessionSupported { get; set; }

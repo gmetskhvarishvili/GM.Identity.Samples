@@ -8,6 +8,7 @@ using GM.Identity.Sample.Application.Clients.Commands.DeleteAllClientSessions;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClient;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClientScope;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClientSession;
+using GM.Identity.Sample.Application.Clients.Commands.RegisterClient;
 using GM.Identity.Sample.Application.Clients.Commands.RotateClientSecret;
 using GM.Identity.Sample.Application.Clients.Commands.SetClientActive;
 using GM.Identity.Sample.Application.Clients.Commands.UpdateClient;
@@ -53,7 +54,24 @@ public class ClientsController : BaseController
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
     }
-    
+
+    /// <summary>
+    /// OAuth 2.0 Dynamic Client Registration (RFC 7591). Provisions a client and returns its generated
+    /// client_id and client_secret (the secret is shown once). Admin-gated, at the well-known /connect/register.
+    /// </summary>
+    [HasPermission(nameof(AddClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("~/connect/register", Name = nameof(RegisterClient))]
+    [ProducesResponseType(typeof(RegisterClientResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RegisterClient(
+        [FromBody] RegisterClientModel request,
+        CancellationToken cancellationToken)
+    {
+        var command = request.Adapt<RegisterClientCommand>();
+        var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
     /// <summary>
     /// Add Client Scope
     /// </summary>

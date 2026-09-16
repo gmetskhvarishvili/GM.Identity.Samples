@@ -16,4 +16,7 @@ public class EndSessionModel
 
     [FromForm(Name = "state")]
     public string? State { get; set; }
+
+    [FromForm(Name = "id_token_hint")]
+    public string? IdTokenHint { get; set; }
 }

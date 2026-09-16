@@ -200,6 +200,7 @@ public class AccountsController : BaseController
             ClientId = request.ClientId,
             PostLogoutRedirectUri = request.PostLogoutRedirectUri,
             State = request.State,
+            IdTokenHint = request.IdTokenHint,
             Issuer = $"{Request.Scheme}://{Request.Host}",
         }, cancellationToken);
 

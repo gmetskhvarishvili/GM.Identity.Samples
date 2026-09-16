@@ -37,11 +37,15 @@ public class EndSessionCommand : IRequest<EndSessionResponseDto>
 
     /// <summary>This OP's issuer (scheme+host), used as the <c>iss</c> of back-channel logout tokens.</summary>
     public string? Issuer { get; set; }
+
+    /// <summary>An id_token previously issued to the RP, identifying the session to end when no cookie is present.</summary>
+    public string? IdTokenHint { get; set; }
 }
 
 public class EndSessionCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
+    IIdTokenReader idTokenReader,
     IBackchannelLogoutNotifier backchannelLogoutNotifier) : IRequestHandler<EndSessionCommand, EndSessionResponseDto>
 {
     public async Task<EndSessionResponseDto> Handle(EndSessionCommand request, CancellationToken cancellationToken)
@@ -49,45 +53,61 @@ public class EndSessionCommandHandler(
         var revokedSessions = 0;
         IReadOnlyCollection<string> frontChannelLogoutUris = System.Array.Empty<string>();
 
-        if (!string.IsNullOrWhiteSpace(request.SsoCookie))
+        var ssoSession = await ResolveSsoSessionAsync(request, cancellationToken);
+        if (ssoSession != null)
         {
-            var hash = TokenGenerator.Hash(request.SsoCookie);
-            var ssoSession = await unitOfWork.SsoSessionRepository
+            ssoSession.Revoke();
+            unitOfWork.SsoSessionRepository.Update(ssoSession);
+
+            // Cascade to every app session spawned through this SSO session (Single Logout).
+            var appSessions = await unitOfWork.UserSessionRepository
                 .Query(true, null)
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.TokenHash == hash && x.RevokedAt == null, cancellationToken);
+                .Where(x => x.SsoSessionId == ssoSession.Id && !x.IsRevoked)
+                .ToListAsync(cancellationToken);
 
-            if (ssoSession != null)
-            {
-                ssoSession.Revoke();
-                unitOfWork.SsoSessionRepository.Update(ssoSession);
+            foreach (var session in appSessions)
+                session.Revoke();
+            if (appSessions.Count > 0)
+                unitOfWork.UserSessionRepository.UpdateRange(appSessions);
 
-                // Cascade to every app session spawned through this SSO session (Single Logout).
-                var appSessions = await unitOfWork.UserSessionRepository
-                    .Query(true, null)
-                    .Where(x => x.SsoSessionId == ssoSession.Id && !x.IsRevoked)
-                    .ToListAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-                foreach (var session in appSessions)
-                    session.Revoke();
-                if (appSessions.Count > 0)
-                    unitOfWork.UserSessionRepository.UpdateRange(appSessions);
+            foreach (var session in appSessions)
+                await sessionCache.RemoveAsync(session.TokenHash, cancellationToken);
 
-                await unitOfWork.SaveChangesAsync(cancellationToken);
+            revokedSessions = appSessions.Count;
 
-                foreach (var session in appSessions)
-                    await sessionCache.RemoveAsync(session.TokenHash, cancellationToken);
-
-                revokedSessions = appSessions.Count;
-
-                // OIDC logout propagation: notify relying parties so logout truly spans applications, not just
-                // this OP's sessions — via back-channel POSTs and/or front-channel iframe URLs.
-                frontChannelLogoutUris = await PropagateLogoutAsync(request, appSessions, ssoSession.Id, cancellationToken);
-            }
+            // OIDC logout propagation: notify relying parties so logout truly spans applications, not just
+            // this OP's sessions — via back-channel POSTs and/or front-channel iframe URLs.
+            frontChannelLogoutUris = await PropagateLogoutAsync(request, appSessions, ssoSession.Id, cancellationToken);
         }
 
         var redirectTo = await ResolveRedirectAsync(request, cancellationToken);
         return new EndSessionResponseDto(revokedSessions, redirectTo, frontChannelLogoutUris);
+    }
+
+    // Identifies the SSO session to end — from the browser's SSO cookie, or (when there is none) from a signed
+    // id_token_hint whose sid names it. Only a live (non-revoked) session is returned.
+    private async Task<Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.SsoSession?>
+        ResolveSsoSessionAsync(EndSessionCommand request, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(request.SsoCookie))
+        {
+            var hash = TokenGenerator.Hash(request.SsoCookie);
+            return await unitOfWork.SsoSessionRepository
+                .Query(true, null)
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.TokenHash == hash && x.RevokedAt == null, cancellationToken);
+        }
+
+        var sessionId = await idTokenReader.TryReadSessionIdAsync(request.IdTokenHint, cancellationToken);
+        if (sessionId is not { } id)
+            return null;
+
+        return await unitOfWork.SsoSessionRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.Id == id && x.RevokedAt == null, cancellationToken);
     }
 
     // For every relying party that had a session under this SSO session: POST a back-channel logout token to

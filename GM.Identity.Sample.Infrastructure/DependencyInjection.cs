@@ -52,6 +52,7 @@ public static class DependencyInjection
         services.AddSingleton<IJwksProvider>(sp => sp.GetRequiredService<OidcSigningKey>());
         services.AddSingleton<LogoutTokenGenerator>();
         services.AddSingleton<IIdTokenGenerator, IdTokenGenerator>();
+        services.AddSingleton<IIdTokenReader, IdTokenReader>();
         services.AddScoped<IBackchannelLogoutNotifier, BackchannelLogoutNotifier>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddGMHttpClient<IOTPAPIService, GMAPIClientOptions>(

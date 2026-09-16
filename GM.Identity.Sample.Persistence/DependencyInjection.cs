@@ -13,6 +13,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserR
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserClientConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
@@ -109,6 +110,7 @@ public static class DependencyInjection
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<ISsoSessionRepository, SsoSessionRepository>();
+        services.AddTransient<IUserClientConsentRepository, UserClientConsentRepository>();
         services.AddTransient<IApiKeyRepository, ApiKeyRepository>();
         services.AddTransient<IUserConsentRepository, UserConsentRepository>();
         services.AddTransient<IUserPasskeyRepository, UserPasskeyRepository>();

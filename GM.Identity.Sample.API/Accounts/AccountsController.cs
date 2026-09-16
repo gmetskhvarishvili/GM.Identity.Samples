@@ -169,6 +169,7 @@ public class AccountsController : BaseController
             Password = request.Password,
             Prompt = request.Prompt,
             Nonce = request.Nonce,
+            Consent = request.Consent,
             // The browser's SSO cookie (if any) enables silent authorization for a second, third, … client.
             SsoCookie = Request.Cookies[SsoCookieName],
         }, cancellationToken);

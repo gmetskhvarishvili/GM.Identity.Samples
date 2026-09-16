@@ -20,6 +20,9 @@ public class UpdateClientCommand : IRequest
 
     /// <summary>The client's OIDC front-channel logout endpoint. Pass empty to clear it; null leaves it unchanged.</summary>
     public string? FrontchannelLogoutUri { get; set; }
+
+    /// <summary>Whether the authorization endpoint must obtain the user's consent for this client. Null leaves it unchanged.</summary>
+    public bool? RequireConsent { get; set; }
 }
 
 public class UpdateClientCommandValidator : AbstractValidator<UpdateClientCommand>
@@ -64,6 +67,9 @@ public class UpdateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
         if (request.FrontchannelLogoutUri is not null)
             entity.SetFrontchannelLogoutUri(
                 request.FrontchannelLogoutUri.Length == 0 ? null : request.FrontchannelLogoutUri);
+
+        if (request.RequireConsent is { } requireConsent)
+            entity.SetRequireConsent(requireConsent);
 
         // Persist the aggregate
         unitOfWork.ClientRepository.Update(entity);

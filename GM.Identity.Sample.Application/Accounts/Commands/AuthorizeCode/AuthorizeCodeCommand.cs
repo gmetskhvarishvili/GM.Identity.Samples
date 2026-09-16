@@ -6,6 +6,8 @@ using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserClientConsentAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -14,6 +16,8 @@ using Microsoft.Extensions.Options;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,6 +62,9 @@ public class AuthorizeCodeCommand : IRequest<AuthorizeCodeResponseDto>
 
     /// <summary>OIDC <c>nonce</c> — echoed into the id_token at token exchange to bind it to this request.</summary>
     public string? Nonce { get; set; }
+
+    /// <summary>The user's approval of the requested scopes, for consent-requiring clients (also implied by prompt=consent).</summary>
+    public bool Consent { get; set; }
 }
 
 public class AuthorizeCodeCommandValidator : AbstractValidator<AuthorizeCodeCommand>
@@ -134,6 +141,11 @@ public class AuthorizeCodeCommandHandler(
             await unitOfWork.SsoSessionRepository.AddAsync(ssoSession, cancellationToken);
         }
 
+        // 2b) Consent gate (opt-in per client): a consent-requiring client needs the user's approval of the
+        // requested scopes unless a prior consent already covers them.
+        if (client.RequireConsent)
+            await EnsureConsentAsync(request, userId, cancellationToken);
+
         // 3) Mint the single-use authorization code, tagged with the SSO session for logout cascade.
         var code = TokenGenerator.Generate();
         var authCode = AuthorizationCode.Create(
@@ -198,6 +210,47 @@ public class AuthorizeCodeCommandHandler(
 
         return user;
     }
+
+    // Enforces per-client consent: proceeds silently if a prior consent already covers the requested scopes;
+    // otherwise requires the user's approval (request.Consent, or prompt=consent) and records/widens the grant,
+    // or refuses with consent_required.
+    private async Task EnsureConsentAsync(AuthorizeCodeCommand request, Guid userId, CancellationToken cancellationToken)
+    {
+        var requested = ParseScopes(request.Scope);
+        if (requested.Count == 0)
+            return; // nothing to consent to
+
+        var consent = await unitOfWork.UserClientConsentRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.ClientId == request.ClientId
+                                      && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);
+
+        var consented = consent is null ? new HashSet<string>() : ParseScopes(consent.Scopes);
+        if (requested.IsSubsetOf(consented))
+            return; // already covered
+
+        var approves = request.Consent || string.Equals(request.Prompt, "consent", StringComparison.OrdinalIgnoreCase);
+        if (!approves)
+            throw new ValidationException("consent_required: the user must approve the requested scopes.");
+
+        // Record the approval, widening any existing grant to the union.
+        consented.UnionWith(requested);
+        var scopes = string.Join(' ', consented.OrderBy(s => s, StringComparer.Ordinal));
+        if (consent is null)
+            await unitOfWork.UserClientConsentRepository.AddAsync(
+                UserClientConsent.Create(userId, request.ClientId, scopes), cancellationToken);
+        else
+        {
+            consent.Grant(scopes);
+            unitOfWork.UserClientConsentRepository.Update(consent);
+        }
+    }
+
+    private static HashSet<string> ParseScopes(string? scope) =>
+        string.IsNullOrWhiteSpace(scope)
+            ? new HashSet<string>()
+            : new HashSet<string>(scope.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), StringComparer.Ordinal);
 }
 
 public record AuthorizeCodeResponseDto(

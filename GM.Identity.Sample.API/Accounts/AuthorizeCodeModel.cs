@@ -38,4 +38,8 @@ public class AuthorizeCodeModel
     /// <summary>OIDC nonce, echoed into the id_token to bind it to this authorization request.</summary>
     [FromForm(Name = "nonce")]
     public string? Nonce { get; set; }
+
+    /// <summary>The user's approval of the requested scopes (for consent-requiring clients).</summary>
+    [FromForm(Name = "consent")]
+    public bool Consent { get; set; }
 }

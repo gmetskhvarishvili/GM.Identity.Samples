@@ -63,4 +63,12 @@ public class Client : GMClient<Client, ClientSession, ClientScope, Scope, ScopeO
     public string? FrontchannelLogoutUri { get; private set; }
 
     public void SetFrontchannelLogoutUri(string? uri) => FrontchannelLogoutUri = uri;
+
+    /// <summary>
+    /// When true, the authorization endpoint requires the user's explicit consent to the requested scopes before
+    /// issuing a code (unless a prior consent already covers them). Default false — first-party clients skip it.
+    /// </summary>
+    public bool RequireConsent { get; private set; }
+
+    public void SetRequireConsent(bool requireConsent) => RequireConsent = requireConsent;
 }

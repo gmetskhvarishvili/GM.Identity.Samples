@@ -55,6 +55,9 @@ public class AuthorizeCodeCommand : IRequest<AuthorizeCodeResponseDto>
 
     /// <summary>OIDC <c>prompt</c>: <c>none</c> = never prompt (fail if no SSO session); <c>login</c> = force re-auth.</summary>
     public string? Prompt { get; set; }
+
+    /// <summary>OIDC <c>nonce</c> — echoed into the id_token at token exchange to bind it to this request.</summary>
+    public string? Nonce { get; set; }
 }
 
 public class AuthorizeCodeCommandValidator : AbstractValidator<AuthorizeCodeCommand>
@@ -136,7 +139,7 @@ public class AuthorizeCodeCommandHandler(
         var authCode = AuthorizationCode.Create(
             request.ClientId, userId, TokenGenerator.Hash(code), request.RedirectUri,
             request.Scope, request.CodeChallenge, request.CodeChallengeMethod,
-            now.Add(CodeLifetime), ssoSession.Id);
+            now.Add(CodeLifetime), ssoSession.Id, request.Nonce);
 
         await unitOfWork.AuthorizationCodeRepository.AddAsync(authCode, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

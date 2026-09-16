@@ -60,6 +60,7 @@ public class AccountsController : BaseController
             RedirectUri = request.RedirectUri,
             CodeVerifier = request.CodeVerifier,
             ApiKey = request.ApiKey,
+            Issuer = $"{Request.Scheme}://{Request.Host}",
         };
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
@@ -167,6 +168,7 @@ public class AccountsController : BaseController
             UserName = request.UserName,
             Password = request.Password,
             Prompt = request.Prompt,
+            Nonce = request.Nonce,
             // The browser's SSO cookie (if any) enables silent authorization for a second, third, … client.
             SsoCookie = Request.Cookies[SsoCookieName],
         }, cancellationToken);

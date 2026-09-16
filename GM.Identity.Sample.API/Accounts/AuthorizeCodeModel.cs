@@ -34,4 +34,8 @@ public class AuthorizeCodeModel
     /// <summary>OIDC prompt: <c>none</c> (silent-only) or <c>login</c> (force re-authentication).</summary>
     [FromForm(Name = "prompt")]
     public string? Prompt { get; set; }
+
+    /// <summary>OIDC nonce, echoed into the id_token to bind it to this authorization request.</summary>
+    [FromForm(Name = "nonce")]
+    public string? Nonce { get; set; }
 }

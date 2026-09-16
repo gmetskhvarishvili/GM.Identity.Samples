@@ -128,6 +128,9 @@
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Prompt">
             <summary>OIDC prompt: <c>none</c> (silent-only) or <c>login</c> (force re-authentication).</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Nonce">
+            <summary>OIDC nonce, echoed into the id_token to bind it to this authorization request.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.EndSessionModel">
             <summary>Form body for the OpenID Connect end-session (logout) endpoint. The SSO session itself is taken
             from the browser's SSO cookie, not the body.</summary>

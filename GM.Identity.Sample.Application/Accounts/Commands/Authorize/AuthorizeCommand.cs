@@ -3,6 +3,7 @@ using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity;
 using GM.Identity.Authorization;
+using GM.Identity.Sample.Application.Infrastructure.Services.Logout;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
@@ -48,6 +49,9 @@ public class AuthorizeCommand : IRequest<AuthorizeResponseDto>
 
     /// <summary>A personal access token, supplied with <c>grant_type=api_key</c> for non-interactive login.</summary>
     public string? ApiKey { get; set; }
+
+    /// <summary>This OP's issuer (scheme+host), set by the controller; the <c>iss</c> of issued id_tokens.</summary>
+    public string? Issuer { get; set; }
 }
 
 public class AuthorizeCommandValidator : AbstractValidator<AuthorizeCommand>
@@ -64,6 +68,7 @@ public class AuthorizeCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
     IOTPService otpService,
+    IIdTokenGenerator idTokenGenerator,
     IOptions<AuthOptions> options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(AuthorizeCommand request, CancellationToken cancellationToken)
@@ -124,7 +129,7 @@ public class AuthorizeCommandHandler(
 
         return await IssueUserSessionAsync(
             user.Id, clientId, provider: null, now, settings,
-            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
+            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken, issuer: request.Issuer);
     }
 
     private async Task<AuthorizeResponseDto> TwoFactorGrantAsync(
@@ -157,7 +162,7 @@ public class AuthorizeCommandHandler(
 
         return await IssueUserSessionAsync(
             user.Id, clientId, provider: null, now, settings,
-            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
+            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken, issuer: request.Issuer);
     }
 
     // Resolves and password-verifies the user (cross-tenant — authentication precedes any tenant context),
@@ -317,7 +322,8 @@ public class AuthorizeCommandHandler(
 
         var response = await IssueUserSessionAsync(
             existing.UserId, existing.ClientId, existing.Provider, now, settings,
-            refreshExpiry: existing.ExpiresAt, cancellationToken, ssoSessionId: existing.SsoSessionId);
+            refreshExpiry: existing.ExpiresAt, cancellationToken,
+            ssoSessionId: existing.SsoSessionId, issuer: request.Issuer);
 
         await sessionCache.RemoveAsync(existing.TokenHash, cancellationToken);
         return response;
@@ -358,11 +364,11 @@ public class AuthorizeCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Stamp the SSO session the code was minted under onto the issued session, so ending the SSO session
-        // (Single Logout) cascades to this app session.
+        // (Single Logout) cascades to this app session. Echo the request's nonce into the id_token.
         return await IssueUserSessionAsync(
             authCode.UserId, clientId, provider: null, now, settings,
             refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken,
-            ssoSessionId: authCode.SsoSessionId);
+            ssoSessionId: authCode.SsoSessionId, issuer: request.Issuer, nonce: authCode.Nonce);
     }
 
     // Non-interactive login with a personal access token (API key). Validates the key, records its use, and
@@ -388,12 +394,13 @@ public class AuthorizeCommandHandler(
 
         return await IssueUserSessionAsync(
             apiKey.UserId, clientId, provider: "api_key", now, settings,
-            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken);
+            refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken, issuer: request.Issuer);
     }
 
     private async Task<AuthorizeResponseDto> IssueUserSessionAsync(
         Guid? userId, Guid? clientId, string? provider, DateTime now, AuthOptions settings,
-        DateTime refreshExpiry, CancellationToken cancellationToken, Guid? ssoSessionId = null)
+        DateTime refreshExpiry, CancellationToken cancellationToken,
+        Guid? ssoSessionId = null, string? issuer = null, string? nonce = null)
     {
         var accessToken = TokenGenerator.Generate();
         var refreshToken = TokenGenerator.Generate();
@@ -412,7 +419,42 @@ public class AuthorizeCommandHandler(
         if (userId is { } uid)
             await EnforceConcurrentSessionCapAsync(uid, settings, now, cancellationToken);
 
-        return new AuthorizeResponseDto(accessToken, accessExpiry, "bearer", refreshToken, refreshExpiry);
+        // OIDC: alongside the opaque access token, issue a signed id_token so relying parties get an
+        // offline-verifiable identity assertion. Only for user (not client-credentials) sessions.
+        var idToken = await IssueIdTokenAsync(
+            userId, clientId, session.Id, ssoSessionId, now, accessExpiry, issuer, nonce, cancellationToken);
+
+        return new AuthorizeResponseDto(accessToken, accessExpiry, "bearer", refreshToken, refreshExpiry, IdToken: idToken);
+    }
+
+    // Builds the id_token for a freshly issued user session, when this came through the HTTP token endpoint
+    // (issuer known) and names a user. sid ties the token to the SSO session (falling back to the app session)
+    // so it correlates with back-/front-channel logout.
+    private async Task<string?> IssueIdTokenAsync(
+        Guid? userId, Guid? clientId, Guid sessionId, Guid? ssoSessionId, DateTime now, DateTime expiresAt,
+        string? issuer, string? nonce, CancellationToken cancellationToken)
+    {
+        if (userId is not { } uid || string.IsNullOrWhiteSpace(issuer))
+            return null;
+
+        var user = await unitOfWork.UserRepository
+            .Query(false, null)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.Id == uid, cancellationToken);
+        if (user is null)
+            return null;
+
+        return idTokenGenerator.Generate(new IdTokenParameters(
+            Issuer: issuer!,
+            ClientId: clientId ?? Guid.Empty,
+            UserId: uid,
+            SessionId: ssoSessionId ?? sessionId,
+            AuthTime: now,
+            ExpiresAt: expiresAt,
+            Email: user.Email,
+            EmailVerified: user.EmailConfirmed,
+            Name: user.UserName,
+            Nonce: nonce));
     }
 
     // Caps how many sessions a user may hold at once: once a new session pushes the count over the configured
@@ -486,7 +528,8 @@ public record AuthorizeResponseDto(
     string? RefreshToken = null,
     DateTime? RefreshTokenExpiresAt = null,
     bool TwoFactorRequired = false,
-    IReadOnlyCollection<int>? TwoFactorAuthTypeIds = null)
+    IReadOnlyCollection<int>? TwoFactorAuthTypeIds = null,
+    string? IdToken = null)
 {
     /// <summary>
     /// A response that stops short of issuing tokens because the user must complete a second factor. Names

@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddSingleton(new OidcSigningKey(configuration["Oidc:SigningKeyPem"]));
         services.AddSingleton<IJwksProvider>(sp => sp.GetRequiredService<OidcSigningKey>());
         services.AddSingleton<LogoutTokenGenerator>();
+        services.AddSingleton<IIdTokenGenerator, IdTokenGenerator>();
         services.AddScoped<IBackchannelLogoutNotifier, BackchannelLogoutNotifier>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddGMHttpClient<IOTPAPIService, GMAPIClientOptions>(

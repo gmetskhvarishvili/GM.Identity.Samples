@@ -52,6 +52,7 @@ public class GetOpenIdConfigurationQueryHandler(IUnitOfWork unitOfWork)
             CodeChallengeMethodsSupported = new[] { "S256" },
             TokenEndpointAuthMethodsSupported = new[] { "client_secret_post" },
             SubjectTypesSupported = new[] { "public" },
+            IdTokenSigningAlgValuesSupported = new[] { "ES256" },
         };
     }
 }
@@ -74,4 +75,5 @@ public class OpenIdConfigurationDto
     [JsonPropertyName("code_challenge_methods_supported")] public IReadOnlyCollection<string> CodeChallengeMethodsSupported { get; set; } = new List<string>();
     [JsonPropertyName("token_endpoint_auth_methods_supported")] public IReadOnlyCollection<string> TokenEndpointAuthMethodsSupported { get; set; } = new List<string>();
     [JsonPropertyName("subject_types_supported")] public IReadOnlyCollection<string> SubjectTypesSupported { get; set; } = new List<string>();
+    [JsonPropertyName("id_token_signing_alg_values_supported")] public IReadOnlyCollection<string> IdTokenSigningAlgValuesSupported { get; set; } = new List<string>();
 }

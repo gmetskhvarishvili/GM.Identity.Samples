@@ -18,7 +18,8 @@ public class AuthorizationCode : SoftDeletableEntity<Guid>, IAggregateRoot
 
     private AuthorizationCode(
         Guid clientId, Guid userId, string codeHash, string redirectUri,
-        string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt, Guid? ssoSessionId)
+        string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt, Guid? ssoSessionId,
+        string? nonce)
     {
         Id = Guid.NewGuid();
         ClientId = clientId;
@@ -30,13 +31,15 @@ public class AuthorizationCode : SoftDeletableEntity<Guid>, IAggregateRoot
         CodeChallengeMethod = codeChallengeMethod;
         ExpiresAt = expiresAt;
         SsoSessionId = ssoSessionId;
+        Nonce = nonce;
     }
 
     public static AuthorizationCode Create(
         Guid clientId, Guid userId, string codeHash, string redirectUri,
         string? scope, string codeChallenge, string codeChallengeMethod, DateTime expiresAt,
-        Guid? ssoSessionId = null) =>
-        new(clientId, userId, codeHash, redirectUri, scope, codeChallenge, codeChallengeMethod, expiresAt, ssoSessionId);
+        Guid? ssoSessionId = null, string? nonce = null) =>
+        new(clientId, userId, codeHash, redirectUri, scope, codeChallenge, codeChallengeMethod, expiresAt,
+            ssoSessionId, nonce);
 
     public Guid ClientId { get; private set; }
     public Guid UserId { get; private set; }
@@ -53,6 +56,9 @@ public class AuthorizationCode : SoftDeletableEntity<Guid>, IAggregateRoot
     /// Single Logout can cascade. Null when the authorization did not go through an SSO browser session.
     /// </summary>
     public Guid? SsoSessionId { get; private set; }
+
+    /// <summary>The OIDC <c>nonce</c> from the authorization request, echoed into the id_token at exchange.</summary>
+    public string? Nonce { get; private set; }
 
     public bool IsConsumed => ConsumedAt.HasValue;
     public bool IsExpired(DateTime now) => ExpiresAt <= now;

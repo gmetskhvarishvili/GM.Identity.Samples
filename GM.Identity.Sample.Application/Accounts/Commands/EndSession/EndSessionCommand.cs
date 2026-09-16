@@ -47,6 +47,7 @@ public class EndSessionCommandHandler(
     public async Task<EndSessionResponseDto> Handle(EndSessionCommand request, CancellationToken cancellationToken)
     {
         var revokedSessions = 0;
+        IReadOnlyCollection<string> frontChannelLogoutUris = System.Array.Empty<string>();
 
         if (!string.IsNullOrWhiteSpace(request.SsoCookie))
         {
@@ -79,24 +80,26 @@ public class EndSessionCommandHandler(
 
                 revokedSessions = appSessions.Count;
 
-                // OIDC back-channel logout: tell every relying party that registered a logout endpoint to end
-                // its own session too, so logout truly spans applications and not just this OP's sessions.
-                await NotifyRelyingPartiesAsync(request, appSessions, ssoSession.Id, cancellationToken);
+                // OIDC logout propagation: notify relying parties so logout truly spans applications, not just
+                // this OP's sessions — via back-channel POSTs and/or front-channel iframe URLs.
+                frontChannelLogoutUris = await PropagateLogoutAsync(request, appSessions, ssoSession.Id, cancellationToken);
             }
         }
 
         var redirectTo = await ResolveRedirectAsync(request, cancellationToken);
-        return new EndSessionResponseDto(revokedSessions, redirectTo);
+        return new EndSessionResponseDto(revokedSessions, redirectTo, frontChannelLogoutUris);
     }
 
-    // Builds one back-channel logout target per relying party that (a) had a session under this SSO session and
-    // (b) registered a BackchannelLogoutUri, then hands them to the notifier (sub = user, sid = SSO session).
-    private async Task NotifyRelyingPartiesAsync(
-        EndSessionCommand request, IReadOnlyCollection<Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.UserSession> appSessions,
+    // For every relying party that had a session under this SSO session: POST a back-channel logout token to
+    // those with a BackchannelLogoutUri, and build an iframe URL (with iss + sid) for those with a
+    // FrontchannelLogoutUri. Returns the front-channel URLs for the caller to render.
+    private async Task<IReadOnlyCollection<string>> PropagateLogoutAsync(
+        EndSessionCommand request,
+        IReadOnlyCollection<Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.UserSession> appSessions,
         Guid ssoSessionId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Issuer))
-            return;
+            return System.Array.Empty<string>();
 
         var clientIds = appSessions
             .Where(s => s.ClientId is not null && s.UserId is not null)
@@ -104,29 +107,43 @@ public class EndSessionCommandHandler(
             .Distinct()
             .ToList();
         if (clientIds.Count == 0)
-            return;
+            return System.Array.Empty<string>();
 
-        var logoutUris = await unitOfWork.ClientRepository
+        var clients = await unitOfWork.ClientRepository
             .Query(false, null)
             .IgnoreQueryFilters()
-            .Where(c => clientIds.Contains(c.Id) && c.BackchannelLogoutUri != null)
-            .Select(c => new { c.Id, c.BackchannelLogoutUri })
+            .Where(c => clientIds.Contains(c.Id)
+                        && (c.BackchannelLogoutUri != null || c.FrontchannelLogoutUri != null))
+            .Select(c => new { c.Id, c.BackchannelLogoutUri, c.FrontchannelLogoutUri })
             .ToListAsync(cancellationToken);
-        if (logoutUris.Count == 0)
-            return;
+        if (clients.Count == 0)
+            return System.Array.Empty<string>();
 
-        var uriByClient = logoutUris.ToDictionary(c => c.Id, c => c.BackchannelLogoutUri!);
-
-        // One notification per client (dedupe across a client's multiple sessions), naming the user it held.
-        var targets = appSessions
-            .Where(s => s.ClientId is { } cid && uriByClient.ContainsKey(cid) && s.UserId is not null)
+        // The user each client held (dedupe across a client's multiple sessions).
+        var userByClient = appSessions
+            .Where(s => s.ClientId is not null && s.UserId is not null)
             .GroupBy(s => s.ClientId!.Value)
-            .Select(g => new BackchannelLogoutTarget(
-                g.Key, uriByClient[g.Key], g.First().UserId!.Value, ssoSessionId))
-            .ToList();
+            .ToDictionary(g => g.Key, g => g.First().UserId!.Value);
 
-        if (targets.Count > 0)
-            await backchannelLogoutNotifier.NotifyAsync(request.Issuer!, targets, cancellationToken);
+        // Back-channel: POST a signed logout token to each RP that registered one.
+        var backchannelTargets = clients
+            .Where(c => c.BackchannelLogoutUri is not null && userByClient.ContainsKey(c.Id))
+            .Select(c => new BackchannelLogoutTarget(c.Id, c.BackchannelLogoutUri!, userByClient[c.Id], ssoSessionId))
+            .ToList();
+        if (backchannelTargets.Count > 0)
+            await backchannelLogoutNotifier.NotifyAsync(request.Issuer!, backchannelTargets, cancellationToken);
+
+        // Front-channel: an iframe URL per RP, carrying the issuer and session id per the spec.
+        return clients
+            .Where(c => c.FrontchannelLogoutUri is not null)
+            .Select(c => BuildFrontChannelUrl(c.FrontchannelLogoutUri!, request.Issuer!, ssoSessionId))
+            .ToList();
+    }
+
+    private static string BuildFrontChannelUrl(string uri, string issuer, Guid ssoSessionId)
+    {
+        var separator = uri.Contains('?') ? '&' : '?';
+        return $"{uri}{separator}iss={Uri.EscapeDataString(issuer)}&sid={Uri.EscapeDataString(ssoSessionId.ToString())}";
     }
 
     // A post-logout redirect is honoured only when it is a URI registered for the named client — never a
@@ -155,4 +172,7 @@ public class EndSessionCommandHandler(
     }
 }
 
-public record EndSessionResponseDto(int RevokedSessions, string? RedirectTo);
+public record EndSessionResponseDto(
+    int RevokedSessions,
+    string? RedirectTo,
+    IReadOnlyCollection<string> FrontChannelLogoutUris = null!);

@@ -54,4 +54,13 @@ public class Client : GMClient<Client, ClientSession, ClientScope, Scope, ScopeO
     public string? BackchannelLogoutUri { get; private set; }
 
     public void SetBackchannelLogoutUri(string? uri) => BackchannelLogoutUri = uri;
+
+    /// <summary>
+    /// The client's OpenID Connect front-channel logout endpoint. When set, Single Logout returns this URL (with
+    /// <c>iss</c> and <c>sid</c>) for the user agent to load in a hidden iframe so the relying party can clear
+    /// its own session in the browser. Null = the client does not participate in front-channel logout.
+    /// </summary>
+    public string? FrontchannelLogoutUri { get; private set; }
+
+    public void SetFrontchannelLogoutUri(string? uri) => FrontchannelLogoutUri = uri;
 }

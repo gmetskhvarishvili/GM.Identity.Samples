@@ -46,6 +46,8 @@ public class GetOpenIdConfigurationQueryHandler(IUnitOfWork unitOfWork)
             JwksUri = $"{issuer}/.well-known/jwks.json",
             BackchannelLogoutSupported = true,
             BackchannelLogoutSessionSupported = true,
+            FrontchannelLogoutSupported = true,
+            FrontchannelLogoutSessionSupported = true,
             ScopesSupported = scopes,
             ResponseTypesSupported = new[] { "code" },
             GrantTypesSupported = new[] { "authorization_code", "refresh_token", "password", "ClientCredentials" },
@@ -69,6 +71,8 @@ public class OpenIdConfigurationDto
     [JsonPropertyName("jwks_uri")] public string JwksUri { get; set; } = null!;
     [JsonPropertyName("backchannel_logout_supported")] public bool BackchannelLogoutSupported { get; set; }
     [JsonPropertyName("backchannel_logout_session_supported")] public bool BackchannelLogoutSessionSupported { get; set; }
+    [JsonPropertyName("frontchannel_logout_supported")] public bool FrontchannelLogoutSupported { get; set; }
+    [JsonPropertyName("frontchannel_logout_session_supported")] public bool FrontchannelLogoutSessionSupported { get; set; }
     [JsonPropertyName("scopes_supported")] public IReadOnlyCollection<string> ScopesSupported { get; set; } = new List<string>();
     [JsonPropertyName("response_types_supported")] public IReadOnlyCollection<string> ResponseTypesSupported { get; set; } = new List<string>();
     [JsonPropertyName("grant_types_supported")] public IReadOnlyCollection<string> GrantTypesSupported { get; set; } = new List<string>();

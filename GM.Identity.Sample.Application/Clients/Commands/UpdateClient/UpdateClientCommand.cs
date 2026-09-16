@@ -17,6 +17,9 @@ public class UpdateClientCommand : IRequest
 
     /// <summary>The client's OIDC back-channel logout endpoint. Pass empty to clear it; null leaves it unchanged.</summary>
     public string? BackchannelLogoutUri { get; set; }
+
+    /// <summary>The client's OIDC front-channel logout endpoint. Pass empty to clear it; null leaves it unchanged.</summary>
+    public string? FrontchannelLogoutUri { get; set; }
 }
 
 public class UpdateClientCommandValidator : AbstractValidator<UpdateClientCommand>
@@ -57,6 +60,10 @@ public class UpdateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
         if (request.BackchannelLogoutUri is not null)
             entity.SetBackchannelLogoutUri(
                 request.BackchannelLogoutUri.Length == 0 ? null : request.BackchannelLogoutUri);
+
+        if (request.FrontchannelLogoutUri is not null)
+            entity.SetFrontchannelLogoutUri(
+                request.FrontchannelLogoutUri.Length == 0 ? null : request.FrontchannelLogoutUri);
 
         // Persist the aggregate
         unitOfWork.ClientRepository.Update(entity);

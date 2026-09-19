@@ -4,7 +4,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Opera
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleHierarchyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.TimeBoundRoleGrantAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
@@ -67,7 +66,6 @@ public sealed class UnitOfWork(
     IEmailTemplateRepository emailTemplateRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
-    IRoleHierarchyRepository roleHierarchyRepository,
     IGroupRepository groupRepository,
     IGroupRoleRepository groupRoleRepository,
     IUserGroupRepository userGroupRepository,
@@ -104,7 +102,6 @@ public sealed class UnitOfWork(
     public IUserPermissionRepository UserPermissionRepository { get; } = userPermissionRepository;
     public ITimeBoundRoleGrantRepository TimeBoundRoleGrantRepository { get; } = timeBoundRoleGrantRepository;
     public IRoleRepository RoleRepository { get; } = roleRepository;
-    public IRoleHierarchyRepository RoleHierarchyRepository { get; } = roleHierarchyRepository;
     public IGroupRepository GroupRepository { get; } = groupRepository;
     public IGroupRoleRepository GroupRoleRepository { get; } = groupRoleRepository;
     public IUserGroupRepository UserGroupRepository { get; } = userGroupRepository;

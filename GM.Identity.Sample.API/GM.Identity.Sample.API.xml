@@ -931,12 +931,6 @@
             <param name="cancellationToken"></param>
             <returns>Result</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Roles.RolesController.SetRoleParent(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Set (or replace) a role's parent so it inherits the parent's permissions transitively.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Roles.RolesController.RemoveRoleParent(System.Guid,System.Threading.CancellationToken)">
-            <summary>Remove a role's parent (it stops inheriting).</summary>
-        </member>
         <member name="M:GM.Identity.Sample.API.Roles.RolesController.DeleteRolePermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete Role Permission

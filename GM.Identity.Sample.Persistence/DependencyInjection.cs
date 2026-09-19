@@ -3,7 +3,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Opera
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleHierarchyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.TimeBoundRoleGrantAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
@@ -92,7 +91,6 @@ public static class DependencyInjection
         services.AddTransient<IPermissionRepository, PermissionRepository>();
         services.AddTransient<IRolePermissionRepository, RolePermissionRepository>();
         services.AddTransient<IRoleRepository, RoleRepository>();
-        services.AddTransient<IRoleHierarchyRepository, RoleHierarchyRepository>();
         services.AddTransient<IGroupRepository, GroupRepository>();
         services.AddTransient<IGroupRoleRepository, GroupRoleRepository>();
         services.AddTransient<IUserGroupRepository, UserGroupRepository>();

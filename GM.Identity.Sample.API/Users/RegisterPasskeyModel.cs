@@ -7,10 +7,13 @@ namespace GM.Identity.Sample.API.Users;
 /// <summary>Body to register a passkey: the credential id, its ES256 public key (SPKI, base64), and a label.</summary>
 public class RegisterPasskeyModel
 {
+    /// <summary>The credential id.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "CredentialId")]
     public string CredentialId { get; set; } = null!;
+    /// <summary>The public key spki base64.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "PublicKeySpkiBase64")]
     public string PublicKeySpkiBase64 { get; set; } = null!;
+    /// <summary>The name.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Name")]
     public string Name { get; set; } = null!;
 }

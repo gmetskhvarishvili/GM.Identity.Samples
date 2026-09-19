@@ -4,12 +4,16 @@ using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Users;
 
+/// <summary>Recover user password model.</summary>
 public class RecoverUserPasswordModel
 {
+    /// <summary>The email.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Email")]
     public string Email { get; set; } = null!;
+    /// <summary>The code.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Code")]
     public string Code { get; set; } = null!;
+    /// <summary>The password.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Password")]
     public string Password { get; set; } = null!;
 }

@@ -9,6 +9,7 @@ namespace GM.Identity.Sample.API.Users;
 /// <summary>Body for a time-bound role grant: when the temporary assignment expires.</summary>
 public class GrantTimeBoundRoleModel
 {
+    /// <summary>The expires at.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "ExpiresAt")]
     public DateTime ExpiresAt { get; set; }
 }

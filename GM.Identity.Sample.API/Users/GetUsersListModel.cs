@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Users;
 
+/// <summary>Get users list model.</summary>
 public class GetUsersListModel : GetBaseListModel
 {
     /// <summary>

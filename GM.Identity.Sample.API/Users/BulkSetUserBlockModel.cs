@@ -10,8 +10,10 @@ namespace GM.Identity.Sample.API.Users;
 /// <summary>Body for a bulk block/unblock operation.</summary>
 public class BulkSetUserBlockModel
 {
+    /// <summary>The user ids.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "UserIds")]
     public List<Guid> UserIds { get; set; } = new();
+    /// <summary>The block.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Block")]
     public bool Block { get; set; }
 }

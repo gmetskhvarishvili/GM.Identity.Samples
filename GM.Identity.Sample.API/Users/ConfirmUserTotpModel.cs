@@ -7,6 +7,7 @@ namespace GM.Identity.Sample.API.Users;
 /// <summary>Body for confirming an authenticator-app enrolment: a code produced by the app.</summary>
 public class ConfirmUserTotpModel
 {
+    /// <summary>The code.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Code")]
     public string Code { get; set; } = null!;
 }

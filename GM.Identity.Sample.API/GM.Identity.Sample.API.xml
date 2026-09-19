@@ -135,8 +135,38 @@
         <member name="F:GM.Identity.Sample.API.Accounts.AccountsController.SsoCookieName">
             <summary>Name of the browser cookie that carries the opaque single sign-on session value.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.AuthConnectModel">
+            <summary>Auth connect model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthConnectModel.RedirectUri">
+            <summary>The redirect uri.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel">
             <summary>Form body for the authorization endpoint of the PKCE authorization-code flow.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.RedirectUri">
+            <summary>The redirect uri.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Scope">
+            <summary>The scope.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.State">
+            <summary>The state.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.CodeChallenge">
+            <summary>The code challenge.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.CodeChallengeMethod">
+            <summary>The code challenge method.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.UserName">
+            <summary>The user name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Password">
+            <summary>The password.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Prompt">
             <summary>OIDC prompt: <c>none</c> (silent-only) or <c>login</c> (force re-authentication).</summary>
@@ -147,18 +177,117 @@
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeCodeModel.Consent">
             <summary>The user's approval of the requested scopes (for consent-requiring clients).</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.AuthorizeModel">
+            <summary>Authorize model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.UserName">
+            <summary>The user name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.Password">
+            <summary>The password.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.ClientSecret">
+            <summary>The client secret.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.GrantType">
+            <summary>The grant type.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.RefreshToken">
+            <summary>The refresh token.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.Code">
+            <summary>The code.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.RedirectUri">
+            <summary>The redirect uri.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.CodeVerifier">
+            <summary>The code verifier.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.ApiKey">
+            <summary>The api key.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.DeviceCode">
+            <summary>The device code.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel">
             <summary>Form body for the device authorization endpoint (client-authenticated).</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel.ClientSecret">
+            <summary>The client secret.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel.Scope">
+            <summary>The scope.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.ApproveDeviceModel">
             <summary>Form body for approving (or denying) a device user_code.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.UserCode">
+            <summary>The user code.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.UserName">
+            <summary>The user name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.Password">
+            <summary>The password.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.Approve">
+            <summary>The approve.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.EndSessionModel">
             <summary>Form body for the OpenID Connect end-session (logout) endpoint. The SSO session itself is taken
             from the browser's SSO cookie, not the body.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.EndSessionModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.EndSessionModel.PostLogoutRedirectUri">
+            <summary>The post logout redirect uri.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.EndSessionModel.State">
+            <summary>The state.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.EndSessionModel.IdTokenHint">
+            <summary>The id token hint.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel">
+            <summary>External authorize model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel.Code">
+            <summary>The code.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel.State">
+            <summary>The state.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel.RedirectUri">
+            <summary>The redirect uri.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.ExternalAuthorizeModel.ClientSecret">
+            <summary>The client secret.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.IntrospectModel">
             <summary>Form body for the RFC 7662 token-introspection endpoint.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.IntrospectModel.Token">
+            <summary>The token.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.IntrospectModel.TokenTypeHint">
+            <summary>The token type hint.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.IntrospectModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.IntrospectModel.ClientSecret">
+            <summary>The client secret.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.BeginPasskeyModel">
             <summary>Body to begin a passkey login.</summary>
@@ -168,6 +297,30 @@
         </member>
         <member name="T:GM.Identity.Sample.API.Accounts.RegisterModel">
             <summary>Self-registration request body.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.Username">
+            <summary>The username.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.PhoneNumber">
+            <summary>The phone number.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.Password">
+            <summary>The password.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.RevokeTokenModel">
+            <summary>Revoke token model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RevokeTokenModel.Token">
+            <summary>The token.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RevokeTokenModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.RevokeTokenModel.ClientSecret">
+            <summary>The client secret.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Audit.AuditController">
             <summary>
@@ -182,6 +335,24 @@
         </member>
         <member name="T:GM.Identity.Sample.API.Audit.AuditEntryModel">
             <summary>One recorded domain event in the audit log.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.ClientDetailsModel">
+            <summary>Client details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.ClientModel">
+            <summary>Client model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientModel.Name">
+            <summary>The name.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientsController">
             <summary>
@@ -303,8 +474,92 @@
             <param name="cancellationToken"></param>
             <returns>Client Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Clients.ClientSessionModel">
+            <summary>Client session model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientSessionModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientSessionModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientSessionModel.IsRevoked">
+            <summary>The is revoked.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientSessionModel.RevokedAt">
+            <summary>The revoked at.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientSessionModel.ExpiresAt">
+            <summary>The expires at.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.CreateClientModel">
+            <summary>Create client model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.Secret">
+            <summary>The secret.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.ClientScopes">
+            <summary>The client scopes.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.CreateClientScopeModel">
+            <summary>Create client scope model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientScopeModel.ScopeId">
+            <summary>The scope id.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.GetClientSessionsListModel">
+            <summary>Get client sessions list model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.GetClientSessionsListModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.GetClientSessionsListModel.IsRevoked">
+            <summary>The is revoked.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.GetClientSessionsListModel.IsExpired">
+            <summary>The is expired.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.GetClientsListModel">
+            <summary>Get clients list model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.GetClientsListModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.GetClientsListModel.Name">
+            <summary>The name.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.RegisterClientModel">
             <summary>RFC 7591 dynamic client registration request body (snake_case on the wire).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.ClientName">
+            <summary>The client name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.RedirectUris">
+            <summary>The redirect uris.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.Scope">
+            <summary>The scope.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.BackchannelLogoutUri">
+            <summary>The backchannel logout uri.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.FrontchannelLogoutUri">
+            <summary>The frontchannel logout uri.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.RequireConsent">
+            <summary>The require consent.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Clients.UpdateClientModel">
+            <summary>Update client model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.Secret">
+            <summary>The secret.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.Name">
+            <summary>The name.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController">
             <summary>Email Templates Controller — manage the editable email templates (subject/body by key).</summary>
@@ -320,6 +575,9 @@
         </member>
         <member name="T:GM.Identity.Sample.API.Groups.CreateGroupModel">
             <summary>Request body to create a group.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Groups.CreateGroupModel.Name">
+            <summary>The name.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Groups.GroupsController">
             <summary>
@@ -341,6 +599,15 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Groups.GroupsController.RemoveUserFromGroup(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>Remove a user from a group.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Operations.CreateOperationModel">
+            <summary>Create operation model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.CreateOperationModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.CreateOperationModel.Description">
+            <summary>The description.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Operations.GetOperationsListModel">
             <summary>
@@ -367,6 +634,30 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Operations.GetOperationsListModelValidator.#ctor">
             <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Operations.OperationDetailsModel">
+            <summary>Operation details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.OperationDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.OperationDetailsModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.OperationDetailsModel.Description">
+            <summary>The description.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Operations.OperationModel">
+            <summary>Operation model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.OperationModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.OperationModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.OperationModel.Description">
+            <summary>The description.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Operations.OperationsController">
             <summary>
@@ -414,6 +705,24 @@
             <param name="cancellationToken"></param>
             <returns>Operation Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Operations.UpdateOperationModel">
+            <summary>Update operation model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.UpdateOperationModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Operations.UpdateOperationModel.Description">
+            <summary>The description.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.CreatePermissionModel">
+            <summary>Create permission model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.CreatePermissionModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.CreatePermissionModel.Description">
+            <summary>The description.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Permissions.GetPermissionsListModel">
             <summary>
             Get Permissions List
@@ -439,6 +748,30 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Permissions.GetPermissionsListModelValidator.#ctor">
             <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.PermissionDetailsModel">
+            <summary>Permission details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.PermissionDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.PermissionDetailsModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.PermissionDetailsModel.Description">
+            <summary>The description.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.PermissionModel">
+            <summary>Permission model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.PermissionModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.PermissionModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.PermissionModel.Description">
+            <summary>The description.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Permissions.PermissionsController">
             <summary>
@@ -486,6 +819,33 @@
             <param name="cancellationToken"></param>
             <returns>Permission Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Permissions.UpdatePermissionModel">
+            <summary>Update permission model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.UpdatePermissionModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Permissions.UpdatePermissionModel.Description">
+            <summary>The description.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.CreateRoleModel">
+            <summary>Create role model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.CreateRoleModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.CreateRoleModel.RolePermissions">
+            <summary>The role permissions.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.CreateRolePermissionModel">
+            <summary>Create role permission model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.CreateRolePermissionModel.PermissionId">
+            <summary>The permission id.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.GetRolesListModel">
+            <summary>Get roles list model.</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Roles.GetRolesListModel.Id">
             <summary>
             The Id of the Role
@@ -501,6 +861,36 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Roles.GetRolesListModelValidator.#ctor">
             <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.RoleDetailsModel">
+            <summary>Role details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RoleDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RoleDetailsModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.RoleModel">
+            <summary>Role model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RoleModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RoleModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Roles.RolePermissionModel">
+            <summary>Role permission model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RolePermissionModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RolePermissionModel.Role">
+            <summary>The role.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.RolePermissionModel.Permission">
+            <summary>The permission.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Roles.RolesController">
             <summary>
@@ -581,6 +971,30 @@
             <param name="cancellationToken"></param>
             <returns>Role Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Roles.UpdateRoleModel">
+            <summary>Update role model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Roles.UpdateRoleModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.CreateScopeModel">
+            <summary>Create scope model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.CreateScopeModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.CreateScopeModel.ScopeOperations">
+            <summary>The scope operations.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.CreateScopeOperationModel">
+            <summary>Create scope operation model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.CreateScopeOperationModel.OperationId">
+            <summary>The operation id.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.GetScopesListModel">
+            <summary>Get scopes list model.</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Scopes.GetScopesListModel.Id">
             <summary>
             The Id of the Scope
@@ -596,6 +1010,36 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Scopes.GetScopesListModelValidator.#ctor">
             <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.ScopeDetailsModel">
+            <summary>Scope details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeDetailsModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.ScopeModel">
+            <summary>Scope model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.ScopeOperationModel">
+            <summary>Scope operation model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeOperationModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeOperationModel.Scope">
+            <summary>The scope.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.ScopeOperationModel.Operation">
+            <summary>The operation.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Scopes.ScopesController">
             <summary>
@@ -670,14 +1114,56 @@
             <param name="cancellationToken"></param>
             <returns>Scope Details</returns>
         </member>
+        <member name="T:GM.Identity.Sample.API.Scopes.UpdateScopeModel">
+            <summary>Update scope model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Scopes.UpdateScopeModel.Name">
+            <summary>The name.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.BulkSetUserBlockModel">
             <summary>Body for a bulk block/unblock operation.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.BulkSetUserBlockModel.UserIds">
+            <summary>The user ids.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.BulkSetUserBlockModel.Block">
+            <summary>The block.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel">
+            <summary>Change current user password model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel.CurrentPassword">
+            <summary>The current password.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel.NewPassword">
+            <summary>The new password.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.ConfirmUserInitModel">
+            <summary>Confirm user init model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ConfirmUserInitModel.ConfirmationType">
+            <summary>The confirmation type.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.ConfirmUserModel">
+            <summary>Confirm user model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ConfirmUserModel.Code">
+            <summary>The code.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ConfirmUserModel.ConfirmationType">
+            <summary>The confirmation type.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTotpModel">
             <summary>Body for confirming an authenticator-app enrolment: a code produced by the app.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTotpModel.Code">
+            <summary>The code.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel">
             <summary>Body for confirming a pending 2FA enrolment: the one-time setup code the user received.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel.Code">
+            <summary>The code.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.RequestContactChangeModel">
             <summary>Request to change the current user's email or phone (starts verify-before-apply).</summary>
@@ -688,11 +1174,56 @@
         <member name="T:GM.Identity.Sample.API.Users.CreateApiKeyModel">
             <summary>Body to create an API key: a label and an optional expiry.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateApiKeyModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateApiKeyModel.ExpiresAt">
+            <summary>The expires at.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.CreateUserModel">
+            <summary>Create user model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.Username">
+            <summary>The username.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.PhoneNumber">
+            <summary>The phone number.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.Password">
+            <summary>The password.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.UserRoles">
+            <summary>The user roles.</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.TwoFactorAuthTypeIds">
             <summary>Ids of the 2FA methods to enrol the new user in.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.CreateUserRoleModel">
+            <summary>Create user role model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserRoleModel.RoleId">
+            <summary>The role id.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.GetUserAuditTrailModel">
             <summary>Paging inputs for a user's audit-trail (domain-event history) query.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.GetUserSessionsListModel">
+            <summary>Get user sessions list model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.GetUserSessionsListModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.GetUserSessionsListModel.IsRevoked">
+            <summary>The is revoked.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.GetUserSessionsListModel.IsExpired">
+            <summary>The is expired.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.GetUsersListModel">
+            <summary>Get users list model.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Users.GetUsersListModel.Id">
             <summary>
@@ -718,17 +1249,131 @@
         <member name="T:GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel">
             <summary>Body for a time-bound role grant: when the temporary assignment expires.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel.ExpiresAt">
+            <summary>The expires at.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.RecordConsentModel">
             <summary>Body to record acceptance of a consent document.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RecordConsentModel.ConsentType">
+            <summary>The consent type.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RecordConsentModel.DocumentVersion">
+            <summary>The document version.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.RecoverUserPasswordModel">
+            <summary>Recover user password model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RecoverUserPasswordModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RecoverUserPasswordModel.Code">
+            <summary>The code.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RecoverUserPasswordModel.Password">
+            <summary>The password.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.RecoveryCodesModel">
             <summary>The freshly generated recovery codes, returned exactly once. The user must store them now.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.RecoveryCodesModel.Codes">
+            <summary>The codes.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.RegisterPasskeyModel">
             <summary>Body to register a passkey: the credential id, its ES256 public key (SPKI, base64), and a label.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.RegisterPasskeyModel.CredentialId">
+            <summary>The credential id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RegisterPasskeyModel.PublicKeySpkiBase64">
+            <summary>The public key spki base64.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.RegisterPasskeyModel.Name">
+            <summary>The name.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.ResetUserPasswordModel">
+            <summary>Reset user password model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ResetUserPasswordModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.ResetUserPasswordModel.NotificationType">
+            <summary>The notification type.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UpdateUserModel">
+            <summary>Update user model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.Username">
+            <summary>The username.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.PhoneNumber">
+            <summary>The phone number.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UpdateUserPasswordModel">
+            <summary>Update user password model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserPasswordModel.Password">
+            <summary>The password.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UserAuditTrailModel">
             <summary>One recorded domain event in a user's audit trail, with the actor/request context it occurred under.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.EventType">
+            <summary>The event type.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.OccurredOn">
+            <summary>The occurred on.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.UserId">
+            <summary>The user id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.TenantId">
+            <summary>The tenant id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.SessionId">
+            <summary>The session id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.IpAddress">
+            <summary>The ip address.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.CorrelationId">
+            <summary>The correlation id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.Payload">
+            <summary>The payload.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UserDetailsModel">
+            <summary>User details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Username">
+            <summary>The username.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UserModel">
+            <summary>User model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserModel.Email">
+            <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserModel.Username">
+            <summary>The username.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UsersController">
             <summary>
@@ -1014,6 +1659,51 @@
             <param name="id">User Id to Get</param>
             <param name="cancellationToken"></param>
             <returns>User Details</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UserSessionModel">
+            <summary>User session model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.UserId">
+            <summary>The user id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.IsRevoked">
+            <summary>The is revoked.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.RevokedAt">
+            <summary>The revoked at.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.ExpiresAt">
+            <summary>The expires at.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.TenantId">
+            <summary>The tenant id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.ChannelId">
+            <summary>The channel id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.Culture">
+            <summary>The culture.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.IpAddress">
+            <summary>The ip address.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.UserAgent">
+            <summary>The user agent.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.CorrelationId">
+            <summary>The correlation id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.IdempotencyKey">
+            <summary>The idempotency key.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserSessionModel.Source">
+            <summary>The source.</summary>
         </member>
         <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
             <summary>

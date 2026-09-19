@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Scopes;
 
+/// <summary>Get scopes list model.</summary>
 public class GetScopesListModel : GetBaseListModel
 {
     /// <summary>

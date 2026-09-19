@@ -7,6 +7,7 @@ namespace GM.Identity.Sample.API.Groups;
 /// <summary>Request body to create a group.</summary>
 public class CreateGroupModel
 {
+    /// <summary>The name.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Name")]
     public string Name { get; set; } = null!;
 }

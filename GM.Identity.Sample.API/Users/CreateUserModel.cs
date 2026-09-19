@@ -1,18 +1,26 @@
 ﻿using FluentValidation;
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Users;
 
 public class CreateUserModel
 {
+    [Display(ResourceType = typeof(StringResource), Name = "UserName")]
     public string? Username { get; set; }
+    [Display(ResourceType = typeof(StringResource), Name = "Email")]
     public string? Email { get; set; }
+    [Display(ResourceType = typeof(StringResource), Name = "PhoneNumber")]
     public string? PhoneNumber { get; set; }
+    [Display(ResourceType = typeof(StringResource), Name = "Password")]
     public string? Password { get; set; }
 
+    [Display(ResourceType = typeof(StringResource), Name = "UserRoles")]
     public IEnumerable<CreateUserRoleModel>? UserRoles { get; set; }
 
     /// <summary>Ids of the 2FA methods to enrol the new user in.</summary>
+    [Display(ResourceType = typeof(StringResource), Name = "TwoFactorAuthTypeIds")]
     public IEnumerable<int>? TwoFactorAuthTypeIds { get; set; }
 }
 

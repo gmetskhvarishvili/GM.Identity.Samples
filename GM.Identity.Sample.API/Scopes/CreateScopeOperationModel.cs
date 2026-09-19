@@ -1,10 +1,13 @@
 ﻿using FluentValidation;
 
 using System;
+using System.ComponentModel.DataAnnotations;
+using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Scopes;
 
 public class CreateScopeOperationModel
 {
+    [Display(ResourceType = typeof(StringResource), Name = "OperationId")]
     public Guid OperationId { get; set; }
 }
 

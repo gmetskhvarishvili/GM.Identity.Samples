@@ -2,12 +2,16 @@ using FluentValidation;
 
 using System;
 
+using System.ComponentModel.DataAnnotations;
+using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Users;
 
 /// <summary>Body to create an API key: a label and an optional expiry.</summary>
 public class CreateApiKeyModel
 {
+    [Display(ResourceType = typeof(StringResource), Name = "Name")]
     public string Name { get; set; } = null!;
+    [Display(ResourceType = typeof(StringResource), Name = "ExpiresAt")]
     public DateTime? ExpiresAt { get; set; }
 }
 

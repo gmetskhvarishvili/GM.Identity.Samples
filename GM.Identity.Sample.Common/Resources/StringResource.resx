@@ -180,4 +180,193 @@
   <data name="UserSession" xml:space="preserve">
     <value>User Session</value>
   </data>
+  <data name="ApiKey" xml:space="preserve">
+    <value>Api Key</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="BackchannelLogoutUri" xml:space="preserve">
+    <value>Backchannel Logout Uri</value>
+  </data>
+  <data name="Block" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="ChannelId" xml:space="preserve">
+    <value>Channel Id</value>
+  </data>
+  <data name="ClientId" xml:space="preserve">
+    <value>Client Id</value>
+  </data>
+  <data name="ClientName" xml:space="preserve">
+    <value>Client Name</value>
+  </data>
+  <data name="ClientScopes" xml:space="preserve">
+    <value>Client Scopes</value>
+  </data>
+  <data name="ClientSecret" xml:space="preserve">
+    <value>Client Secret</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="CodeChallenge" xml:space="preserve">
+    <value>Code Challenge</value>
+  </data>
+  <data name="CodeChallengeMethod" xml:space="preserve">
+    <value>Code Challenge Method</value>
+  </data>
+  <data name="CodeVerifier" xml:space="preserve">
+    <value>Code Verifier</value>
+  </data>
+  <data name="Codes" xml:space="preserve">
+    <value>Codes</value>
+  </data>
+  <data name="ConfirmationType" xml:space="preserve">
+    <value>Confirmation Type</value>
+  </data>
+  <data name="Consent" xml:space="preserve">
+    <value>Consent</value>
+  </data>
+  <data name="ConsentType" xml:space="preserve">
+    <value>Consent Type</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Correlation Id</value>
+  </data>
+  <data name="CredentialId" xml:space="preserve">
+    <value>Credential Id</value>
+  </data>
+  <data name="CultureCode" xml:space="preserve">
+    <value>Culture Code</value>
+  </data>
+  <data name="CurrentPassword" xml:space="preserve">
+    <value>Current Password</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="DeviceCode" xml:space="preserve">
+    <value>Device Code</value>
+  </data>
+  <data name="DocumentVersion" xml:space="preserve">
+    <value>Document Version</value>
+  </data>
+  <data name="EventType" xml:space="preserve">
+    <value>Event Type</value>
+  </data>
+  <data name="ExpiresAt" xml:space="preserve">
+    <value>Expires At</value>
+  </data>
+  <data name="FrontchannelLogoutUri" xml:space="preserve">
+    <value>Frontchannel Logout Uri</value>
+  </data>
+  <data name="GrantType" xml:space="preserve">
+    <value>Grant Type</value>
+  </data>
+  <data name="IdTokenHint" xml:space="preserve">
+    <value>Id Token Hint</value>
+  </data>
+  <data name="IdempotencyKey" xml:space="preserve">
+    <value>Idempotency Key</value>
+  </data>
+  <data name="IpAddress" xml:space="preserve">
+    <value>Ip Address</value>
+  </data>
+  <data name="IsExpired" xml:space="preserve">
+    <value>Is Expired</value>
+  </data>
+  <data name="IsRevoked" xml:space="preserve">
+    <value>Is Revoked</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>New Password</value>
+  </data>
+  <data name="Nonce" xml:space="preserve">
+    <value>Nonce</value>
+  </data>
+  <data name="NotificationType" xml:space="preserve">
+    <value>Notification Type</value>
+  </data>
+  <data name="OccurredOn" xml:space="preserve">
+    <value>Occurred On</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Payload" xml:space="preserve">
+    <value>Payload</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="PostLogoutRedirectUri" xml:space="preserve">
+    <value>Post Logout Redirect Uri</value>
+  </data>
+  <data name="Prompt" xml:space="preserve">
+    <value>Prompt</value>
+  </data>
+  <data name="PublicKeySpkiBase64" xml:space="preserve">
+    <value>Public Key Spki Base64</value>
+  </data>
+  <data name="RedirectUri" xml:space="preserve">
+    <value>Redirect Uri</value>
+  </data>
+  <data name="RedirectUris" xml:space="preserve">
+    <value>Redirect Uris</value>
+  </data>
+  <data name="RefreshToken" xml:space="preserve">
+    <value>Refresh Token</value>
+  </data>
+  <data name="RequireConsent" xml:space="preserve">
+    <value>Require Consent</value>
+  </data>
+  <data name="RevokedAt" xml:space="preserve">
+    <value>Revoked At</value>
+  </data>
+  <data name="RolePermissions" xml:space="preserve">
+    <value>Role Permissions</value>
+  </data>
+  <data name="ScopeOperations" xml:space="preserve">
+    <value>Scope Operations</value>
+  </data>
+  <data name="Secret" xml:space="preserve">
+    <value>Secret</value>
+  </data>
+  <data name="SessionId" xml:space="preserve">
+    <value>Session Id</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="TenantId" xml:space="preserve">
+    <value>Tenant Id</value>
+  </data>
+  <data name="Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+  <data name="TokenTypeHint" xml:space="preserve">
+    <value>Token Type Hint</value>
+  </data>
+  <data name="TwoFactorAuthTypeIds" xml:space="preserve">
+    <value>Two Factor Auth Type Ids</value>
+  </data>
+  <data name="UserAgent" xml:space="preserve">
+    <value>User Agent</value>
+  </data>
+  <data name="UserCode" xml:space="preserve">
+    <value>User Code</value>
+  </data>
+  <data name="UserId" xml:space="preserve">
+    <value>User Id</value>
+  </data>
+  <data name="UserIds" xml:space="preserve">
+    <value>User Ids</value>
+  </data>
+  <data name="UserRoles" xml:space="preserve">
+    <value>User Roles</value>
+  </data>
 </root>

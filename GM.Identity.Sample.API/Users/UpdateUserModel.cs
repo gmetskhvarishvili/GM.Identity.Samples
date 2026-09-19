@@ -1,11 +1,16 @@
 using FluentValidation;
 
+using System.ComponentModel.DataAnnotations;
+using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Users;
 
 public class UpdateUserModel
 {
+    [Display(ResourceType = typeof(StringResource), Name = "UserName")]
     public string? Username { get; set; }
+    [Display(ResourceType = typeof(StringResource), Name = "Email")]
     public string? Email { get; set; }
+    [Display(ResourceType = typeof(StringResource), Name = "PhoneNumber")]
     public string? PhoneNumber { get; set; }
 }
 

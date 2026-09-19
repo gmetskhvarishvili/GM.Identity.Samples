@@ -1,10 +1,13 @@
 ﻿using FluentValidation;
 
 using System;
+using System.ComponentModel.DataAnnotations;
+using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.Clients;
 
 public class CreateClientScopeModel
 {
+    [Display(ResourceType = typeof(StringResource), Name = "ScopeId")]
     public Guid ScopeId { get; set; }
 }
 

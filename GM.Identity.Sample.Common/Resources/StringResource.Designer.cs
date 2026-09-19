@@ -247,5 +247,383 @@ namespace GM.Identity.Sample.Common.Resources {
                 return ResourceManager.GetString("TwoFactorAuthType", resourceCulture);
             }
         }
+        public static string ApiKey {
+            get {
+                return ResourceManager.GetString("ApiKey", resourceCulture);
+            }
+        }
+
+        public static string Approve {
+            get {
+                return ResourceManager.GetString("Approve", resourceCulture);
+            }
+        }
+
+        public static string BackchannelLogoutUri {
+            get {
+                return ResourceManager.GetString("BackchannelLogoutUri", resourceCulture);
+            }
+        }
+
+        public static string Block {
+            get {
+                return ResourceManager.GetString("Block", resourceCulture);
+            }
+        }
+
+        public static string ChannelId {
+            get {
+                return ResourceManager.GetString("ChannelId", resourceCulture);
+            }
+        }
+
+        public static string ClientId {
+            get {
+                return ResourceManager.GetString("ClientId", resourceCulture);
+            }
+        }
+
+        public static string ClientName {
+            get {
+                return ResourceManager.GetString("ClientName", resourceCulture);
+            }
+        }
+
+        public static string ClientScopes {
+            get {
+                return ResourceManager.GetString("ClientScopes", resourceCulture);
+            }
+        }
+
+        public static string ClientSecret {
+            get {
+                return ResourceManager.GetString("ClientSecret", resourceCulture);
+            }
+        }
+
+        public static string Code {
+            get {
+                return ResourceManager.GetString("Code", resourceCulture);
+            }
+        }
+
+        public static string CodeChallenge {
+            get {
+                return ResourceManager.GetString("CodeChallenge", resourceCulture);
+            }
+        }
+
+        public static string CodeChallengeMethod {
+            get {
+                return ResourceManager.GetString("CodeChallengeMethod", resourceCulture);
+            }
+        }
+
+        public static string CodeVerifier {
+            get {
+                return ResourceManager.GetString("CodeVerifier", resourceCulture);
+            }
+        }
+
+        public static string Codes {
+            get {
+                return ResourceManager.GetString("Codes", resourceCulture);
+            }
+        }
+
+        public static string ConfirmationType {
+            get {
+                return ResourceManager.GetString("ConfirmationType", resourceCulture);
+            }
+        }
+
+        public static string Consent {
+            get {
+                return ResourceManager.GetString("Consent", resourceCulture);
+            }
+        }
+
+        public static string ConsentType {
+            get {
+                return ResourceManager.GetString("ConsentType", resourceCulture);
+            }
+        }
+
+        public static string CorrelationId {
+            get {
+                return ResourceManager.GetString("CorrelationId", resourceCulture);
+            }
+        }
+
+        public static string CredentialId {
+            get {
+                return ResourceManager.GetString("CredentialId", resourceCulture);
+            }
+        }
+
+        public static string CultureCode {
+            get {
+                return ResourceManager.GetString("CultureCode", resourceCulture);
+            }
+        }
+
+        public static string CurrentPassword {
+            get {
+                return ResourceManager.GetString("CurrentPassword", resourceCulture);
+            }
+        }
+
+        public static string Description {
+            get {
+                return ResourceManager.GetString("Description", resourceCulture);
+            }
+        }
+
+        public static string DeviceCode {
+            get {
+                return ResourceManager.GetString("DeviceCode", resourceCulture);
+            }
+        }
+
+        public static string DocumentVersion {
+            get {
+                return ResourceManager.GetString("DocumentVersion", resourceCulture);
+            }
+        }
+
+        public static string EventType {
+            get {
+                return ResourceManager.GetString("EventType", resourceCulture);
+            }
+        }
+
+        public static string ExpiresAt {
+            get {
+                return ResourceManager.GetString("ExpiresAt", resourceCulture);
+            }
+        }
+
+        public static string FrontchannelLogoutUri {
+            get {
+                return ResourceManager.GetString("FrontchannelLogoutUri", resourceCulture);
+            }
+        }
+
+        public static string GrantType {
+            get {
+                return ResourceManager.GetString("GrantType", resourceCulture);
+            }
+        }
+
+        public static string IdTokenHint {
+            get {
+                return ResourceManager.GetString("IdTokenHint", resourceCulture);
+            }
+        }
+
+        public static string IdempotencyKey {
+            get {
+                return ResourceManager.GetString("IdempotencyKey", resourceCulture);
+            }
+        }
+
+        public static string IpAddress {
+            get {
+                return ResourceManager.GetString("IpAddress", resourceCulture);
+            }
+        }
+
+        public static string IsExpired {
+            get {
+                return ResourceManager.GetString("IsExpired", resourceCulture);
+            }
+        }
+
+        public static string IsRevoked {
+            get {
+                return ResourceManager.GetString("IsRevoked", resourceCulture);
+            }
+        }
+
+        public static string NewPassword {
+            get {
+                return ResourceManager.GetString("NewPassword", resourceCulture);
+            }
+        }
+
+        public static string Nonce {
+            get {
+                return ResourceManager.GetString("Nonce", resourceCulture);
+            }
+        }
+
+        public static string NotificationType {
+            get {
+                return ResourceManager.GetString("NotificationType", resourceCulture);
+            }
+        }
+
+        public static string OccurredOn {
+            get {
+                return ResourceManager.GetString("OccurredOn", resourceCulture);
+            }
+        }
+
+        public static string Password {
+            get {
+                return ResourceManager.GetString("Password", resourceCulture);
+            }
+        }
+
+        public static string Payload {
+            get {
+                return ResourceManager.GetString("Payload", resourceCulture);
+            }
+        }
+
+        public static string PhoneNumber {
+            get {
+                return ResourceManager.GetString("PhoneNumber", resourceCulture);
+            }
+        }
+
+        public static string PostLogoutRedirectUri {
+            get {
+                return ResourceManager.GetString("PostLogoutRedirectUri", resourceCulture);
+            }
+        }
+
+        public static string Prompt {
+            get {
+                return ResourceManager.GetString("Prompt", resourceCulture);
+            }
+        }
+
+        public static string PublicKeySpkiBase64 {
+            get {
+                return ResourceManager.GetString("PublicKeySpkiBase64", resourceCulture);
+            }
+        }
+
+        public static string RedirectUri {
+            get {
+                return ResourceManager.GetString("RedirectUri", resourceCulture);
+            }
+        }
+
+        public static string RedirectUris {
+            get {
+                return ResourceManager.GetString("RedirectUris", resourceCulture);
+            }
+        }
+
+        public static string RefreshToken {
+            get {
+                return ResourceManager.GetString("RefreshToken", resourceCulture);
+            }
+        }
+
+        public static string RequireConsent {
+            get {
+                return ResourceManager.GetString("RequireConsent", resourceCulture);
+            }
+        }
+
+        public static string RevokedAt {
+            get {
+                return ResourceManager.GetString("RevokedAt", resourceCulture);
+            }
+        }
+
+        public static string RolePermissions {
+            get {
+                return ResourceManager.GetString("RolePermissions", resourceCulture);
+            }
+        }
+
+        public static string ScopeOperations {
+            get {
+                return ResourceManager.GetString("ScopeOperations", resourceCulture);
+            }
+        }
+
+        public static string Secret {
+            get {
+                return ResourceManager.GetString("Secret", resourceCulture);
+            }
+        }
+
+        public static string SessionId {
+            get {
+                return ResourceManager.GetString("SessionId", resourceCulture);
+            }
+        }
+
+        public static string Source {
+            get {
+                return ResourceManager.GetString("Source", resourceCulture);
+            }
+        }
+
+        public static string State {
+            get {
+                return ResourceManager.GetString("State", resourceCulture);
+            }
+        }
+
+        public static string TenantId {
+            get {
+                return ResourceManager.GetString("TenantId", resourceCulture);
+            }
+        }
+
+        public static string Token {
+            get {
+                return ResourceManager.GetString("Token", resourceCulture);
+            }
+        }
+
+        public static string TokenTypeHint {
+            get {
+                return ResourceManager.GetString("TokenTypeHint", resourceCulture);
+            }
+        }
+
+        public static string TwoFactorAuthTypeIds {
+            get {
+                return ResourceManager.GetString("TwoFactorAuthTypeIds", resourceCulture);
+            }
+        }
+
+        public static string UserAgent {
+            get {
+                return ResourceManager.GetString("UserAgent", resourceCulture);
+            }
+        }
+
+        public static string UserCode {
+            get {
+                return ResourceManager.GetString("UserCode", resourceCulture);
+            }
+        }
+
+        public static string UserId {
+            get {
+                return ResourceManager.GetString("UserId", resourceCulture);
+            }
+        }
+
+        public static string UserIds {
+            get {
+                return ResourceManager.GetString("UserIds", resourceCulture);
+            }
+        }
+
+        public static string UserRoles {
+            get {
+                return ResourceManager.GetString("UserRoles", resourceCulture);
+            }
+        }
+
     }
 }

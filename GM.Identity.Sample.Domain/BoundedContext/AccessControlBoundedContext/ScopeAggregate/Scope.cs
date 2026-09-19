@@ -12,7 +12,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
-using GM.EntityFramework.Domain.Common;
 using GM.Identity.Domain.AccessControl.ScopeAggregate.Entities;
 
 using System;
@@ -23,7 +22,7 @@ public class Scope
     : GMScope<Client, ClientSession, ClientScope, Scope, ScopeOperation, Operation,
             User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
             UserRole, Role, RolePermission, Permission>
-        ,  IAggregateRoot, IHasTenant
+        ,  IAggregateRoot
 {
     private Scope() // EF Core materialization
     {
@@ -40,9 +39,5 @@ public class Scope
         return new Scope(name);
     }
 
-    /// <summary>The tenant this scope belongs to, or <c>null</c> for a global (cross-tenant) row.</summary>
-    public Guid? TenantId { get; private set; }
 
-    /// <summary>Assigns the owning tenant (stamped by the persistence layer on insert when unset).</summary>
-    public void AssignTenant(Guid? tenantId) => TenantId = tenantId;
 }

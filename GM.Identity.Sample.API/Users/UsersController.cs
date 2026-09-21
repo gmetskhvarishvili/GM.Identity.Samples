@@ -23,9 +23,7 @@ using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
-using GM.Identity.Sample.Application.Users.Commands.GrantUserPermission;
 using GM.Identity.Sample.Application.Users.Commands.ImpersonateUser;
-using GM.Identity.Sample.Application.Users.Commands.RevokeUserPermission;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.MergeUsers;
@@ -510,31 +508,6 @@ public class UsersController : BaseController
         [FromRoute] Guid id, [FromRoute] Guid apiKeyId, CancellationToken cancellationToken)
     {
         await Mediator.Send(new RevokeApiKeyCommand { UserId = id, ApiKeyId = apiKeyId }, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Grant a permission directly to a user (in addition to role-derived permissions).</summary>
-    [HasPermission(nameof(GrantUserPermission))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/Permissions/{permissionId}", Name = nameof(GrantUserPermission))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GrantUserPermission(
-        [FromRoute] Guid id, [FromRoute] Guid permissionId, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new GrantUserPermissionCommand { UserId = id, PermissionId = permissionId }, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Revoke a directly-granted user permission.</summary>
-    [HasPermission(nameof(RevokeUserPermission))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpDelete("{id}/Permissions/{permissionId}", Name = nameof(RevokeUserPermission))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RevokeUserPermission(
-        [FromRoute] Guid id, [FromRoute] Guid permissionId, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new RevokeUserPermissionCommand { UserId = id, PermissionId = permissionId }, cancellationToken);
         return Ok();
     }
 

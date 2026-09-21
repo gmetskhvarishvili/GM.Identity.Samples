@@ -29,21 +29,6 @@ public sealed class PermissionCacheReconciliationJob(
             .GroupBy(x => x.UserId)
             .ToDictionary(g => g.Key, g => g.Select(x => x.RoleId).ToHashSet());
 
-        // Group membership contributes the group's roles to each member.
-        var groupRoles = (await unitOfWork.GroupRoleRepository.GetAllAsync(true, null, cancellationToken))
-            .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden)
-            .GroupBy(x => x.GroupId)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.RoleId).ToList());
-        var userGroups = (await unitOfWork.UserGroupRepository.GetAllAsync(true, null, cancellationToken))
-            .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden);
-        foreach (var membership in userGroups)
-        {
-            if (!groupRoles.TryGetValue(membership.GroupId, out var rolesOfGroup)) continue;
-            if (!roleIdsByUser.TryGetValue(membership.UserId, out var set))
-                roleIdsByUser[membership.UserId] = set = new HashSet<Guid>();
-            set.UnionWith(rolesOfGroup);
-        }
-
         var desiredUserRoles = roleIdsByUser
             .ToDictionary(kv => kv.Key, kv => (IReadOnlyCollection<Guid>)kv.Value.ToList());
 
@@ -52,24 +37,6 @@ public sealed class PermissionCacheReconciliationJob(
             .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden)
             .GroupBy(x => x.RoleId)
             .ToDictionary(g => g.Key, g => (IReadOnlyCollection<Guid>)g.Select(x => x.PermissionId).Distinct().ToList());
-
-        // Direct user permissions are projected under the user's own id as a synthetic "self-role": add that
-        // id to the user's role set and give it the directly-granted permissions.
-        var userPermissions = (await unitOfWork.UserPermissionRepository.GetAllAsync(true, null, cancellationToken))
-            .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden)
-            .GroupBy(x => x.UserId)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.PermissionId).Distinct().ToList());
-
-        foreach (var (userId, permissionIds) in userPermissions)
-        {
-            var roles = desiredUserRoles.TryGetValue(userId, out var existing)
-                ? new List<Guid>(existing)
-                : new List<Guid>();
-            if (!roles.Contains(userId))
-                roles.Add(userId);
-            desiredUserRoles[userId] = roles;
-            desiredRolePermissions[userId] = permissionIds;
-        }
 
         // Overwrite each desired key (atomic per key).
         foreach (var (userId, roleIds) in desiredUserRoles)

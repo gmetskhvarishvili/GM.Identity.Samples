@@ -2,11 +2,9 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
@@ -26,7 +24,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.EmailTemplateAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Application.Infrastructure.Services.Audit;
@@ -90,9 +87,6 @@ public static class DependencyInjection
         services.AddTransient<IPermissionRepository, PermissionRepository>();
         services.AddTransient<IRolePermissionRepository, RolePermissionRepository>();
         services.AddTransient<IRoleRepository, RoleRepository>();
-        services.AddTransient<IGroupRepository, GroupRepository>();
-        services.AddTransient<IGroupRoleRepository, GroupRoleRepository>();
-        services.AddTransient<IUserGroupRepository, UserGroupRepository>();
         services.AddTransient<ITwoFactorAuthTypeRepository, TwoFactorAuthTypeRepository>();
         services.AddTransient<IUserSessionRepository, UserSessionRepository>();
         services.AddTransient<IUserRepository, UserRepository>();
@@ -103,7 +97,6 @@ public static class DependencyInjection
         services.AddTransient<IUserTotpDeviceRepository, UserTotpDeviceRepository>();
         services.AddTransient<IUserPasswordHistoryRepository, UserPasswordHistoryRepository>();
         services.AddTransient<IUserPendingContactChangeRepository, UserPendingContactChangeRepository>();
-        services.AddTransient<IUserPermissionRepository, UserPermissionRepository>();
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<ISsoSessionRepository, SsoSessionRepository>();
@@ -113,7 +106,6 @@ public static class DependencyInjection
         services.AddTransient<IUserConsentRepository, UserConsentRepository>();
         services.AddTransient<IUserPasskeyRepository, UserPasskeyRepository>();
         services.AddTransient<IPasskeyChallengeRepository, PasskeyChallengeRepository>();
-        services.AddTransient<IEmailTemplateRepository, EmailTemplateRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
         // Read-side over the durable domain-event log (the audit trail).

@@ -3,11 +3,9 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Clien
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
@@ -27,7 +25,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.EmailTemplateAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Identity.Sample.Persistence.Context;
@@ -46,7 +43,6 @@ public sealed class UnitOfWork(
     IUserSessionRepository userSessionRepository,
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
-    IUserPermissionRepository userPermissionRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
     IUserRecoveryCodeRepository userRecoveryCodeRepository,
     IUserPasswordHistoryRepository userPasswordHistoryRepository,
@@ -61,12 +57,8 @@ public sealed class UnitOfWork(
     IUserConsentRepository userConsentRepository,
     IUserPasskeyRepository userPasskeyRepository,
     IPasskeyChallengeRepository passkeyChallengeRepository,
-    IEmailTemplateRepository emailTemplateRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
-    IGroupRepository groupRepository,
-    IGroupRoleRepository groupRoleRepository,
-    IUserGroupRepository userGroupRepository,
     IRolePermissionRepository rolePermissionRepository,
     IPermissionRepository permissionRepository)
     : GenericUnitOfWork<ApplicationDbContext>(context), IUnitOfWork
@@ -93,15 +85,10 @@ public sealed class UnitOfWork(
     public IUserConsentRepository UserConsentRepository { get; } = userConsentRepository;
     public IUserPasskeyRepository UserPasskeyRepository { get; } = userPasskeyRepository;
     public IPasskeyChallengeRepository PasskeyChallengeRepository { get; } = passkeyChallengeRepository;
-    public IEmailTemplateRepository EmailTemplateRepository { get; } = emailTemplateRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;
     public IUserRepository UserRepository { get; } = userRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;
-    public IUserPermissionRepository UserPermissionRepository { get; } = userPermissionRepository;
     public IRoleRepository RoleRepository { get; } = roleRepository;
-    public IGroupRepository GroupRepository { get; } = groupRepository;
-    public IGroupRoleRepository GroupRoleRepository { get; } = groupRoleRepository;
-    public IUserGroupRepository UserGroupRepository { get; } = userGroupRepository;
     public IRolePermissionRepository RolePermissionRepository { get; } = rolePermissionRepository;
     public IPermissionRepository PermissionRepository { get; } = permissionRepository;
 }

@@ -2,12 +2,10 @@ using GM.EntityFramework.Domain.Repositories;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
@@ -27,7 +25,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendin
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserRecoveryCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.EmailTemplateAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 
 namespace GM.Identity.Sample.Domain.SeedWork;
@@ -65,14 +62,9 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public IPasskeyChallengeRepository PasskeyChallengeRepository { get; }
   
     public IUserRoleRepository UserRoleRepository { get; }
-    public IUserPermissionRepository UserPermissionRepository { get; }
     public IRoleRepository RoleRepository { get; }
-    public IGroupRepository GroupRepository { get; }
-    public IGroupRoleRepository GroupRoleRepository { get; }
-    public IUserGroupRepository UserGroupRepository { get; }
     public IPermissionRepository PermissionRepository { get; }
     public IRolePermissionRepository RolePermissionRepository { get; }
     
     public IOutboxMessageRepository OutboxMessageRepository { get; }
-    public IEmailTemplateRepository EmailTemplateRepository { get; }
 }

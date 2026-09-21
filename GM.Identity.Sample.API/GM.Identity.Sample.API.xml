@@ -17,12 +17,6 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.Register(GM.Identity.Sample.API.Accounts.RegisterModel,System.Threading.CancellationToken)">
-            <summary>
-            Public self-registration: creates a new account and sends an email confirmation code. Returns the new
-            user id. The account must confirm its email via the confirm flow.
-            </summary>
-        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.BeginPasskeyAssertion(GM.Identity.Sample.API.Accounts.BeginPasskeyModel,System.Threading.CancellationToken)">
             <summary>Begin a passkey login: returns a single-use challenge for the user's authenticator to sign.</summary>
         </member>
@@ -295,21 +289,6 @@
         <member name="T:GM.Identity.Sample.API.Accounts.CompletePasskeyModel">
             <summary>Body to complete a passkey login (WebAuthn assertion, all binary fields base64url).</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Accounts.RegisterModel">
-            <summary>Self-registration request body.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.Username">
-            <summary>The username.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.Email">
-            <summary>The email.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.PhoneNumber">
-            <summary>The phone number.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.RegisterModel.Password">
-            <summary>The password.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.RevokeTokenModel">
             <summary>Revoke token model.</summary>
         </member>
@@ -560,45 +539,6 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.Name">
             <summary>The name.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController">
-            <summary>Email Templates Controller — manage the editable email templates (subject/body by key).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController.SaveEmailTemplate(System.String,GM.Identity.Sample.API.EmailTemplates.SaveEmailTemplateModel,System.Threading.CancellationToken)">
-            <summary>Create or update an email template (upsert by key).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.EmailTemplates.EmailTemplatesController.GetEmailTemplates(System.Threading.CancellationToken)">
-            <summary>List all email templates.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.EmailTemplates.SaveEmailTemplateModel">
-            <summary>Body for creating/updating an email template.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Groups.CreateGroupModel">
-            <summary>Request body to create a group.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Groups.CreateGroupModel.Name">
-            <summary>The name.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Groups.GroupsController">
-            <summary>
-            Groups Controller — manage groups (teams), the roles attached to them, and their members. Users inherit the
-            roles of every group they belong to.
-            </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.AddGroup(GM.Identity.Sample.API.Groups.CreateGroupModel,System.Threading.CancellationToken)">
-            <summary>Create a group.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.AddGroupRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Grant a role to a group.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.RemoveGroupRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Remove a role from a group.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.AddUserToGroup(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Add a user to a group.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Groups.GroupsController.RemoveUserFromGroup(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Remove a user from a group.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Operations.CreateOperationModel">
             <summary>Create operation model.</summary>
@@ -1474,12 +1414,6 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeApiKey(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>Revoke one of a user's API keys.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantUserPermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Grant a permission directly to a user (in addition to role-derived permissions).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeUserPermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Revoke a directly-granted user permission.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ImpersonateUser(System.Guid,GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>

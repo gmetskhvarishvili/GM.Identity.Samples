@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Accounts.Commands.RegisterUser;
+using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteCurrentUser;
 using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
@@ -61,15 +61,15 @@ public sealed class AccountLifecycleEndToEndTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Register_then_export_then_self_delete()
+    public async Task Create_then_export_then_self_delete()
     {
         if (!_infraReady) return;
 
-        // Register (public) → unconfirmed account + queued confirmation.
+        // Create the user.
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            _userId = await mediator.Send(new RegisterUserCommand
+            _userId = await mediator.Send(new CreateUserCommand
             {
                 Username = $"reg-{_suffix}",
                 Email = $"reg-{_suffix}@test.local",
@@ -77,15 +77,6 @@ public sealed class AccountLifecycleEndToEndTests : IAsyncLifetime
             });
         }
         Assert.NotEqual(Guid.Empty, _userId);
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var user = await context.Set<User>().IgnoreQueryFilters().FirstAsync(u => u.Id == _userId);
-            Assert.False(user.EmailConfirmed); // starts unconfirmed
-            Assert.True(await context.Set<OutboxMessage>()
-                .AnyAsync(m => m.UserId == _userId && m.EventType.Contains("UserConfirmationInitiatedIntegrationEvent")));
-        }
 
         // Export → returns the profile.
         using (var scope = _factory.Services.CreateScope())

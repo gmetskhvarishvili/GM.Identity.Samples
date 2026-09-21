@@ -23,10 +23,8 @@ using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
-using GM.Identity.Sample.Application.Users.Commands.GrantTimeBoundRole;
 using GM.Identity.Sample.Application.Users.Commands.GrantUserPermission;
 using GM.Identity.Sample.Application.Users.Commands.ImpersonateUser;
-using GM.Identity.Sample.Application.Users.Commands.RevokeTimeBoundRole;
 using GM.Identity.Sample.Application.Users.Commands.RevokeUserPermission;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
@@ -512,33 +510,6 @@ public class UsersController : BaseController
         [FromRoute] Guid id, [FromRoute] Guid apiKeyId, CancellationToken cancellationToken)
     {
         await Mediator.Send(new RevokeApiKeyCommand { UserId = id, ApiKeyId = apiKeyId }, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Grant a role to a user until an expiry time (temporary/elevated access).</summary>
-    [HasPermission(nameof(GrantTimeBoundRole))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/TimeBoundRoles/{roleId}", Name = nameof(GrantTimeBoundRole))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GrantTimeBoundRole(
-        [FromRoute] Guid id, [FromRoute] Guid roleId, [FromBody] GrantTimeBoundRoleModel request, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(
-            new GrantTimeBoundRoleCommand { UserId = id, RoleId = roleId, ExpiresAt = request.ExpiresAt },
-            cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Revoke a time-bound role grant before it expires.</summary>
-    [HasPermission(nameof(RevokeTimeBoundRole))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpDelete("{id}/TimeBoundRoles/{roleId}", Name = nameof(RevokeTimeBoundRole))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RevokeTimeBoundRole(
-        [FromRoute] Guid id, [FromRoute] Guid roleId, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new RevokeTimeBoundRoleCommand { UserId = id, RoleId = roleId }, cancellationToken);
         return Ok();
     }
 

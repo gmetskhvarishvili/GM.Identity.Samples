@@ -44,15 +44,6 @@ public static class UserRoleProjection
             roleIds.UnionWith(groupRoles);
         }
 
-        // Time-bound role grants that haven't expired.
-        var now = DateTime.UtcNow;
-        var temporaryRoles = await unitOfWork.TimeBoundRoleGrantRepository
-            .Query(false, null).IgnoreQueryFilters()
-            .Where(x => x.UserId == userId && x.ExpiresAt > now && x.IsActive && !x.IsDeleted && !x.IsHidden)
-            .Select(x => x.RoleId)
-            .ToListAsync(cancellationToken);
-        roleIds.UnionWith(temporaryRoles);
-
         // Synthetic self-role carries any directly-granted permissions.
         var hasDirectPermissions = await unitOfWork.UserPermissionRepository.ExistsAsync(
             x => x.UserId == userId && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken);

@@ -4,7 +4,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Permi
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.TimeBoundRoleGrantAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
@@ -105,7 +104,6 @@ public static class DependencyInjection
         services.AddTransient<IUserPasswordHistoryRepository, UserPasswordHistoryRepository>();
         services.AddTransient<IUserPendingContactChangeRepository, UserPendingContactChangeRepository>();
         services.AddTransient<IUserPermissionRepository, UserPermissionRepository>();
-        services.AddTransient<ITimeBoundRoleGrantRepository, TimeBoundRoleGrantRepository>();
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<ISsoSessionRepository, SsoSessionRepository>();

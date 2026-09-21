@@ -5,7 +5,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Permi
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.GroupAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.TimeBoundRoleGrantAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserPermissionAggregate.Interfaces;
@@ -67,7 +66,6 @@ public interface IUnitOfWork : IGenericUnitOfWork
   
     public IUserRoleRepository UserRoleRepository { get; }
     public IUserPermissionRepository UserPermissionRepository { get; }
-    public ITimeBoundRoleGrantRepository TimeBoundRoleGrantRepository { get; }
     public IRoleRepository RoleRepository { get; }
     public IGroupRepository GroupRepository { get; }
     public IGroupRoleRepository GroupRoleRepository { get; }

@@ -48,16 +48,10 @@ public sealed class ExpiredArtifactsPurgeJob(IUnitOfWork unitOfWork) : ISchedule
             .Where(x => x.UsedAt != null && x.UsedAt < cutoff)
             .ExecuteDeleteAsync(cancellationToken);
 
-        var timeBoundGrants = await unitOfWork.TimeBoundRoleGrantRepository
-            .Query(true, null)
-            .IgnoreQueryFilters()
-            .Where(x => x.ExpiresAt < cutoff)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        var total = userSessions + clientSessions + authCodes + recoveryCodes + timeBoundGrants;
+        var total = userSessions + clientSessions + authCodes + recoveryCodes;
         return JobExecutionResult.Success(
             total,
             $"Purged {userSessions} user + {clientSessions} client sessions, {authCodes} auth codes, " +
-            $"{recoveryCodes} recovery codes, {timeBoundGrants} expired role grants.");
+            $"{recoveryCodes} recovery codes.");
     }
 }

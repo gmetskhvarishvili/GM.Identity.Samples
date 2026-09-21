@@ -44,17 +44,6 @@ public sealed class PermissionCacheReconciliationJob(
             set.UnionWith(rolesOfGroup);
         }
 
-        // Time-bound role grants that haven't expired contribute too.
-        var now = DateTime.UtcNow;
-        var temporaryGrants = (await unitOfWork.TimeBoundRoleGrantRepository.GetAllAsync(true, null, cancellationToken))
-            .Where(x => x.ExpiresAt > now && x.IsActive && !x.IsDeleted && !x.IsHidden);
-        foreach (var grant in temporaryGrants)
-        {
-            if (!roleIdsByUser.TryGetValue(grant.UserId, out var set))
-                roleIdsByUser[grant.UserId] = set = new HashSet<Guid>();
-            set.Add(grant.RoleId);
-        }
-
         var desiredUserRoles = roleIdsByUser
             .ToDictionary(kv => kv.Key, kv => (IReadOnlyCollection<Guid>)kv.Value.ToList());
 

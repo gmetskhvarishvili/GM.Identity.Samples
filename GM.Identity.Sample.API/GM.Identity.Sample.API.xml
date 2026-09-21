@@ -1240,12 +1240,6 @@
         <member name="M:GM.Identity.Sample.API.Users.GetUsersListModelValidator.#ctor">
             <inheritdoc />
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel">
-            <summary>Body for a time-bound role grant: when the temporary assignment expires.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel.ExpiresAt">
-            <summary>The expires at.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.RecordConsentModel">
             <summary>Body to record acceptance of a consent document.</summary>
         </member>
@@ -1480,12 +1474,6 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeApiKey(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>Revoke one of a user's API keys.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantTimeBoundRole(System.Guid,System.Guid,GM.Identity.Sample.API.Users.GrantTimeBoundRoleModel,System.Threading.CancellationToken)">
-            <summary>Grant a role to a user until an expiry time (temporary/elevated access).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeTimeBoundRole(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Revoke a time-bound role grant before it expires.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GrantUserPermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>Grant a permission directly to a user (in addition to role-derived permissions).</summary>

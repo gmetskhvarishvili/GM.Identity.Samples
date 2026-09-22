@@ -1063,15 +1063,6 @@
         <member name="P:GM.Identity.Sample.API.Users.BulkSetUserBlockModel.Block">
             <summary>The block.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel">
-            <summary>Change current user password model.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel.CurrentPassword">
-            <summary>The current password.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel.NewPassword">
-            <summary>The new password.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmUserInitModel">
             <summary>Confirm user init model.</summary>
         </member>
@@ -1316,11 +1307,6 @@
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GetCurrentUserSessions(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.GetUserSessionsListModel,System.Threading.CancellationToken)">
             <summary>
             Get the current user's own sessions.
-            </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateCurrentUserPassword(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.ChangeCurrentUserPasswordModel,System.Threading.CancellationToken)">
-            <summary>
-            Change the current user's own password.
             </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.UpdateCurrentUser(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.UpdateUserModel,System.Threading.CancellationToken)">

@@ -4,7 +4,6 @@ using GM.API.Models;
 using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
 using GM.Identity.Sample.Application.Users.Commands.BulkSetUserBlock;
-using GM.Identity.Sample.Application.Users.Commands.ChangeCurrentUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
@@ -105,26 +104,6 @@ public class UsersController : BaseController
         var result = response.Items.Adapt<IEnumerable<UserSessionModel>>();
         AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
         return Ok(result);
-    }
-
-    /// <summary>
-    /// Change the current user's own password.
-    /// </summary>
-    [HttpPut("me/Password", Name = nameof(UpdateCurrentUserPassword))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UpdateCurrentUserPassword(
-        [FromServices] ICurrentActor currentActor,
-        [FromBody] ChangeCurrentUserPasswordModel request,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var command = request.Adapt<ChangeCurrentUserPasswordCommand>();
-        command.UserId = userId;
-        await Mediator.Send(command, cancellationToken);
-        return Ok();
     }
 
     /// <summary>

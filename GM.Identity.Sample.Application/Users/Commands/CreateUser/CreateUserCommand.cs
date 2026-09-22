@@ -75,9 +75,6 @@ public class CreateUserCommandHandler(
 
         entity.UpdatePassword(hash, salt);
 
-        // Seed password history with the initial password so it can't be immediately reused after a change.
-        await unitOfWork.RecordAsync(entity.Id, hash, salt, cancellationToken);
-
         // Add child items if any
         if (request.UserRoles?.Any() == true)
         {

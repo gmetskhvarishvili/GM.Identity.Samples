@@ -12,6 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Domain.Identity.UserAggregate.Entities;
 
 using System;
@@ -46,5 +47,14 @@ public class User : GMUser
         return new User(username, email, phoneNumber);
     }
 
-
+    /// <summary>
+    /// Sets a new password hash/salt and raises <see cref="UserPasswordChangedDomainEvent"/>. The event (in the
+    /// domain-event store) is the record of the change and the basis for password-expiry — use this rather than
+    /// the base <c>UpdatePassword</c> for any user-initiated or admin password change.
+    /// </summary>
+    public void ChangePassword(string passwordHash, string passwordSalt)
+    {
+        UpdatePassword(passwordHash, passwordSalt);
+        RaiseDomainEvent(new UserPasswordChangedDomainEvent(Id));
+    }
 }

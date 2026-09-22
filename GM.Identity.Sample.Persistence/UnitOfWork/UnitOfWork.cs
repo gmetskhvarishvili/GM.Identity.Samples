@@ -18,7 +18,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPasswordHistoryAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
@@ -45,7 +44,6 @@ public sealed class UnitOfWork(
     IUserRoleRepository userRoleRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
     IUserRecoveryCodeRepository userRecoveryCodeRepository,
-    IUserPasswordHistoryRepository userPasswordHistoryRepository,
     IUserPendingContactChangeRepository userPendingContactChangeRepository,
     IUserTotpDeviceRepository userTotpDeviceRepository,
     IClientRedirectUriRepository clientRedirectUriRepository,
@@ -73,7 +71,6 @@ public sealed class UnitOfWork(
     public IUserSessionRepository UserSessionRepository { get; } = userSessionRepository;
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; } = userTwoFactorAuthTypeRepository;
     public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; } = userRecoveryCodeRepository;
-    public IUserPasswordHistoryRepository UserPasswordHistoryRepository { get; } = userPasswordHistoryRepository;
     public IUserPendingContactChangeRepository UserPendingContactChangeRepository { get; } = userPendingContactChangeRepository;
     public IUserTotpDeviceRepository UserTotpDeviceRepository { get; } = userTotpDeviceRepository;
     public IClientRedirectUriRepository ClientRedirectUriRepository { get; } = clientRedirectUriRepository;

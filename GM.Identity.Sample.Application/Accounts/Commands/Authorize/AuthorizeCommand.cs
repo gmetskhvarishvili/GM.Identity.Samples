@@ -4,7 +4,9 @@ using GM.Identity.Sample.Application.Common;
 using GM.Identity;
 using GM.Identity.Authorization;
 using GM.Identity.Oidc;
+using GM.Identity.Sample.Application.Infrastructure.Services.Audit;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
+using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
@@ -73,6 +75,7 @@ public class AuthorizeCommandHandler(
     ISessionCache sessionCache,
     IOTPService otpService,
     IIdTokenGenerator idTokenGenerator,
+    IAuditTrailReader auditTrailReader,
     IOptions<AuthOptions> options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(AuthorizeCommand request, CancellationToken cancellationToken)
@@ -217,15 +220,13 @@ public class AuthorizeCommandHandler(
         // so the user must reset it. Based on the most recent recorded password change.
         if (settings.PasswordExpiryDays > 0)
         {
-            var lastChanged = await unitOfWork.UserPasswordHistoryRepository
-                .Query(false, null)
-                .IgnoreQueryFilters()
-                .Where(x => x.UserId == user.Id && x.IsActive && !x.IsDeleted && !x.IsHidden)
-                .OrderByDescending(x => x.SetAt)
-                .Select(x => (DateTime?)x.SetAt)
-                .FirstOrDefaultAsync(cancellationToken);
+            // Last password change comes from the domain-event log; fall back to account creation when the
+            // password has never been changed since (so a long-lived initial password still expires).
+            var lastChanged = await auditTrailReader.GetLatestEventOccurredOnAsync(
+                GetUserAuditTrailQuery.UserAggregateType, user.Id.ToString(),
+                nameof(UserPasswordChangedDomainEvent), cancellationToken) ?? user.CreatedAt;
 
-            if (lastChanged is { } changedAt && changedAt.AddDays(settings.PasswordExpiryDays) < now)
+            if (lastChanged.AddDays(settings.PasswordExpiryDays) < now)
                 throw new ValidationException("Your password has expired and must be reset before signing in.");
         }
 

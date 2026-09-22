@@ -59,18 +59,13 @@ public class UpdateUserPasswordCommandHandler(
                 request.Id);
         }
 
-        // Reject reuse of the current or a recent password before changing anything.
-        await unitOfWork.EnsureNotReusedAsync(
-            entity.Id, request.Password, entity.PasswordHash, entity.PasswordSalt, cancellationToken);
-
         var (hash, salt) = PasswordHasher
             .Hash(request.Password);
 
-        entity.UpdatePassword(hash, salt);
+        entity.ChangePassword(hash, salt);
 
         // Persist the aggregate
         unitOfWork.UserRepository.Update(entity);
-        await unitOfWork.RecordAsync(entity.Id, hash, salt, cancellationToken);
         await unitOfWork.QueueSecurityAlertAsync(
             entity.Id, entity.Email, entity.PhoneNumber, SecurityAlertTypes.PasswordChanged, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

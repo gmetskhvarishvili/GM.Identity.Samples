@@ -86,4 +86,17 @@ public class AuditTrailReader(ApplicationDbContext dbContext) : IAuditTrailReade
 
         return (items, totalCount);
     }
+
+    public async Task<System.DateTime?> GetLatestEventOccurredOnAsync(
+        string aggregateType, string aggregateId, string eventType, CancellationToken cancellationToken)
+    {
+        var occurredOn = await dbContext.DomainEvents
+            .AsNoTracking()
+            .Where(x => x.AggregateType == aggregateType && x.AggregateId == aggregateId && x.EventType == eventType)
+            .OrderByDescending(x => x.OccurredOn)
+            .Select(x => (System.DateTime?)x.OccurredOn)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return occurredOn;
+    }
 }

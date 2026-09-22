@@ -27,6 +27,13 @@ public interface IAuditTrailReader
     /// </summary>
     Task<(IReadOnlyList<AuditTrailEntry> Items, int TotalCount)> SearchAsync(
         AuditTrailSearch search, int skip, int take, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns when the newest event of <paramref name="eventType"/> was recorded for one aggregate, or
+    /// <c>null</c> if there is none. Used to derive facts from the event log — e.g. the last password change.
+    /// </summary>
+    Task<DateTime?> GetLatestEventOccurredOnAsync(
+        string aggregateType, string aggregateId, string eventType, CancellationToken cancellationToken);
 }
 
 /// <summary>Optional filters for a global audit search; any null filter is ignored.</summary>

@@ -1395,12 +1395,6 @@
         <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeApiKey(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>Revoke one of a user's API keys.</summary>
         </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.ImpersonateUser(System.Guid,GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
-            <summary>
-            Impersonate a user (support "log in as"): issues a session that authenticates as the target user, under
-            the admin's client, tagged with the acting admin for audit. Requires an authenticated admin session.
-            </summary>
-        </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTotp(System.Guid,System.Threading.CancellationToken)">
             <summary>Remove a user's authenticator-app (TOTP) device.</summary>
         </member>

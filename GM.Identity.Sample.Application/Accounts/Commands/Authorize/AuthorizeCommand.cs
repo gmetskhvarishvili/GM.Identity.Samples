@@ -230,6 +230,17 @@ public class AuthorizeCommandHandler(
                 throw new ValidationException("Your password has expired and must be reset before signing in.");
         }
 
+        // Consent gate: refuse login while the user still owes acceptance of a mandatory consent document at its
+        // current version. The outstanding documents are available via GET users/me/Consents/Pending.
+        if (settings.EnforceConsent)
+        {
+            var pendingConsents = await unitOfWork.GetPendingAsync(user.Id, cancellationToken);
+            if (pendingConsents.Count > 0)
+                throw new ValidationException(
+                    "You must accept the required consent documents before signing in: "
+                    + string.Join(", ", pendingConsents.Select(d => $"{d.Title} (v{d.CurrentVersion})")) + ".");
+        }
+
         return user;
     }
 

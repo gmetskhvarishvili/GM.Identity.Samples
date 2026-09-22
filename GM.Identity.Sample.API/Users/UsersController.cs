@@ -37,6 +37,7 @@ using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
 using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
 using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
+using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 using GM.Identity.Sample.Application.Users.Queries.GetUserRolesList;
@@ -232,6 +233,25 @@ public class UsersController : BaseController
             return Unauthorized();
 
         var result = await Mediator.Send(new GetUserConsentsQuery { UserId = userId }, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// List the mandatory consent documents the current user must still accept (never accepted, or an older
+    /// version). While this is non-empty the user is blocked from signing in.
+    /// </summary>
+    [HttpGet("me/Consents/Pending", Name = nameof(GetCurrentUserPendingConsents))]
+    [ProducesResponseType(typeof(IReadOnlyList<PendingConsentModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUserPendingConsents(
+        [FromServices] ICurrentActor currentActor,
+        CancellationToken cancellationToken)
+    {
+        if (currentActor.UserId is not { } userId)
+            return Unauthorized();
+
+        var response = await Mediator.Send(new GetPendingConsentsQuery { UserId = userId }, cancellationToken);
+        var result = response.Adapt<IReadOnlyList<PendingConsentModel>>();
         return Ok(result);
     }
 

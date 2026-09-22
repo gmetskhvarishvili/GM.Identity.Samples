@@ -540,6 +540,146 @@
         <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.Name">
             <summary>The name.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel">
+            <summary>Consent document details model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel.ConsentType">
+            <summary>The stable document identifier.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel.Title">
+            <summary>The human-readable title.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel.Content">
+            <summary>The document body (or a URL to it).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel.CurrentVersion">
+            <summary>The current version users must accept.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentDetailsModel.IsMandatory">
+            <summary>Whether an unaccepted current version blocks login.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel">
+            <summary>Consent document model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel.Id">
+            <summary>The id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel.ConsentType">
+            <summary>The stable document identifier.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel.Title">
+            <summary>The human-readable title.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel.Content">
+            <summary>The document body (or a URL to it).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel.CurrentVersion">
+            <summary>The current version users must accept.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentModel.IsMandatory">
+            <summary>Whether an unaccepted current version blocks login.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController">
+            <summary>
+            Consent Documents Controller — admin CRUD for the registry of documents (Terms of Service, Privacy Policy, …)
+            that users must accept. A mandatory document whose current version is unaccepted blocks the user's login.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.AddConsentDocument(GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel,System.Threading.CancellationToken)">
+            <summary>
+            Add Consent Document
+            </summary>
+            <param name="request">Consent document model to add</param>
+            <param name="cancellationToken"></param>
+            <returns>Consent document Id</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.UpdateConsentDocument(System.Guid,GM.Identity.Sample.API.ConsentDocuments.UpdateConsentDocumentModel,System.Threading.CancellationToken)">
+            <summary>
+            Update Consent Document
+            </summary>
+            <param name="id">Consent document Id to update</param>
+            <param name="request">Consent document model to update</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.DeleteConsentDocument(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Delete Consent Document
+            </summary>
+            <param name="id">Consent document Id to delete</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.GetConsentDocumentsList(GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Consent Documents List
+            </summary>
+            <param name="request">Consent documents list model to get</param>
+            <param name="cancellationToken"></param>
+            <returns>IEnumerable of consent documents</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.GetConsentDocumentDetails(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Get Consent Document Details
+            </summary>
+            <param name="id">Consent document Id to get</param>
+            <param name="cancellationToken"></param>
+            <returns>Consent document details</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel">
+            <summary>Create consent document model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel.ConsentType">
+            <summary>The stable document identifier (e.g. TermsOfService, PrivacyPolicy).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel.Title">
+            <summary>The human-readable title.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel.Content">
+            <summary>The document body (or a URL to it).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel.CurrentVersion">
+            <summary>The version users must accept.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.CreateConsentDocumentModel.IsMandatory">
+            <summary>Whether an unaccepted current version blocks login.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModel">
+            <summary>Get consent documents list model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModel.Id">
+            <summary>The id of the consent document.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModel.ConsentType">
+            <summary>The consent type filter.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModel.IsMandatory">
+            <summary>Filter to mandatory (or non-mandatory) documents.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModelValidator">
+            <inheritdoc />
+        </member>
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModelValidator.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.ConsentDocuments.UpdateConsentDocumentModel">
+            <summary>Update consent document model (the ConsentType is immutable and set at creation).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.UpdateConsentDocumentModel.Title">
+            <summary>The human-readable title.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.UpdateConsentDocumentModel.Content">
+            <summary>The document body (or a URL to it).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.UpdateConsentDocumentModel.CurrentVersion">
+            <summary>The version users must accept. Bumping it makes prior acceptances outstanding again.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.ConsentDocuments.UpdateConsentDocumentModel.IsMandatory">
+            <summary>Whether an unaccepted current version blocks login.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Operations.CreateOperationModel">
             <summary>Create operation model.</summary>
         </member>
@@ -1171,6 +1311,21 @@
         <member name="M:GM.Identity.Sample.API.Users.GetUsersListModelValidator.#ctor">
             <inheritdoc />
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.PendingConsentModel">
+            <summary>A consent document the current user must still accept.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.PendingConsentModel.ConsentType">
+            <summary>The stable document identifier.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.PendingConsentModel.Title">
+            <summary>The human-readable title.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.PendingConsentModel.Content">
+            <summary>The document body (or a URL to it).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.PendingConsentModel.CurrentVersion">
+            <summary>The version to accept.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.RecordConsentModel">
             <summary>Body to record acceptance of a consent document.</summary>
         </member>
@@ -1338,6 +1493,12 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GetCurrentUserConsents(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>List the current user's recorded consent acceptances.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetCurrentUserPendingConsents(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            List the mandatory consent documents the current user must still accept (never accepted, or an older
+            version). While this is non-empty the user is blocked from signing in.
+            </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.ExportCurrentUserData(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
             <summary>

@@ -2,6 +2,7 @@ using GM.EntityFramework.Persistence.Events;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
 using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate;
@@ -31,6 +32,7 @@ public sealed class ComplianceEndToEndTests : IAsyncLifetime
     private readonly GmWebApplicationFactory<Program> _factory = new();
     private readonly string _newEmail = $"pii-{Guid.NewGuid():N}@test.local";
     private readonly string _probeEventType = $"RetentionProbe-{Guid.NewGuid():N}";
+    private readonly string _consentType = $"ToS-{Guid.NewGuid():N}";
     private Guid _userId;
     private bool _infraReady;
 
@@ -63,6 +65,7 @@ public sealed class ComplianceEndToEndTests : IAsyncLifetime
                 using var scope = _factory.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 await context.Set<UserConsent>().IgnoreQueryFilters().Where(x => x.UserId == _userId).ExecuteDeleteAsync();
+                await context.Set<ConsentDocument>().IgnoreQueryFilters().Where(x => x.ConsentType == _consentType).ExecuteDeleteAsync();
                 await context.Set<UserPendingContactChange>().IgnoreQueryFilters().Where(x => x.UserId == _userId).ExecuteDeleteAsync();
                 await context.DomainEvents.Where(x => x.EventType == _probeEventType).ExecuteDeleteAsync();
                 await context.Set<User>().IgnoreQueryFilters().Where(u => u.Id == _userId).ExecuteDeleteAsync();
@@ -77,13 +80,22 @@ public sealed class ComplianceEndToEndTests : IAsyncLifetime
     {
         if (!_infraReady) return;
 
+        // A matching document must exist in the registry (non-mandatory so it can't gate other login tests).
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await context.Set<ConsentDocument>()
+                .AddAsync(ConsentDocument.Create(_consentType, "Terms of Service", "body", "2026-01", isMandatory: false));
+            await context.SaveChangesAsync();
+        }
+
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             await mediator.Send(new RecordUserConsentCommand
             {
                 UserId = _userId,
-                ConsentType = "TermsOfService",
+                ConsentType = _consentType,
                 DocumentVersion = "2026-01",
             });
         }
@@ -93,7 +105,7 @@ public sealed class ComplianceEndToEndTests : IAsyncLifetime
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             var consents = await mediator.Send(new GetUserConsentsQuery { UserId = _userId });
             var consent = Assert.Single(consents);
-            Assert.Equal("TermsOfService", consent.ConsentType);
+            Assert.Equal(_consentType, consent.ConsentType);
             Assert.Equal("2026-01", consent.DocumentVersion);
         }
     }

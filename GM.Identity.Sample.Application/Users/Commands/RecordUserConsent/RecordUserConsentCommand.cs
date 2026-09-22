@@ -8,6 +8,7 @@ using GM.Mediator.Contracts;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ValidationException = GM.Exceptions.ValidationException;
 
 namespace GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 
@@ -36,6 +37,20 @@ public class RecordUserConsentCommandHandler(IUnitOfWork unitOfWork) : IRequestH
         if (!await unitOfWork.UserRepository.ExistsAsync(
                 x => x.Id == request.UserId && x.IsActive && !x.IsDeleted && !x.IsHidden, cancellationToken))
             throw new NotFoundException(StringResource.User, StringResource.Id, request.UserId);
+
+        // The document (type + version) must exist in the registry, so a client can't record acceptance of an
+        // unknown document or a stale version that would never clear the pending-consent gate.
+        var document = await unitOfWork.ConsentDocumentRepository
+            .FirstOrDefaultAsync(x => x.ConsentType == request.ConsentType
+                                      && x.IsActive && !x.IsDeleted && !x.IsHidden,
+                false, null, cancellationToken);
+
+        if (document == null)
+            throw new NotFoundException(StringResource.ConsentDocument, StringResource.ConsentType, request.ConsentType);
+
+        if (document.CurrentVersion != request.DocumentVersion)
+            throw new ValidationException(
+                $"Consent '{request.ConsentType}' must be accepted at the current version '{document.CurrentVersion}'.");
 
         await unitOfWork.UserConsentRepository.AddAsync(
             UserConsent.Create(request.UserId, request.ConsentType, request.DocumentVersion), cancellationToken);

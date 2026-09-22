@@ -15,6 +15,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
@@ -102,6 +103,7 @@ public static class DependencyInjection
         services.AddTransient<IDeviceCodeRepository, DeviceCodeRepository>();
         services.AddTransient<IApiKeyRepository, ApiKeyRepository>();
         services.AddTransient<IUserConsentRepository, UserConsentRepository>();
+        services.AddTransient<IConsentDocumentRepository, ConsentDocumentRepository>();
         services.AddTransient<IUserPasskeyRepository, UserPasskeyRepository>();
         services.AddTransient<IPasskeyChallengeRepository, PasskeyChallengeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();

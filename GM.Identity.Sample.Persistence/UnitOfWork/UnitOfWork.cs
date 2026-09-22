@@ -16,6 +16,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
@@ -53,6 +54,7 @@ public sealed class UnitOfWork(
     IDeviceCodeRepository deviceCodeRepository,
     IApiKeyRepository apiKeyRepository,
     IUserConsentRepository userConsentRepository,
+    IConsentDocumentRepository consentDocumentRepository,
     IUserPasskeyRepository userPasskeyRepository,
     IPasskeyChallengeRepository passkeyChallengeRepository,
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
@@ -80,6 +82,7 @@ public sealed class UnitOfWork(
     public IDeviceCodeRepository DeviceCodeRepository { get; } = deviceCodeRepository;
     public IApiKeyRepository ApiKeyRepository { get; } = apiKeyRepository;
     public IUserConsentRepository UserConsentRepository { get; } = userConsentRepository;
+    public IConsentDocumentRepository ConsentDocumentRepository { get; } = consentDocumentRepository;
     public IUserPasskeyRepository UserPasskeyRepository { get; } = userPasskeyRepository;
     public IPasskeyChallengeRepository PasskeyChallengeRepository { get; } = passkeyChallengeRepository;
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; } = twoFactorAuthTypeRepository;

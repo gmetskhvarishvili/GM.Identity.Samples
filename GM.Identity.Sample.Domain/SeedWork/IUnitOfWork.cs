@@ -15,6 +15,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserC
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
@@ -56,6 +57,7 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public IDeviceCodeRepository DeviceCodeRepository { get; }
     public IApiKeyRepository ApiKeyRepository { get; }
     public IUserConsentRepository UserConsentRepository { get; }
+    public IConsentDocumentRepository ConsentDocumentRepository { get; }
     public IUserPasskeyRepository UserPasskeyRepository { get; }
     public IPasskeyChallengeRepository PasskeyChallengeRepository { get; }
   

@@ -343,6 +343,36 @@ namespace GM.Identity.Sample.Common.Resources {
             }
         }
 
+        public static string ConsentDocument {
+            get {
+                return ResourceManager.GetString("ConsentDocument", resourceCulture);
+            }
+        }
+
+        public static string Content {
+            get {
+                return ResourceManager.GetString("Content", resourceCulture);
+            }
+        }
+
+        public static string CurrentVersion {
+            get {
+                return ResourceManager.GetString("CurrentVersion", resourceCulture);
+            }
+        }
+
+        public static string IsMandatory {
+            get {
+                return ResourceManager.GetString("IsMandatory", resourceCulture);
+            }
+        }
+
+        public static string Title {
+            get {
+                return ResourceManager.GetString("Title", resourceCulture);
+            }
+        }
+
         public static string ConsentType {
             get {
                 return ResourceManager.GetString("ConsentType", resourceCulture);

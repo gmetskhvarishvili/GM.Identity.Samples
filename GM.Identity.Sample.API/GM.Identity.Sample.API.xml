@@ -1364,12 +1364,6 @@
             Close the current user's own account (self-service). Soft-deletes the account and revokes all sessions.
             </summary>
         </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.MergeUsers(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>
-            Merge a source user into a target: moves the source's roles, groups, and direct permissions to the
-            target, revokes the source's sessions, and soft-deletes the source.
-            </summary>
-        </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BulkSetUserBlock(GM.Identity.Sample.API.Users.BulkSetUserBlockModel,System.Threading.CancellationToken)">
             <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
         </member>

@@ -26,7 +26,6 @@ using GM.Identity.Sample.Application.Users.Commands.RecoverUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ResetUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
-using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
 using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
@@ -611,30 +610,6 @@ public class UsersController : BaseController
         query.UserId = id;
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<UserSessionModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get a user's audit trail — the domain-event history recorded for that user, newest first and paged.
-    /// </summary>
-    /// <param name="id">User Id whose audit trail to read</param>
-    /// <param name="request">Paging options</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>The user's recorded domain events</returns>
-    [HasPermission(nameof(GetUserAuditTrail))]
-    [RequiresScope(ScopeOperations.ReadIdentity)]
-    [HttpGet("{id}/AuditTrail", Name = nameof(GetUserAuditTrail))]
-    [ProducesResponseType(typeof(IEnumerable<UserAuditTrailModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUserAuditTrail(
-        [FromRoute] Guid id,
-        [FromQuery] GetUserAuditTrailModel request,
-        CancellationToken cancellationToken)
-    {
-        var query = request.Adapt<GetUserAuditTrailQuery>();
-        query.UserId = id;
-        var response = await Mediator.Send(query, cancellationToken);
-        var result = response.Items.Adapt<IEnumerable<UserAuditTrailModel>>();
         AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
         return Ok(result);
     }

@@ -6,7 +6,6 @@ using GM.Identity.Authorization;
 using GM.Identity.Oidc;
 using GM.Identity.Sample.Application.Infrastructure.Services.Audit;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
-using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
@@ -217,7 +216,7 @@ public class AuthorizeCommandHandler(
             // Last password change comes from the domain-event log; fall back to account creation when the
             // password has never been changed since (so a long-lived initial password still expires).
             var lastChanged = await auditTrailReader.GetLatestEventOccurredOnAsync(
-                GetUserAuditTrailQuery.UserAggregateType, user.Id.ToString(),
+                nameof(User), user.Id.ToString(),
                 nameof(UserPasswordChangedDomainEvent), cancellationToken) ?? user.CreatedAt;
 
             if (lastChanged.AddDays(settings.PasswordExpiryDays) < now)

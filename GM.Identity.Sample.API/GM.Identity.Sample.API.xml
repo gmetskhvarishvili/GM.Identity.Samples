@@ -298,20 +298,6 @@
         <member name="P:GM.Identity.Sample.API.Accounts.RevokeTokenModel.ClientSecret">
             <summary>The client secret.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Audit.AuditController">
-            <summary>
-            Audit Controller — global, filterable search over the durable domain-event log across every aggregate.
-            </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Audit.AuditController.SearchAuditTrail(GM.Identity.Sample.API.Audit.SearchAuditTrailModel,System.Threading.CancellationToken)">
-            <summary>Search the audit log by aggregate type, acting user, event type, and/or date range.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Audit.SearchAuditTrailModel">
-            <summary>Query filters for the global audit search (all optional).</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Audit.AuditEntryModel">
-            <summary>One recorded domain event in the audit log.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientDetailsModel">
             <summary>Client details model.</summary>
         </member>
@@ -1254,9 +1240,6 @@
         <member name="P:GM.Identity.Sample.API.Users.CreateUserRoleModel.RoleId">
             <summary>The role id.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.GetUserAuditTrailModel">
-            <summary>Paging inputs for a user's audit-trail (domain-event history) query.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.GetUserSessionsListModel">
             <summary>Get user sessions list model.</summary>
         </member>
@@ -1367,39 +1350,6 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Users.UpdateUserPasswordModel.Password">
             <summary>The password.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Users.UserAuditTrailModel">
-            <summary>One recorded domain event in a user's audit trail, with the actor/request context it occurred under.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.Id">
-            <summary>The id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.EventType">
-            <summary>The event type.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.OccurredOn">
-            <summary>The occurred on.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.UserId">
-            <summary>The user id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.ClientId">
-            <summary>The client id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.TenantId">
-            <summary>The tenant id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.SessionId">
-            <summary>The session id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.IpAddress">
-            <summary>The ip address.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.CorrelationId">
-            <summary>The correlation id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.UserAuditTrailModel.Payload">
-            <summary>The payload.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UserDetailsModel">
             <summary>User details model.</summary>
@@ -1608,15 +1558,6 @@
             <param name="request">User Session Model to Get</param>
             <param name="cancellationToken"></param>
             <returns>User Sessions</returns>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserAuditTrail(System.Guid,GM.Identity.Sample.API.Users.GetUserAuditTrailModel,System.Threading.CancellationToken)">
-            <summary>
-            Get a user's audit trail — the domain-event history recorded for that user, newest first and paged.
-            </summary>
-            <param name="id">User Id whose audit trail to read</param>
-            <param name="request">Paging options</param>
-            <param name="cancellationToken"></param>
-            <returns>The user's recorded domain events</returns>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserDetails(System.Guid,System.Threading.CancellationToken)">
             <summary>

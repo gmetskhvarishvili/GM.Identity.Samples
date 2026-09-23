@@ -8,7 +8,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System;
@@ -51,7 +50,7 @@ public class CompletePasskeyAssertionCommandValidator : AbstractValidator<Comple
 public class CompletePasskeyAssertionCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IOptions<AuthOptions> options) : IRequestHandler<CompletePasskeyAssertionCommand, PasskeyTokenDto>
+    IAuthOptions options) : IRequestHandler<CompletePasskeyAssertionCommand, PasskeyTokenDto>
 {
     public async Task<PasskeyTokenDto> Handle(CompletePasskeyAssertionCommand request, CancellationToken cancellationToken)
     {
@@ -106,7 +105,7 @@ public class CompletePasskeyAssertionCommandHandler(
         unitOfWork.UserPasskeyRepository.Update(passkey);
         unitOfWork.PasskeyChallengeRepository.Remove(challenge);
 
-        var settings = options.Value;
+        var settings = options;
         var accessToken = TokenGenerator.Generate();
         var refreshToken = TokenGenerator.Generate();
         var accessExpiry = now.AddMinutes(settings.AccessTokenMinutes);

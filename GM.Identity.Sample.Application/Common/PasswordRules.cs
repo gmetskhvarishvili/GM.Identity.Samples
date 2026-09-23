@@ -8,13 +8,13 @@ namespace GM.Identity.Sample.Application.Common;
 
 /// <summary>
 /// FluentValidation rules for a password field. <see cref="StrongPassword{T}"/> enforces the configurable
-/// complexity policy (<see cref="PasswordPolicyOptions"/>) directly in the validator, so it runs in the mediator
+/// complexity policy (<see cref="IPasswordPolicyOptions"/>) directly in the validator, so it runs in the mediator
 /// validation behaviour like every other request rule. The options are injected into the command validator's
 /// constructor and passed in here.
 /// </summary>
 public static class PasswordRules
 {
-    public static void StrongPassword<T>(this IRuleBuilder<T, string?> rule, PasswordPolicyOptions options)
+    public static void StrongPassword<T>(this IRuleBuilder<T, string?> rule, IPasswordPolicyOptions options)
     {
         rule
             .NotNull().NotEmpty()

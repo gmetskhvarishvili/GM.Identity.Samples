@@ -15,7 +15,6 @@ using GM.Mediator.Contracts;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using ValidationException = FluentValidation.ValidationException;
 
 using System;
@@ -50,7 +49,7 @@ public class ExternalAuthorizeCommandHandler(
     IOAuthService oAuthService,
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IOptions<AuthOptions> options)
+    IAuthOptions options)
     : IRequestHandler<ExternalAuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(ExternalAuthorizeCommand request, CancellationToken cancellationToken)
@@ -133,7 +132,7 @@ public class ExternalAuthorizeCommandHandler(
         // Issue a short-lived access token + a rotating refresh token, exactly like the password grant:
         // the session's absolute expiry is the refresh lifetime, while the Redis access entry carries the
         // shorter access TTL. The refresh grant (grant_type=refresh_token) then rotates these too.
-        var settings = options.Value;
+        var settings = options;
         var now = DateTime.UtcNow;
         var accessToken = TokenGenerator.Generate();
         var refreshToken = TokenGenerator.Generate();

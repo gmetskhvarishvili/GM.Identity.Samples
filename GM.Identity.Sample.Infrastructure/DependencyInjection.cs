@@ -16,6 +16,7 @@ using GM.Messaging;
 using GM.Scheduling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GM.Identity.Sample.Infrastructure;
 
@@ -27,6 +28,11 @@ public static class DependencyInjection
         services.Configure<OAuthOptions>(configuration.GetSection("OAuth"));
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<PasswordPolicyOptions>(configuration.GetSection(PasswordPolicyOptions.SectionName));
+
+        // Expose the bound options to the Application layer through its interfaces (Application can't reference the
+        // concrete option classes, which live here in Infrastructure).
+        services.AddSingleton<IAuthOptions>(sp => sp.GetRequiredService<IOptions<AuthOptions>>().Value);
+        services.AddSingleton<IPasswordPolicyOptions>(sp => sp.GetRequiredService<IOptions<PasswordPolicyOptions>>().Value);
 
         // Key for PII-at-rest encryption (configure DataProtection:Key in production; dev key otherwise).
         services.AddSingleton(new EncryptionKeyProvider(configuration["DataProtection:Key"]));

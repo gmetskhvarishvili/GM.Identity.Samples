@@ -16,7 +16,6 @@ using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System;
@@ -72,7 +71,7 @@ public class AuthorizeCommandHandler(
     IOTPService otpService,
     IIdTokenGenerator idTokenGenerator,
     IAuditTrailReader auditTrailReader,
-    IOptions<AuthOptions> options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
+    IAuthOptions options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(AuthorizeCommand request, CancellationToken cancellationToken)
     {
@@ -90,7 +89,7 @@ public class AuthorizeCommandHandler(
         if (!PasswordHasher.Verify(request.ClientSecret, client.SecretHash, client.SecretSalt))
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
 
-        var settings = options.Value;
+        var settings = options;
         var now = DateTime.UtcNow;
 
         return request.GrantType switch
@@ -105,7 +104,7 @@ public class AuthorizeCommandHandler(
     }
 
     private async Task<AuthorizeResponseDto> PasswordGrantAsync(
-        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         var user = await AuthenticateUserAsync(request, now, settings, cancellationToken);
 
@@ -136,7 +135,7 @@ public class AuthorizeCommandHandler(
     }
 
     private async Task<AuthorizeResponseDto> TwoFactorGrantAsync(
-        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         // Completing a 2FA login: re-verify the password (the challenge is not itself a bearer of trust),
         // require that the user really is enrolled, then validate the one-time code before issuing a session.
@@ -170,7 +169,7 @@ public class AuthorizeCommandHandler(
     // applying the block/lockout checks and the failed-attempt counter. Shared by the password and
     // two-factor grants.
     private async Task<User> AuthenticateUserAsync(
-        AuthorizeCommand request, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        AuthorizeCommand request, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         // Authentication is a cross-tenant operation: the caller has no proven tenant yet at /connect, so
         // resolve the user by credentials across all tenants (bypass the tenant query filter). The tenant
@@ -271,7 +270,7 @@ public class AuthorizeCommandHandler(
             .FirstOrDefaultAsync(cancellationToken);
 
     private async Task<AuthorizeResponseDto> RefreshAsync(
-        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
@@ -311,7 +310,7 @@ public class AuthorizeCommandHandler(
     // and redirect URI, and that the caller holds the matching code verifier (BASE64URL(SHA256(verifier)) ==
     // the stored challenge). The code is single-use.
     private async Task<AuthorizeResponseDto> AuthorizationCodeGrantAsync(
-        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Code)
             || string.IsNullOrWhiteSpace(request.RedirectUri)
@@ -353,7 +352,7 @@ public class AuthorizeCommandHandler(
     // for tokens once the user has approved. Returns the RFC error codes as validation failures while the device
     // keeps polling — authorization_pending, slow_down (polled too fast), access_denied, expired_token.
     private async Task<AuthorizeResponseDto> DeviceCodeGrantAsync(
-        AuthorizeCommand request, Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.DeviceCode))
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
@@ -398,7 +397,7 @@ public class AuthorizeCommandHandler(
     }
 
     private async Task<AuthorizeResponseDto> IssueUserSessionAsync(
-        Guid? userId, Guid? clientId, string? provider, DateTime now, AuthOptions settings,
+        Guid? userId, Guid? clientId, string? provider, DateTime now, IAuthOptions settings,
         DateTime refreshExpiry, CancellationToken cancellationToken,
         Guid? ssoSessionId = null, string? issuer = null, string? nonce = null)
     {
@@ -461,7 +460,7 @@ public class AuthorizeCommandHandler(
     // limit, the oldest live sessions are revoked (and evicted) so only the most recent N survive. Disabled
     // when the limit is <= 0.
     private async Task EnforceConcurrentSessionCapAsync(
-        Guid userId, AuthOptions settings, DateTime now, CancellationToken cancellationToken)
+        Guid userId, IAuthOptions settings, DateTime now, CancellationToken cancellationToken)
     {
         if (settings.MaxConcurrentSessionsPerUser <= 0)
             return;
@@ -486,7 +485,7 @@ public class AuthorizeCommandHandler(
     }
 
     private async Task<AuthorizeResponseDto> IssueClientTokenAsync(
-        Guid clientId, DateTime now, AuthOptions settings, CancellationToken cancellationToken)
+        Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         // Client-credentials tokens carry no refresh token — the client simply re-authenticates.
         var token = TokenGenerator.Generate();

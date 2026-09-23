@@ -1,11 +1,14 @@
-namespace GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Common;
+
+namespace GM.Identity.Sample.Infrastructure.Options;
 
 /// <summary>
 /// Configurable password-complexity policy, bound from the <c>PasswordPolicy</c> configuration section so a
-/// deployment can tighten or relax the rules without a code change. Defaults match the previous hardcoded
-/// policy (min 8 with upper/lower/digit).
+/// deployment can tighten or relax the rules without a code change. Implements <see cref="IPasswordPolicyOptions"/>
+/// so the Application layer's validators can consume it. Defaults match the previous hardcoded policy
+/// (min 8 with upper/lower/digit).
 /// </summary>
-public sealed class PasswordPolicyOptions
+public sealed class PasswordPolicyOptions : IPasswordPolicyOptions
 {
     public const string SectionName = "PasswordPolicy";
 

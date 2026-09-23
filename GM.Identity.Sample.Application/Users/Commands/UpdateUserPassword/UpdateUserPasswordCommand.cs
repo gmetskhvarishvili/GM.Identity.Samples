@@ -7,7 +7,6 @@ using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-using Microsoft.Extensions.Options;
 
 using System;
 using System.Threading;
@@ -23,10 +22,10 @@ public class UpdateUserPasswordCommand : IRequest
 public class UpdateUserPasswordCommandValidator : AbstractValidator<UpdateUserPasswordCommand>
 {
     public UpdateUserPasswordCommandValidator(
-        IOptions<PasswordPolicyOptions> passwordPolicy, IBreachedPasswordChecker breachedPasswordChecker)
+        IPasswordPolicyOptions passwordPolicy, IBreachedPasswordChecker breachedPasswordChecker)
     {
         RuleFor(x => x.Id).NotNull().NotEmpty();
-        RuleFor(x => x.Password).StrongPassword(passwordPolicy.Value);
+        RuleFor(x => x.Password).StrongPassword(passwordPolicy);
         RuleFor(x => x.Password).NotBreached(breachedPasswordChecker);
     }
 }

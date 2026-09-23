@@ -11,7 +11,6 @@ using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMes
 using GM.Identity.Sample.Domain.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-using Microsoft.Extensions.Options;
 
 using System;
 using System.Collections.Generic;
@@ -36,11 +35,11 @@ public class CreateUserCommand : IRequest<Guid>
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
     public CreateUserCommandValidator(
-        IOptions<PasswordPolicyOptions> passwordPolicy, IBreachedPasswordChecker breachedPasswordChecker)
+        IPasswordPolicyOptions passwordPolicy, IBreachedPasswordChecker breachedPasswordChecker)
     {
         RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
         RuleFor(x => x.Username).NotNull().NotEmpty();
-        RuleFor(x => x.Password).StrongPassword(passwordPolicy.Value);
+        RuleFor(x => x.Password).StrongPassword(passwordPolicy);
         RuleFor(x => x.Password).NotBreached(breachedPasswordChecker);
     }
 }

@@ -12,7 +12,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggreg
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using ValidationException = GM.Exceptions.ValidationException;
 
 using System;
@@ -82,7 +81,7 @@ public class AuthorizeCodeCommandValidator : AbstractValidator<AuthorizeCodeComm
 
 public class AuthorizeCodeCommandHandler(
     IUnitOfWork unitOfWork,
-    IOptions<AuthOptions> options) : IRequestHandler<AuthorizeCodeCommand, AuthorizeCodeResponseDto>
+    IAuthOptions options) : IRequestHandler<AuthorizeCodeCommand, AuthorizeCodeResponseDto>
 {
     // Authorization codes are short-lived by design (RFC 6749 §4.1.2 recommends <= 10 minutes; we use 1).
     private static readonly TimeSpan CodeLifetime = TimeSpan.FromMinutes(1);
@@ -106,7 +105,7 @@ public class AuthorizeCodeCommandHandler(
             throw new ValidationException("The redirect URI is not registered for this client.");
 
         var now = DateTime.UtcNow;
-        var settings = options.Value;
+        var settings = options;
         var forceLogin = string.Equals(request.Prompt, "login", StringComparison.OrdinalIgnoreCase);
         var promptNone = string.Equals(request.Prompt, "none", StringComparison.OrdinalIgnoreCase);
 

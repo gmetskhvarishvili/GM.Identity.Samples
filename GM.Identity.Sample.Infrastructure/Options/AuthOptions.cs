@@ -1,10 +1,12 @@
-namespace GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Application.Common;
+
+namespace GM.Identity.Sample.Infrastructure.Options;
 
 /// <summary>
-/// Authentication tuning bound from the <c>Auth</c> configuration section: access/refresh token lifetimes
-/// and the failed-login lockout policy.
+/// Authentication tuning bound from the <c>Auth</c> configuration section: access/refresh token lifetimes and the
+/// failed-login lockout policy. Implements <see cref="IAuthOptions"/> so the Application layer can consume it.
 /// </summary>
-public sealed class AuthOptions
+public sealed class AuthOptions : IAuthOptions
 {
     public const string SectionName = "Auth";
 

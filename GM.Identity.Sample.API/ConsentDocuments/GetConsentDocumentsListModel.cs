@@ -20,6 +20,10 @@ public class GetConsentDocumentsListModel : GetBaseListModel
     /// <summary>Filter to mandatory (or non-mandatory) documents.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "IsMandatory")]
     public bool? IsMandatory { get; set; }
+
+    /// <summary>Filter to current versions only (true) or superseded ones (false); omit for all.</summary>
+    [Display(ResourceType = typeof(StringResource), Name = "IsCurrent")]
+    public bool? IsCurrent { get; set; }
 }
 
 /// <inheritdoc />

@@ -13,10 +13,12 @@ public class ConsentDocumentConfiguration : IEntityTypeConfiguration<ConsentDocu
         builder.Property(x => x.ConsentType).IsRequired();
         builder.Property(x => x.Title).IsRequired();
         builder.Property(x => x.Content).IsRequired();
-        builder.Property(x => x.CurrentVersion).IsRequired();
+        builder.Property(x => x.Version).IsRequired();
         builder.Property(x => x.IsMandatory).IsRequired();
-        // Uniqueness of an active ConsentType is enforced in the command handler (matching the Scope.Name pattern),
-        // so soft-deleted rows don't block re-creating a document with the same type.
-        builder.HasIndex(x => x.ConsentType);
+        builder.Property(x => x.IsCurrent).IsRequired();
+        // Each (ConsentType, Version) is one immutable row. Uniqueness of a type's version and the single-current
+        // invariant are maintained in the command handlers (matching the Scope.Name pattern), so soft-deleted
+        // rows don't block re-publishing. The index serves the by-type / current-version lookups.
+        builder.HasIndex(x => new { x.ConsentType, x.IsCurrent });
     }
 }

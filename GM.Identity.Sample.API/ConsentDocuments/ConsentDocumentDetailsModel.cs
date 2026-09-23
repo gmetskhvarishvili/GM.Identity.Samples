@@ -20,10 +20,13 @@ public class ConsentDocumentDetailsModel : AuditableModel
     /// <summary>The document body (or a URL to it).</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Content")]
     public string? Content { get; set; }
-    /// <summary>The current version users must accept.</summary>
-    [Display(ResourceType = typeof(StringResource), Name = "CurrentVersion")]
-    public string? CurrentVersion { get; set; }
-    /// <summary>Whether an unaccepted current version blocks login.</summary>
+    /// <summary>This row's version identifier.</summary>
+    [Display(ResourceType = typeof(StringResource), Name = "Version")]
+    public string? Version { get; set; }
+    /// <summary>Whether an unaccepted current version is reported as pending for the user.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "IsMandatory")]
     public bool IsMandatory { get; set; }
+    /// <summary>Whether this is the current version for its type.</summary>
+    [Display(ResourceType = typeof(StringResource), Name = "IsCurrent")]
+    public bool IsCurrent { get; set; }
 }

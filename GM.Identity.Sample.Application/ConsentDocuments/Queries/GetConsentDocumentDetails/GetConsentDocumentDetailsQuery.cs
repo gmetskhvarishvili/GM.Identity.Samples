@@ -58,6 +58,7 @@ public class ConsentDocumentDetailsDto : AuditableDto
     public string? ConsentType { get; set; }
     public string? Title { get; set; }
     public string? Content { get; set; }
-    public string? CurrentVersion { get; set; }
+    public string? Version { get; set; }
     public bool IsMandatory { get; set; }
+    public bool IsCurrent { get; set; }
 }

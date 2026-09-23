@@ -361,6 +361,18 @@ namespace GM.Identity.Sample.Common.Resources {
             }
         }
 
+        public static string Version {
+            get {
+                return ResourceManager.GetString("Version", resourceCulture);
+            }
+        }
+
+        public static string IsCurrent {
+            get {
+                return ResourceManager.GetString("IsCurrent", resourceCulture);
+            }
+        }
+
         public static string IsMandatory {
             get {
                 return ResourceManager.GetString("IsMandatory", resourceCulture);

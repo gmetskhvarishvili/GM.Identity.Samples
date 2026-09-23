@@ -36,7 +36,7 @@ public class GetPendingConsentsQueryHandler(IUnitOfWork unitOfWork)
                 ConsentType = d.ConsentType,
                 Title = d.Title,
                 Content = d.Content,
-                CurrentVersion = d.CurrentVersion,
+                Version = d.Version,
             })
             .ToList();
     }
@@ -47,5 +47,5 @@ public class PendingConsentDto
     public string ConsentType { get; set; } = null!;
     public string Title { get; set; } = null!;
     public string Content { get; set; } = null!;
-    public string CurrentVersion { get; set; } = null!;
+    public string Version { get; set; } = null!;
 }

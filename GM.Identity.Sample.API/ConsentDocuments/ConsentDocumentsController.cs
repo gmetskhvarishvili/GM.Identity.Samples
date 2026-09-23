@@ -2,9 +2,9 @@ using Asp.Versioning;
 using GM.API.Authorization;
 using GM.API.Controllers;
 using GM.API.Models;
+using GM.Identity.Sample.Application.ConsentDocuments.Commands.AddConsentDocumentVersion;
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.CreateConsentDocument;
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.DeleteConsentDocument;
-using GM.Identity.Sample.Application.ConsentDocuments.Commands.UpdateConsentDocument;
 using GM.Identity.Sample.Application.ConsentDocuments.Queries.GetConsentDocumentDetails;
 using GM.Identity.Sample.Application.ConsentDocuments.Queries.GetConsentDocumentsList;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -48,26 +48,26 @@ public class ConsentDocumentsController : BaseController
     }
 
     /// <summary>
-    /// Update Consent Document
+    /// Add Consent Document Version
     /// </summary>
-    /// <param name="id">Consent document Id to update</param>
-    /// <param name="request">Consent document model to update</param>
+    /// <param name="consentType">The document type to publish a new version of</param>
+    /// <param name="request">The new version to publish (becomes current)</param>
     /// <param name="cancellationToken"></param>
-    /// <returns>Result</returns>
-    [HasPermission(nameof(UpdateConsentDocument))]
+    /// <returns>The new version's Id</returns>
+    [HasPermission(nameof(AddConsentDocumentVersion))]
     [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPut("{id}", Name = nameof(UpdateConsentDocument))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpPost("{consentType}/Versions", Name = nameof(AddConsentDocumentVersion))]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateConsentDocument(
-        [FromRoute] Guid id,
-        [FromBody] UpdateConsentDocumentModel request,
+    public async Task<IActionResult> AddConsentDocumentVersion(
+        [FromRoute] string consentType,
+        [FromBody] AddConsentDocumentVersionModel request,
         CancellationToken cancellationToken)
     {
-        var command = request.Adapt<UpdateConsentDocumentCommand>();
-        command.Id = id;
-        await Mediator.Send(command, cancellationToken);
-        return Ok();
+        var command = request.Adapt<AddConsentDocumentVersionCommand>();
+        command.ConsentType = consentType;
+        var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

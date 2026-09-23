@@ -237,6 +237,12 @@
   <data name="CurrentVersion" xml:space="preserve">
     <value>Current Version</value>
   </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="IsCurrent" xml:space="preserve">
+    <value>Is Current</value>
+  </data>
   <data name="IsMandatory" xml:space="preserve">
     <value>Is Mandatory</value>
   </data>

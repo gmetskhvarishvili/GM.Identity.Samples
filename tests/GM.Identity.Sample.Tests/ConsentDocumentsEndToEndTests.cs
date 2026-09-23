@@ -1,5 +1,5 @@
+using GM.Identity.Sample.Application.ConsentDocuments.Commands.AddConsentDocumentVersion;
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.CreateConsentDocument;
-using GM.Identity.Sample.Application.ConsentDocuments.Commands.UpdateConsentDocument;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate;
@@ -29,7 +29,6 @@ public sealed class ConsentDocumentsEndToEndTests : IAsyncLifetime
     private readonly string _userName = $"consent-{Guid.NewGuid():N}";
     private readonly string _consentType = $"ToS-{Guid.NewGuid():N}";
     private Guid _userId;
-    private Guid _documentId;
     private bool _infraReady;
 
     public async Task InitializeAsync()
@@ -48,12 +47,12 @@ public sealed class ConsentDocumentsEndToEndTests : IAsyncLifetime
             using (var scope = _factory.Services.CreateScope())
             {
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                _documentId = await mediator.Send(new CreateConsentDocumentCommand
+                await mediator.Send(new CreateConsentDocumentCommand
                 {
                     ConsentType = _consentType,
                     Title = "Terms of Service",
                     Content = "body",
-                    CurrentVersion = "v1",
+                    Version = "v1",
                     IsMandatory = true,
                 });
             }
@@ -91,28 +90,28 @@ public sealed class ConsentDocumentsEndToEndTests : IAsyncLifetime
 
         // The mandatory v1 document is outstanding for the user.
         var item = Assert.Single(await PendingAsync(), p => p.ConsentType == _consentType);
-        Assert.Equal("v1", item.CurrentVersion);
+        Assert.Equal("v1", item.Version);
 
         // Accepting the current version clears it.
         await AcceptAsync("v1");
         Assert.DoesNotContain(await PendingAsync(), p => p.ConsentType == _consentType);
 
-        // Bumping the version makes the prior acceptance outstanding again.
+        // Publishing a new version makes the prior acceptance outstanding again.
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            await mediator.Send(new UpdateConsentDocumentCommand
+            await mediator.Send(new AddConsentDocumentVersionCommand
             {
-                Id = _documentId,
+                ConsentType = _consentType,
                 Title = "Terms of Service",
                 Content = "body v2",
-                CurrentVersion = "v2",
+                Version = "v2",
                 IsMandatory = true,
             });
         }
 
         var reopened = Assert.Single(await PendingAsync(), p => p.ConsentType == _consentType);
-        Assert.Equal("v2", reopened.CurrentVersion);
+        Assert.Equal("v2", reopened.Version);
 
         // Accepting the new version clears it again.
         await AcceptAsync("v2");

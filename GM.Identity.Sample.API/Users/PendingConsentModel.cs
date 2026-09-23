@@ -15,6 +15,6 @@ public class PendingConsentModel
     [Display(ResourceType = typeof(StringResource), Name = "Content")]
     public string Content { get; set; } = null!;
     /// <summary>The version to accept.</summary>
-    [Display(ResourceType = typeof(StringResource), Name = "CurrentVersion")]
-    public string CurrentVersion { get; set; } = null!;
+    [Display(ResourceType = typeof(StringResource), Name = "Version")]
+    public string Version { get; set; } = null!;
 }

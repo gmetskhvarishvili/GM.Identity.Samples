@@ -4,19 +4,16 @@ using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
 namespace GM.Identity.Sample.API.ConsentDocuments;
 
-/// <summary>Create consent document model.</summary>
-public class CreateConsentDocumentModel
+/// <summary>Publish a new version of an existing consent document type. The new version becomes current.</summary>
+public class AddConsentDocumentVersionModel
 {
-    /// <summary>The stable document identifier (e.g. TermsOfService, PrivacyPolicy).</summary>
-    [Display(ResourceType = typeof(StringResource), Name = "ConsentType")]
-    public string? ConsentType { get; set; }
     /// <summary>The human-readable title.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Title")]
     public string? Title { get; set; }
-    /// <summary>The document body (or a URL to it).</summary>
+    /// <summary>The document body (or a URL to it) for this version.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Content")]
     public string? Content { get; set; }
-    /// <summary>The version identifier of this first published version.</summary>
+    /// <summary>The new version identifier (must not already exist for this type).</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Version")]
     public string? Version { get; set; }
     /// <summary>Whether an unaccepted current version is reported as pending for the user.</summary>
@@ -24,11 +21,10 @@ public class CreateConsentDocumentModel
     public bool IsMandatory { get; set; }
 }
 
-public class CreateConsentDocumentModelValidator : AbstractValidator<CreateConsentDocumentModel>
+public class AddConsentDocumentVersionModelValidator : AbstractValidator<AddConsentDocumentVersionModel>
 {
-    public CreateConsentDocumentModelValidator()
+    public AddConsentDocumentVersionModelValidator()
     {
-        RuleFor(x => x.ConsentType).NotNull().NotEmpty();
         RuleFor(x => x.Title).NotNull().NotEmpty();
         RuleFor(x => x.Content).NotNull().NotEmpty();
         RuleFor(x => x.Version).NotNull().NotEmpty();

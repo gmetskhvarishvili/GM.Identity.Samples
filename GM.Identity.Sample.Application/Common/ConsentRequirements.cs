@@ -26,7 +26,7 @@ public static class ConsentRequirements
     {
         var mandatory = await unitOfWork.ConsentDocumentRepository
             .Query(false, null)
-            .Where(d => d.IsMandatory && d.IsActive && !d.IsDeleted && !d.IsHidden)
+            .Where(d => d.IsMandatory && d.IsCurrent && d.IsActive && !d.IsDeleted && !d.IsHidden)
             .ToListAsync(cancellationToken);
 
         if (mandatory.Count == 0)
@@ -46,7 +46,7 @@ public static class ConsentRequirements
 
         return mandatory
             .Where(d => !acceptedVersionsByType.TryGetValue(d.ConsentType, out var versions)
-                        || !versions.Contains(d.CurrentVersion))
+                        || !versions.Contains(d.Version))
             .ToList();
     }
 }

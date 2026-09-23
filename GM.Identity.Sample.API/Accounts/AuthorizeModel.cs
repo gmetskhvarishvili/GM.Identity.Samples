@@ -54,11 +54,6 @@ public class AuthorizeModel
     [Display(ResourceType = typeof(StringResource), Name = "CodeVerifier")]
     public string? CodeVerifier { get; set; }
 
-    /// <summary>The api key.</summary>
-    [FromForm(Name = "api_key")]
-    [Display(ResourceType = typeof(StringResource), Name = "ApiKey")]
-    public string? ApiKey { get; set; }
-
     /// <summary>The device code.</summary>
     [FromForm(Name = "device_code")]
     [Display(ResourceType = typeof(StringResource), Name = "DeviceCode")]

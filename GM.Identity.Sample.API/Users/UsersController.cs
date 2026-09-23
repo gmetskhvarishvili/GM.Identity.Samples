@@ -12,8 +12,6 @@ using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
-using GM.Identity.Sample.Application.Users.Commands.CreateApiKey;
-using GM.Identity.Sample.Application.Users.Commands.RevokeApiKey;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
@@ -286,33 +284,6 @@ public class UsersController : BaseController
             Name = request.Name,
         }, cancellationToken);
         return Ok(passkeyId);
-    }
-
-    /// <summary>Issue a personal access token (API key) for a user. Returns the plaintext key exactly once.</summary>
-    [HasPermission(nameof(CreateApiKey))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/ApiKeys", Name = nameof(CreateApiKey))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateApiKey(
-        [FromRoute] Guid id, [FromBody] CreateApiKeyModel request, CancellationToken cancellationToken)
-    {
-        var key = await Mediator.Send(
-            new CreateApiKeyCommand { UserId = id, Name = request.Name, ExpiresAt = request.ExpiresAt },
-            cancellationToken);
-        return Ok(key);
-    }
-
-    /// <summary>Revoke one of a user's API keys.</summary>
-    [HasPermission(nameof(RevokeApiKey))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpDelete("{id}/ApiKeys/{apiKeyId}", Name = nameof(RevokeApiKey))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RevokeApiKey(
-        [FromRoute] Guid id, [FromRoute] Guid apiKeyId, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new RevokeApiKeyCommand { UserId = id, ApiKeyId = apiKeyId }, cancellationToken);
-        return Ok();
     }
 
     /// <summary>Remove a user's authenticator-app (TOTP) device.</summary>

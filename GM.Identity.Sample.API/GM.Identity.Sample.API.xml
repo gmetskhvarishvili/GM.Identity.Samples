@@ -201,9 +201,6 @@
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.CodeVerifier">
             <summary>The code verifier.</summary>
         </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.ApiKey">
-            <summary>The api key.</summary>
-        </member>
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.DeviceCode">
             <summary>The device code.</summary>
         </member>
@@ -1239,15 +1236,6 @@
         <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel.Code">
             <summary>The code.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.CreateApiKeyModel">
-            <summary>Body to create an API key: a label and an optional expiry.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.CreateApiKeyModel.Name">
-            <summary>The name.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.CreateApiKeyModel.ExpiresAt">
-            <summary>The expires at.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateUserModel">
             <summary>Create user model.</summary>
         </member>
@@ -1500,12 +1488,6 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.RegisterPasskey(System.Guid,GM.Identity.Sample.API.Users.RegisterPasskeyModel,System.Threading.CancellationToken)">
             <summary>Register a WebAuthn passkey for a user (stores the credential's public key).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.CreateApiKey(System.Guid,GM.Identity.Sample.API.Users.CreateApiKeyModel,System.Threading.CancellationToken)">
-            <summary>Issue a personal access token (API key) for a user. Returns the plaintext key exactly once.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.RevokeApiKey(System.Guid,System.Guid,System.Threading.CancellationToken)">
-            <summary>Revoke one of a user's API keys.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTotp(System.Guid,System.Threading.CancellationToken)">
             <summary>Remove a user's authenticator-app (TOTP) device.</summary>

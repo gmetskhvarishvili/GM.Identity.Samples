@@ -41,7 +41,7 @@ public class UserSession : GMUserSession
     /// <summary>
     /// The single sign-on session this app session was established through, when the login went via the SSO
     /// browser session at <c>/connect/authorize</c>. Null for sessions minted by non-SSO grants (password,
-    /// client-credentials, api_key, passkey). Ending the SSO session revokes every session that carries its id.
+    /// client-credentials, passkey). Ending the SSO session revokes every session that carries its id.
     /// </summary>
     public Guid? SsoSessionId { get; private set; }
 

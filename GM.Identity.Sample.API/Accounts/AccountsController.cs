@@ -60,7 +60,6 @@ public class AccountsController : BaseController
             Code = request.Code,
             RedirectUri = request.RedirectUri,
             CodeVerifier = request.CodeVerifier,
-            ApiKey = request.ApiKey,
             DeviceCode = request.DeviceCode,
             Issuer = $"{Request.Scheme}://{Request.Host}",
         };

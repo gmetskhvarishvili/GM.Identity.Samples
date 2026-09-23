@@ -13,7 +13,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.Devic
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserClientConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ApiKeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
@@ -51,7 +50,6 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public ISsoSessionRepository SsoSessionRepository { get; }
     public IUserClientConsentRepository UserClientConsentRepository { get; }
     public IDeviceCodeRepository DeviceCodeRepository { get; }
-    public IApiKeyRepository ApiKeyRepository { get; }
     public IUserConsentRepository UserConsentRepository { get; }
     public IConsentDocumentRepository ConsentDocumentRepository { get; }
     public IUserPasskeyRepository UserPasskeyRepository { get; }

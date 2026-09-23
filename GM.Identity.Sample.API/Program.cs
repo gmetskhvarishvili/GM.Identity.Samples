@@ -15,6 +15,7 @@ using GM.Identity.Sample.Infrastructure;
 using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 var builder = ProgramExtension.CreateGMBuilder(args);
 
@@ -81,9 +82,11 @@ using (var scope = app.Services.CreateScope())
                 Guid? clientId = Guid.TryParse(builder.Configuration["Seed:ClientId"], out var parsedClientId)
                     ? parsedClientId
                     : null;
+                var seedConsentDocuments = builder.Configuration.GetValue("Seed:ConsentDocuments", true);
 
                 await new ApplicationDbContextSeed().SeedAsync(
-                    context, logger, permissionNames, permissionCache, adminPassword, clientId, clientSecret, scopeCache);
+                    context, logger, permissionNames, permissionCache, adminPassword, clientId, clientSecret, scopeCache,
+                    seedConsentDocuments);
             }
         }
     }

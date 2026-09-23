@@ -8,7 +8,9 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Scope
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -52,6 +54,7 @@ public class ApplicationDbContextSeed
         Guid? clientId = null,
         string? clientSecret = null,
         IScopeCache? scopeCache = null,
+        bool seedConsentDocuments = true,
         int? retry = 0,
         CancellationToken cancellationToken = default)
     {
@@ -202,6 +205,42 @@ public class ApplicationDbContextSeed
                 }
             }
 
+            // 7) Consent documents (Terms of Service + Privacy Policy) the app requires users to accept. Seeded
+            // as mandatory so the consent gate (Auth:EnforceConsent) has something to enforce. The seeded admin
+            // is auto-accepted for the current versions so it is never locked out of its own instance.
+            if (seedConsentDocuments)
+            {
+                var documents = new[]
+                {
+                    (ConsentType: "TermsOfService", Title: "Terms of Service",
+                        Content: "The sample Terms of Service. Replace with your real document.", Version: "1.0"),
+                    (ConsentType: "PrivacyPolicy", Title: "Privacy Policy",
+                        Content: "The sample Privacy Policy. Replace with your real document.", Version: "1.0"),
+                };
+
+                foreach (var (consentType, title, content, version) in documents)
+                {
+                    var exists = await context.Set<ConsentDocument>()
+                        .AnyAsync(d => d.ConsentType == consentType && !d.IsDeleted, cancellationToken);
+                    if (!exists)
+                    {
+                        await context.Set<ConsentDocument>().AddAsync(
+                            ConsentDocument.Create(consentType, title, content, version, isMandatory: true), cancellationToken);
+                        await context.SaveChangesAsync(cancellationToken);
+                    }
+
+                    var adminAccepted = await context.Set<UserConsent>().IgnoreQueryFilters()
+                        .AnyAsync(c => c.UserId == adminUser.Id && c.ConsentType == consentType
+                                       && c.DocumentVersion == version && !c.IsDeleted, cancellationToken);
+                    if (!adminAccepted)
+                    {
+                        await context.Set<UserConsent>().AddAsync(
+                            UserConsent.Create(adminUser.Id, consentType, version), cancellationToken);
+                        await context.SaveChangesAsync(cancellationToken);
+                    }
+                }
+            }
+
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation(
                     "RBAC seed complete: {PermissionCount} permissions, Administrator role, admin user '{AdminUser}', client '{ClientId}'.",
@@ -213,7 +252,7 @@ public class ApplicationDbContextSeed
             {
                 retryForAvailability++;
                 logger.LogError(ex, "EXCEPTION ERROR while seeding {DbContextName}", nameof(ApplicationDbContext));
-                await SeedAsync(context, logger, permissionNames, permissionCache, adminPassword, clientId, clientSecret, scopeCache, retryForAvailability, cancellationToken);
+                await SeedAsync(context, logger, permissionNames, permissionCache, adminPassword, clientId, clientSecret, scopeCache, seedConsentDocuments, retryForAvailability, cancellationToken);
             }
         }
     }

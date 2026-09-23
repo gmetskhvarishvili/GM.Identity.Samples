@@ -27,13 +27,6 @@ public sealed class AuthOptions
     public int PasswordExpiryDays { get; set; }
 
     /// <summary>
-    /// When <c>true</c>, login is refused while the user still owes acceptance of a mandatory consent document
-    /// at its current version (the outstanding documents are available via GET users/me/Consents/Pending).
-    /// Off by default — enforcement is a deployment policy, like <see cref="PasswordExpiryDays"/>.
-    /// </summary>
-    public bool EnforceConsent { get; set; }
-
-    /// <summary>
     /// Single sign-on session lifetime in minutes — how long one interactive login lets the browser obtain
     /// authorization codes for other clients silently before it must re-authenticate. Defaults to 8 hours.
     /// </summary>

@@ -29,7 +29,6 @@ using GM.Identity.Sample.Application.Users.Commands.RecoverUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ResetUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
-using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
 using GM.Identity.Sample.Application.Users.Queries.GetUserAuditTrail;
 using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
@@ -110,23 +109,6 @@ public class UsersController : BaseController
     {
         var response = await Mediator.Send(new GetPendingConsentsQuery { UserId = id }, cancellationToken);
         var result = response.Adapt<IReadOnlyList<PendingConsentModel>>();
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Export everything this identity server holds about a user (GDPR-style data portability): profile, roles,
-    /// 2FA enrolments, and active sessions. Secrets and password hashes are excluded.
-    /// </summary>
-    [HasPermission(nameof(ExportUserData))]
-    [RequiresScope(ScopeOperations.ReadIdentity)]
-    [HttpGet("{id}/Export", Name = nameof(ExportUserData))]
-    [ProducesResponseType(typeof(UserDataExportDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ExportUserData(
-        [FromRoute] Guid id,
-        CancellationToken cancellationToken)
-    {
-        var result = await Mediator.Send(new ExportCurrentUserDataQuery { UserId = id }, cancellationToken);
         return Ok(result);
     }
 

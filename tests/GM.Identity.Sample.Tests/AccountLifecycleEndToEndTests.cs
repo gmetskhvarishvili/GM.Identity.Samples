@@ -1,6 +1,6 @@
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
-using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
+using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Persistence.Context;
@@ -18,9 +18,8 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Tests;
 
 /// <summary>
-/// End-to-end proof of the self-service account lifecycle: registration creates an unconfirmed account and
-/// queues an email-confirmation code; data export returns the user's profile; self-delete soft-removes the
-/// account. Requires Postgres + Redis; no-ops if they aren't reachable.
+/// End-to-end proof of the account lifecycle: create makes an account, its details read back, and delete
+/// soft-removes it. Requires Postgres + Redis; no-ops if they aren't reachable.
 /// </summary>
 public sealed class AccountLifecycleEndToEndTests : IAsyncLifetime
 {
@@ -61,7 +60,7 @@ public sealed class AccountLifecycleEndToEndTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Create_then_export_then_self_delete()
+    public async Task Create_then_read_then_delete()
     {
         if (!_infraReady) return;
 
@@ -78,17 +77,16 @@ public sealed class AccountLifecycleEndToEndTests : IAsyncLifetime
         }
         Assert.NotEqual(Guid.Empty, _userId);
 
-        // Export → returns the profile.
+        // Read back → returns the profile.
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            var export = await mediator.Send(new ExportCurrentUserDataQuery { UserId = _userId });
-            Assert.Equal(_userId, export.Id);
-            Assert.Equal($"reg-{_suffix}", export.Username);
-            Assert.Equal($"reg-{_suffix}@test.local", export.Email);
+            var details = await mediator.Send(new GetUserDetailsQuery { Id = _userId });
+            Assert.Equal(_userId, details.Id);
+            Assert.Equal($"reg-{_suffix}@test.local", details.Email);
         }
 
-        // Self-delete → soft-removed.
+        // Delete → soft-removed.
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();

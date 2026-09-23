@@ -1462,12 +1462,6 @@
             List the mandatory consent documents a user must still accept (never accepted, or an older version).
             </summary>
         </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.ExportUserData(System.Guid,System.Threading.CancellationToken)">
-            <summary>
-            Export everything this identity server holds about a user (GDPR-style data portability): profile, roles,
-            2FA enrolments, and active sessions. Secrets and password hashes are excluded.
-            </summary>
-        </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BulkSetUserBlock(GM.Identity.Sample.API.Users.BulkSetUserBlockModel,System.Threading.CancellationToken)">
             <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
         </member>

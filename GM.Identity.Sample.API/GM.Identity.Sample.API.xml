@@ -1239,12 +1239,6 @@
         <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel.Code">
             <summary>The code.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.RequestContactChangeModel">
-            <summary>Request to change the current user's email or phone (starts verify-before-apply).</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Users.ConfirmContactChangeModel">
-            <summary>The one-time code sent to the pending new contact.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateApiKeyModel">
             <summary>Body to create an API key: a label and an optional expiry.</summary>
         </member>
@@ -1462,15 +1456,6 @@
             <summary>
             Users Controller
             </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.RequestContactChange(System.Guid,GM.Identity.Sample.API.Users.RequestContactChangeModel,System.Threading.CancellationToken)">
-            <summary>
-            Request a change to a user's email or phone. Sends a one-time code to the NEW contact; the change is not
-            applied until it's confirmed.
-            </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmContactChange(System.Guid,GM.Identity.Sample.API.Users.ConfirmContactChangeModel,System.Threading.CancellationToken)">
-            <summary>Confirm a pending email/phone change with the code sent to the new contact (applies the change).</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.RecordUserConsent(System.Guid,GM.Identity.Sample.API.Users.RecordConsentModel,System.Threading.CancellationToken)">
             <summary>Record a user's acceptance of a consent document (e.g. Terms of Service).</summary>

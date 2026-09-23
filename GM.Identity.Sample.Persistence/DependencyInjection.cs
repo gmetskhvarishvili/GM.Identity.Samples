@@ -18,7 +18,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedi
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
@@ -95,7 +94,6 @@ public static class DependencyInjection
         services.AddTransient<IUserTwoFactorAuthTypeRepository, UserTwoFactorAuthTypeRepository>();
         services.AddTransient<IUserRecoveryCodeRepository, UserRecoveryCodeRepository>();
         services.AddTransient<IUserTotpDeviceRepository, UserTotpDeviceRepository>();
-        services.AddTransient<IUserPendingContactChangeRepository, UserPendingContactChangeRepository>();
         services.AddTransient<IClientRedirectUriRepository, ClientRedirectUriRepository>();
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<ISsoSessionRepository, SsoSessionRepository>();

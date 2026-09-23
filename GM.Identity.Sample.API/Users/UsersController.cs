@@ -11,7 +11,6 @@ using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
-using GM.Identity.Sample.Application.Users.Commands.ConfirmContactChange;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.CreateApiKey;
 using GM.Identity.Sample.Application.Users.Commands.RevokeApiKey;
@@ -24,7 +23,6 @@ using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
-using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
 using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
 using GM.Identity.Sample.Application.Users.Commands.UnlockUser;
@@ -64,44 +62,6 @@ public class UsersController : BaseController
     // id explicitly (never derived from the session), and these are admin-gated like the rest of the API.
     // Reading/updating a user's own profile, sessions, account deletion and logout are the {id} endpoints below
     // (GetUserDetails, GetUserSessions, UpdateUser, DeleteUser, DeleteUserSessions/DeleteUserSession). ----
-
-    /// <summary>
-    /// Request a change to a user's email or phone. Sends a one-time code to the NEW contact; the change is not
-    /// applied until it's confirmed.
-    /// </summary>
-    [HasPermission(nameof(RequestContactChange))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/Contact/Change", Name = nameof(RequestContactChange))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RequestContactChange(
-        [FromRoute] Guid id,
-        [FromBody] RequestContactChangeModel request,
-        CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new RequestContactChangeCommand
-        {
-            UserId = id,
-            ConfirmationType = request.ConfirmationType,
-            NewContact = request.NewContact,
-        }, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Confirm a pending email/phone change with the code sent to the new contact (applies the change).</summary>
-    [HasPermission(nameof(ConfirmContactChange))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/Contact/Confirm", Name = nameof(ConfirmContactChange))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ConfirmContactChange(
-        [FromRoute] Guid id,
-        [FromBody] ConfirmContactChangeModel request,
-        CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new ConfirmContactChangeCommand { UserId = id, Code = request.Code }, cancellationToken);
-        return Ok();
-    }
 
     /// <summary>Record a user's acceptance of a consent document (e.g. Terms of Service).</summary>
     [HasPermission(nameof(RecordUserConsent))]

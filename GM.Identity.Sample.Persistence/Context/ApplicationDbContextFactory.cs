@@ -12,8 +12,7 @@ public class ApplicationDbContextFactory : DesignTimeDbContextFactoryBase<Applic
     {
         // Design-time (migrations) has no request, so no ambient tenant — a no-op actor is sufficient to
         // build the model and its tenant query filter.
-        return new ApplicationDbContext(options, new DesignTimeCurrentActor(),
-            new GM.Identity.Sample.Application.Common.EncryptionKeyProvider(null));
+        return new ApplicationDbContext(options, new DesignTimeCurrentActor());
     }
 
     private sealed class DesignTimeCurrentActor : ICurrentActor

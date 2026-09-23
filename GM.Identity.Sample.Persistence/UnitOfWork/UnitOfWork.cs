@@ -19,7 +19,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedi
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserPendingContactChangeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
@@ -45,7 +44,6 @@ public sealed class UnitOfWork(
     IUserRoleRepository userRoleRepository,
     IUserTwoFactorAuthTypeRepository userTwoFactorAuthTypeRepository,
     IUserRecoveryCodeRepository userRecoveryCodeRepository,
-    IUserPendingContactChangeRepository userPendingContactChangeRepository,
     IUserTotpDeviceRepository userTotpDeviceRepository,
     IClientRedirectUriRepository clientRedirectUriRepository,
     IAuthorizationCodeRepository authorizationCodeRepository,
@@ -73,7 +71,6 @@ public sealed class UnitOfWork(
     public IUserSessionRepository UserSessionRepository { get; } = userSessionRepository;
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; } = userTwoFactorAuthTypeRepository;
     public IUserRecoveryCodeRepository UserRecoveryCodeRepository { get; } = userRecoveryCodeRepository;
-    public IUserPendingContactChangeRepository UserPendingContactChangeRepository { get; } = userPendingContactChangeRepository;
     public IUserTotpDeviceRepository UserTotpDeviceRepository { get; } = userTotpDeviceRepository;
     public IClientRedirectUriRepository ClientRedirectUriRepository { get; } = clientRedirectUriRepository;
     public IAuthorizationCodeRepository AuthorizationCodeRepository { get; } = authorizationCodeRepository;

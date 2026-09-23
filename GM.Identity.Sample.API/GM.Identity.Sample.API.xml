@@ -1350,12 +1350,6 @@
         <member name="P:GM.Identity.Sample.API.Users.RecoverUserPasswordModel.Password">
             <summary>The password.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.RecoveryCodesModel">
-            <summary>The freshly generated recovery codes, returned exactly once. The user must store them now.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.RecoveryCodesModel.Codes">
-            <summary>The codes.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.RegisterPasskeyModel">
             <summary>Body to register a passkey: the credential id, its ES256 public key (SPKI, base64), and a label.</summary>
         </member>
@@ -1521,12 +1515,6 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTotp(System.Guid,System.Threading.CancellationToken)">
             <summary>Remove a user's authenticator-app (TOTP) device.</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.GenerateRecoveryCodes(System.Guid,System.Threading.CancellationToken)">
-            <summary>
-            (Re)generate a user's single-use backup codes. Returns the new codes exactly once — they replace any
-            existing set and are never recoverable afterwards.
-            </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.AddUser(GM.Identity.Sample.API.Users.CreateUserModel,System.Threading.CancellationToken)">
             <summary>

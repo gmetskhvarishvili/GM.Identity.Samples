@@ -19,7 +19,6 @@ using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
-using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
@@ -343,21 +342,6 @@ public class UsersController : BaseController
     {
         await Mediator.Send(new DisableUserTotpCommand { UserId = id }, cancellationToken);
         return Ok();
-    }
-
-    /// <summary>
-    /// (Re)generate a user's single-use backup codes. Returns the new codes exactly once — they replace any
-    /// existing set and are never recoverable afterwards.
-    /// </summary>
-    [HasPermission(nameof(GenerateRecoveryCodes))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/RecoveryCodes", Name = nameof(GenerateRecoveryCodes))]
-    [ProducesResponseType(typeof(RecoveryCodesModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GenerateRecoveryCodes([FromRoute] Guid id, CancellationToken cancellationToken)
-    {
-        var codes = await Mediator.Send(new GenerateRecoveryCodesCommand { UserId = id }, cancellationToken);
-        return Ok(new RecoveryCodesModel { Codes = codes });
     }
 
     /// <summary>

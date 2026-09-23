@@ -155,15 +155,13 @@ public class AuthorizeCommandHandler(
         if (twoFactorTypeIds.Count == 0 && totpSecret == null)
             throw new ValidationException("This account has no second factor configured.");
 
-        // The submitted value can be an authenticator-app (TOTP) code, the one-time code sent to the user's
-        // contact, or one of their single-use backup codes. Try each in turn; only if none matches is the
-        // second factor rejected.
+        // The submitted value can be an authenticator-app (TOTP) code or the one-time code sent to the user's
+        // contact. Try each in turn; only if none matches is the second factor rejected.
         var subject = TwoFactorSubject(user);
         var verified =
             (totpSecret != null && Totp.Verify(totpSecret, request.Code))
             || (twoFactorTypeIds.Count > 0 && !string.IsNullOrWhiteSpace(subject)
-                && await TryVerifyOtpAsync(subject, request.Code, cancellationToken))
-            || await TryConsumeRecoveryCodeAsync(user.Id, request.Code, cancellationToken);
+                && await TryVerifyOtpAsync(subject, request.Code, cancellationToken));
 
         if (!verified)
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
@@ -246,29 +244,8 @@ public class AuthorizeCommandHandler(
         }
         catch (ValidationException)
         {
-            return false; // Not a valid OTP — the caller will try a recovery code.
+            return false; // Not a valid OTP.
         }
-    }
-
-    // Spends a single-use recovery code if the submitted value matches an unused one. Cross-tenant, like the
-    // rest of the login path (the caller has no proven tenant yet).
-    private async Task<bool> TryConsumeRecoveryCodeAsync(Guid userId, string code, CancellationToken cancellationToken)
-    {
-        var hash = TokenGenerator.Hash(code);
-        var recoveryCode = await unitOfWork.UserRecoveryCodeRepository
-            .Query(true, null)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(
-                x => x.UserId == userId && x.CodeHash == hash && x.UsedAt == null
-                     && x.IsActive && !x.IsDeleted && !x.IsHidden,
-                cancellationToken);
-
-        if (recoveryCode == null || !recoveryCode.Consume())
-            return false;
-
-        unitOfWork.UserRecoveryCodeRepository.Update(recoveryCode);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        return true;
     }
 
     // The payload the one-time code is issued/validated against — the email, falling back to the phone.

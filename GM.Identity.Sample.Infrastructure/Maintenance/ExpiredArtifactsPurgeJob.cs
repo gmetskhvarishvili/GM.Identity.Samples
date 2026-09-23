@@ -11,9 +11,9 @@ namespace GM.Identity.Sample.Infrastructure.Maintenance;
 
 /// <summary>
 /// Reaps short-lived security artifacts that are no longer usable so the tables don't grow without bound:
-/// dead sessions (expired or revoked), spent/expired authorization codes, and consumed recovery codes. A small
-/// grace window keeps very recent rows around for diagnosability. Distributed-lock-guarded per fire by
-/// GM.Scheduling; discovered automatically via ScanAssemblies.
+/// dead sessions (expired or revoked) and spent/expired authorization codes. A small grace window keeps very
+/// recent rows around for diagnosability. Distributed-lock-guarded per fire by GM.Scheduling; discovered
+/// automatically via ScanAssemblies.
 /// </summary>
 [ScheduledJob("expired-artifacts-purge", Cron = "0 20/30 * * * ?")]
 public sealed class ExpiredArtifactsPurgeJob(IUnitOfWork unitOfWork) : IScheduledJob
@@ -42,16 +42,9 @@ public sealed class ExpiredArtifactsPurgeJob(IUnitOfWork unitOfWork) : ISchedule
             .Where(x => x.ExpiresAt < cutoff || x.ConsumedAt != null)
             .ExecuteDeleteAsync(cancellationToken);
 
-        var recoveryCodes = await unitOfWork.UserRecoveryCodeRepository
-            .Query(true, null)
-            .IgnoreQueryFilters()
-            .Where(x => x.UsedAt != null && x.UsedAt < cutoff)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        var total = userSessions + clientSessions + authCodes + recoveryCodes;
+        var total = userSessions + clientSessions + authCodes;
         return JobExecutionResult.Success(
             total,
-            $"Purged {userSessions} user + {clientSessions} client sessions, {authCodes} auth codes, " +
-            $"{recoveryCodes} recovery codes.");
+            $"Purged {userSessions} user + {clientSessions} client sessions, {authCodes} auth codes.");
     }
 }

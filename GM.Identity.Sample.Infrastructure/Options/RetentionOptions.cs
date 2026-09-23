@@ -1,4 +1,4 @@
-namespace GM.Identity.Sample.Application.Common;
+namespace GM.Identity.Sample.Infrastructure.Options;
 
 /// <summary>
 /// Data-retention policy, bound from the <c>Retention</c> configuration section. Governs how long the durable

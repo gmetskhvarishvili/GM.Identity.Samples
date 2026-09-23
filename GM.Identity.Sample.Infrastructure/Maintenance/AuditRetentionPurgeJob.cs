@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Common;
+using GM.Identity.Sample.Infrastructure.Options;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Scheduling;
 using Microsoft.EntityFrameworkCore;

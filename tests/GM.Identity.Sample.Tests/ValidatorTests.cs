@@ -1,8 +1,10 @@
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Clients.Commands.CreateClientScope;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Application.Operations.Commands.CreateOperation;
 using GM.Identity.Sample.Application.Scopes.Commands.CreateScopeOperation;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 using System;
@@ -44,7 +46,7 @@ public sealed class ValidatorTests
     [Fact]
     public void CreateUser_requires_username_password_and_a_valid_email()
     {
-        var validator = new CreateUserCommandValidator();
+        var validator = new CreateUserCommandValidator(Options.Create(new PasswordPolicyOptions()));
 
         Assert.True(validator.Validate(new CreateUserCommand
         {

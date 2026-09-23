@@ -35,22 +35,20 @@ public class CreateUserCommand : IRequest<Guid>
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
-    public CreateUserCommandValidator()
+    public CreateUserCommandValidator(IOptions<PasswordPolicyOptions> passwordPolicy)
     {
         RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
         RuleFor(x => x.Username).NotNull().NotEmpty();
-        RuleFor(x => x.Password).StrongPassword();
+        RuleFor(x => x.Password).StrongPassword(passwordPolicy.Value);
     }
 }
 
 public class CreateUserCommandHandler(
     IUnitOfWork unitOfWork,
-    IOptions<PasswordPolicyOptions> passwordPolicy,
     IBreachedPasswordChecker breachedPasswordChecker) : IRequestHandler<CreateUserCommand, Guid>
 {
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
-        PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
         await PasswordPolicy.EnsureNotBreachedAsync(request.Password, breachedPasswordChecker, cancellationToken);
 
         if (await unitOfWork.UserRepository.ExistsAsync(

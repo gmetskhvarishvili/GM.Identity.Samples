@@ -22,23 +22,21 @@ public class UpdateUserPasswordCommand : IRequest
 
 public class UpdateUserPasswordCommandValidator : AbstractValidator<UpdateUserPasswordCommand>
 {
-    public UpdateUserPasswordCommandValidator()
+    public UpdateUserPasswordCommandValidator(IOptions<PasswordPolicyOptions> passwordPolicy)
     {
         RuleFor(x => x.Id).NotNull().NotEmpty();
-        RuleFor(x => x.Password).StrongPassword();
+        RuleFor(x => x.Password).StrongPassword(passwordPolicy.Value);
     }
 }
 
 public class UpdateUserPasswordCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IOptions<PasswordPolicyOptions> passwordPolicy,
     IBreachedPasswordChecker breachedPasswordChecker)
     : IRequestHandler<UpdateUserPasswordCommand>
 {
     public async Task Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
     {
-        PasswordPolicy.Validate(request.Password, passwordPolicy.Value);
         await PasswordPolicy.EnsureNotBreachedAsync(request.Password, breachedPasswordChecker, cancellationToken);
 
         // the root aggregate

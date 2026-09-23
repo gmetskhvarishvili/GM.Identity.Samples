@@ -3,7 +3,6 @@ using GM.API.Controllers;
 using GM.API.Models;
 using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
-using GM.Identity.Sample.Application.Users.Commands.BulkSetUserBlock;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
@@ -112,20 +111,6 @@ public class UsersController : BaseController
 
     // ---- Account state (admin) — block/unblock, activate/deactivate, unlock. Each finds the user
     // regardless of active/blocked state; the session-revoking ones take effect immediately. ----
-
-
-    /// <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
-    [HasPermission(nameof(BulkSetUserBlock))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("Bulk/Block", Name = nameof(BulkSetUserBlock))]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-    public async Task<IActionResult> BulkSetUserBlock(
-        [FromBody] BulkSetUserBlockModel request, CancellationToken cancellationToken)
-    {
-        var changed = await Mediator.Send(
-            new BulkSetUserBlockCommand { UserIds = request.UserIds, Block = request.Block }, cancellationToken);
-        return Ok(changed);
-    }
 
     /// <summary>Block a user (and revoke their active sessions).</summary>
     [HasPermission(nameof(BlockUser))]

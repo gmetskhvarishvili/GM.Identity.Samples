@@ -1200,15 +1200,6 @@
         <member name="P:GM.Identity.Sample.API.Scopes.UpdateScopeModel.Name">
             <summary>The name.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.BulkSetUserBlockModel">
-            <summary>Body for a bulk block/unblock operation.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.BulkSetUserBlockModel.UserIds">
-            <summary>The user ids.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.BulkSetUserBlockModel.Block">
-            <summary>The block.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.ConfirmUserInitModel">
             <summary>Confirm user init model.</summary>
         </member>
@@ -1449,9 +1440,6 @@
             <summary>
             List the mandatory consent documents a user must still accept (never accepted, or an older version).
             </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.BulkSetUserBlock(GM.Identity.Sample.API.Users.BulkSetUserBlockModel,System.Threading.CancellationToken)">
-            <summary>Bulk block/unblock many users in one operation. Returns the number of users changed.</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.BlockUser(System.Guid,System.Threading.CancellationToken)">
             <summary>Block a user (and revoke their active sessions).</summary>

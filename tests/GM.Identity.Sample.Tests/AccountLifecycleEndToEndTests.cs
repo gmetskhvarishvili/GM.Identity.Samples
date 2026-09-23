@@ -1,5 +1,5 @@
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
-using GM.Identity.Sample.Application.Users.Commands.DeleteCurrentUser;
+using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Queries.ExportCurrentUserData;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
@@ -92,7 +92,7 @@ public sealed class AccountLifecycleEndToEndTests : IAsyncLifetime
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            await mediator.Send(new DeleteCurrentUserCommand { UserId = _userId });
+            await mediator.Send(new DeleteUserCommand { Id = _userId });
         }
         using (var scope = _factory.Services.CreateScope())
         {

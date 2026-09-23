@@ -9,7 +9,6 @@ using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
-using GM.Identity.Sample.Application.Users.Commands.DeleteCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmContactChange;
@@ -23,11 +22,9 @@ using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.GenerateRecoveryCodes;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
-using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
 using GM.Identity.Sample.Application.Users.Commands.RequestContactChange;
-using GM.Identity.Sample.Application.Users.Commands.LogoutCurrentUser;
 using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
 using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
 using GM.Identity.Sample.Application.Users.Commands.UnlockUser;
@@ -63,121 +60,28 @@ namespace GM.Identity.Sample.API.Users;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class UsersController : BaseController
 {
-    // ---- Current user (self) — owner-scoped, no admin permission required. The user id comes from the
-    // gateway-forwarded X-User-Id header (ICurrentActor), never from the route, so a caller can only ever
-    // read/change their own data. These back the gateway's /me and /me/sessions routes. ----
+    // ---- Per-user operations addressed by user id. Identity is a backend service: the caller passes the user
+    // id explicitly (never derived from the session), and these are admin-gated like the rest of the API.
+    // Reading/updating a user's own profile, sessions, account deletion and logout are the {id} endpoints below
+    // (GetUserDetails, GetUserSessions, UpdateUser, DeleteUser, DeleteUserSessions/DeleteUserSession). ----
 
     /// <summary>
-    /// Get the current user's own details.
+    /// Request a change to a user's email or phone. Sends a one-time code to the NEW contact; the change is not
+    /// applied until it's confirmed.
     /// </summary>
-    [HttpGet("me", Name = nameof(GetCurrentUser))]
-    [ProducesResponseType(typeof(UserDetailsModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetCurrentUser(
-        [FromServices] ICurrentActor currentActor,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var response = await Mediator.Send(new GetUserDetailsQuery { Id = userId }, cancellationToken);
-        return Ok(response.Adapt<UserDetailsModel>());
-    }
-
-    /// <summary>
-    /// Get the current user's own sessions.
-    /// </summary>
-    [HttpGet("me/Sessions", Name = nameof(GetCurrentUserSessions))]
-    [ProducesResponseType(typeof(IEnumerable<UserSessionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetCurrentUserSessions(
-        [FromServices] ICurrentActor currentActor,
-        [FromQuery] GetUserSessionsListModel request,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var query = request.Adapt<GetUserSessionsListQuery>();
-        query.UserId = userId;
-        var response = await Mediator.Send(query, cancellationToken);
-        var result = response.Items.Adapt<IEnumerable<UserSessionModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Update the current user's own profile (username / email / phone).
-    /// </summary>
-    [HttpPut("me/Profile", Name = nameof(UpdateCurrentUser))]
+    [HasPermission(nameof(RequestContactChange))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Contact/Change", Name = nameof(RequestContactChange))]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UpdateCurrentUser(
-        [FromServices] ICurrentActor currentActor,
-        [FromBody] UpdateUserModel request,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var command = request.Adapt<UpdateUserCommand>();
-        command.Id = userId;
-        await Mediator.Send(command, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>
-    /// Log the current user out — revokes the session the presented token belongs to.
-    /// </summary>
-    [HttpPost("me/Logout", Name = nameof(LogoutCurrentUser))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> LogoutCurrentUser(
-        [FromServices] ICurrentActor currentActor,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.SessionId is not { } sessionId)
-            return Unauthorized();
-
-        await Mediator.Send(new LogoutCurrentUserCommand { SessionId = sessionId }, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>
-    /// Log the current user out everywhere — revokes all of their active sessions across every device.
-    /// </summary>
-    [HttpPost("me/Logout/All", Name = nameof(LogoutCurrentUserEverywhere))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> LogoutCurrentUserEverywhere(
-        [FromServices] ICurrentActor currentActor,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        await Mediator.Send(new LogoutAllUserSessionsCommand { UserId = userId }, cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>
-    /// Request a change to the current user's email or phone. Sends a one-time code to the NEW contact; the
-    /// change is not applied until it's confirmed.
-    /// </summary>
-    [HttpPost("me/Contact/Change", Name = nameof(RequestContactChange))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RequestContactChange(
-        [FromServices] ICurrentActor currentActor,
+        [FromRoute] Guid id,
         [FromBody] RequestContactChangeModel request,
         CancellationToken cancellationToken)
     {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
         await Mediator.Send(new RequestContactChangeCommand
         {
-            UserId = userId,
+            UserId = id,
             ConfirmationType = request.ConfirmationType,
             NewContact = request.NewContact,
         }, cancellationToken);
@@ -185,109 +89,86 @@ public class UsersController : BaseController
     }
 
     /// <summary>Confirm a pending email/phone change with the code sent to the new contact (applies the change).</summary>
-    [HttpPost("me/Contact/Confirm", Name = nameof(ConfirmContactChange))]
+    [HasPermission(nameof(ConfirmContactChange))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Contact/Confirm", Name = nameof(ConfirmContactChange))]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ConfirmContactChange(
-        [FromServices] ICurrentActor currentActor,
+        [FromRoute] Guid id,
         [FromBody] ConfirmContactChangeModel request,
         CancellationToken cancellationToken)
     {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        await Mediator.Send(new ConfirmContactChangeCommand { UserId = userId, Code = request.Code }, cancellationToken);
+        await Mediator.Send(new ConfirmContactChangeCommand { UserId = id, Code = request.Code }, cancellationToken);
         return Ok();
     }
 
-    /// <summary>Record the current user's acceptance of a consent document (e.g. Terms of Service).</summary>
-    [HttpPost("me/Consents", Name = nameof(RecordCurrentUserConsent))]
+    /// <summary>Record a user's acceptance of a consent document (e.g. Terms of Service).</summary>
+    [HasPermission(nameof(RecordUserConsent))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Consents", Name = nameof(RecordUserConsent))]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> RecordCurrentUserConsent(
-        [FromServices] ICurrentActor currentActor,
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RecordUserConsent(
+        [FromRoute] Guid id,
         [FromBody] RecordConsentModel request,
         CancellationToken cancellationToken)
     {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
         await Mediator.Send(new RecordUserConsentCommand
         {
-            UserId = userId,
+            UserId = id,
             ConsentType = request.ConsentType,
             DocumentVersion = request.DocumentVersion,
         }, cancellationToken);
         return Ok();
     }
 
-    /// <summary>List the current user's recorded consent acceptances.</summary>
-    [HttpGet("me/Consents", Name = nameof(GetCurrentUserConsents))]
+    /// <summary>List a user's recorded consent acceptances.</summary>
+    [HasPermission(nameof(GetUserConsents))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
+    [HttpGet("{id}/Consents", Name = nameof(GetUserConsents))]
     [ProducesResponseType(typeof(IReadOnlyList<UserConsentDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetCurrentUserConsents(
-        [FromServices] ICurrentActor currentActor,
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUserConsents(
+        [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var result = await Mediator.Send(new GetUserConsentsQuery { UserId = userId }, cancellationToken);
+        var result = await Mediator.Send(new GetUserConsentsQuery { UserId = id }, cancellationToken);
         return Ok(result);
     }
 
     /// <summary>
-    /// List the mandatory consent documents the current user must still accept (never accepted, or an older
-    /// version). While this is non-empty the user is blocked from signing in.
+    /// List the mandatory consent documents a user must still accept (never accepted, or an older version).
     /// </summary>
-    [HttpGet("me/Consents/Pending", Name = nameof(GetCurrentUserPendingConsents))]
+    [HasPermission(nameof(GetUserPendingConsents))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
+    [HttpGet("{id}/Consents/Pending", Name = nameof(GetUserPendingConsents))]
     [ProducesResponseType(typeof(IReadOnlyList<PendingConsentModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetCurrentUserPendingConsents(
-        [FromServices] ICurrentActor currentActor,
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUserPendingConsents(
+        [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var response = await Mediator.Send(new GetPendingConsentsQuery { UserId = userId }, cancellationToken);
+        var response = await Mediator.Send(new GetPendingConsentsQuery { UserId = id }, cancellationToken);
         var result = response.Adapt<IReadOnlyList<PendingConsentModel>>();
         return Ok(result);
     }
 
     /// <summary>
-    /// Export everything this identity server holds about the current user (GDPR-style data portability):
-    /// profile, roles, 2FA enrolments, and active sessions. Secrets and password hashes are excluded.
+    /// Export everything this identity server holds about a user (GDPR-style data portability): profile, roles,
+    /// 2FA enrolments, and active sessions. Secrets and password hashes are excluded.
     /// </summary>
-    [HttpGet("me/Export", Name = nameof(ExportCurrentUserData))]
+    [HasPermission(nameof(ExportUserData))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
+    [HttpGet("{id}/Export", Name = nameof(ExportUserData))]
     [ProducesResponseType(typeof(UserDataExportDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> ExportCurrentUserData(
-        [FromServices] ICurrentActor currentActor,
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExportUserData(
+        [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        var result = await Mediator.Send(new ExportCurrentUserDataQuery { UserId = userId }, cancellationToken);
+        var result = await Mediator.Send(new ExportCurrentUserDataQuery { UserId = id }, cancellationToken);
         return Ok(result);
-    }
-
-    /// <summary>
-    /// Close the current user's own account (self-service). Soft-deletes the account and revokes all sessions.
-    /// </summary>
-    [HttpDelete("me", Name = nameof(DeleteCurrentUser))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> DeleteCurrentUser(
-        [FromServices] ICurrentActor currentActor,
-        CancellationToken cancellationToken)
-    {
-        if (currentActor.UserId is not { } userId)
-            return Unauthorized();
-
-        await Mediator.Send(new DeleteCurrentUserCommand { UserId = userId }, cancellationToken);
-        return Ok();
     }
 
     // ---- Account state (admin) — block/unblock, activate/deactivate, unlock. Each finds the user

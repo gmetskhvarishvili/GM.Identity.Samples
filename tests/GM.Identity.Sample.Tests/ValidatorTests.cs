@@ -1,3 +1,4 @@
+using GM.Identity;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Clients.Commands.CreateClientScope;
 using GM.Identity.Sample.Application.Common;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Options;
 using Xunit;
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Tests;
 
@@ -46,7 +49,8 @@ public sealed class ValidatorTests
     [Fact]
     public void CreateUser_requires_username_password_and_a_valid_email()
     {
-        var validator = new CreateUserCommandValidator(Options.Create(new PasswordPolicyOptions()));
+        var validator = new CreateUserCommandValidator(
+            Options.Create(new PasswordPolicyOptions()), new NotBreachedChecker());
 
         Assert.True(validator.Validate(new CreateUserCommand
         {
@@ -129,5 +133,10 @@ public sealed class ValidatorTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateScopeOperationCommand.ScopeId));
         Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateScopeOperationCommand.OperationId));
+    }
+
+    private sealed class NotBreachedChecker : IBreachedPasswordChecker
+    {
+        public Task<bool> IsBreachedAsync(string password, CancellationToken cancellationToken) => Task.FromResult(false);
     }
 }

@@ -1,4 +1,4 @@
-using GM.Identity.Sample.Application.Users.Commands.LogoutAllUserSessions;
+using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
@@ -88,7 +88,7 @@ public sealed class SessionManagementEndToEndTests : IAsyncLifetime
         using (var scope = _factory.Services.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            await mediator.Send(new LogoutAllUserSessionsCommand { UserId = _userId });
+            await mediator.Send(new DeleteAllUserSessionsCommand { UserId = _userId });
         }
 
         // Both refresh tokens are now dead.

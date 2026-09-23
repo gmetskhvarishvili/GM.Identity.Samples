@@ -25,9 +25,6 @@ public sealed class AuthOptions : IAuthOptions
     /// <summary>Maximum concurrent sessions a user may hold; the oldest are revoked past this. 0 = unlimited.</summary>
     public int MaxConcurrentSessionsPerUser { get; set; }
 
-    /// <summary>Days before a password must be changed; login is refused past this. 0 = never expires.</summary>
-    public int PasswordExpiryDays { get; set; }
-
     /// <summary>
     /// Single sign-on session lifetime in minutes — how long one interactive login lets the browser obtain
     /// authorization codes for other clients silently before it must re-authenticate. Defaults to 8 hours.

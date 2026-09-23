@@ -22,9 +22,6 @@ public interface IAuthOptions
     /// <summary>Maximum concurrent sessions a user may hold; the oldest are revoked past this. 0 = unlimited.</summary>
     int MaxConcurrentSessionsPerUser { get; }
 
-    /// <summary>Days before a password must be changed; login is refused past this. 0 = never expires.</summary>
-    int PasswordExpiryDays { get; }
-
     /// <summary>Single sign-on session lifetime in minutes.</summary>
     int SsoSessionMinutes { get; }
 }

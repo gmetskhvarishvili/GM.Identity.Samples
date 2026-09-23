@@ -4,7 +4,6 @@ using GM.Identity.Sample.Application.Common;
 using GM.Identity;
 using GM.Identity.Authorization;
 using GM.Identity.Oidc;
-using GM.Identity.Sample.Application.Infrastructure.Services.Audit;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
@@ -70,7 +69,6 @@ public class AuthorizeCommandHandler(
     ISessionCache sessionCache,
     IOTPService otpService,
     IIdTokenGenerator idTokenGenerator,
-    IAuditTrailReader auditTrailReader,
     IAuthOptions options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(AuthorizeCommand request, CancellationToken cancellationToken)
@@ -206,20 +204,6 @@ public class AuthorizeCommandHandler(
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
-        }
-
-        // Password-expiry policy: refuse login when the current password is older than the configured window,
-        // so the user must reset it. Based on the most recent recorded password change.
-        if (settings.PasswordExpiryDays > 0)
-        {
-            // Last password change comes from the domain-event log; fall back to account creation when the
-            // password has never been changed since (so a long-lived initial password still expires).
-            var lastChanged = await auditTrailReader.GetLatestEventOccurredOnAsync(
-                nameof(User), user.Id.ToString(),
-                nameof(UserPasswordChangedDomainEvent), cancellationToken) ?? user.CreatedAt;
-
-            if (lastChanged.AddDays(settings.PasswordExpiryDays) < now)
-                throw new ValidationException("Your password has expired and must be reset before signing in.");
         }
 
         return user;

@@ -30,9 +30,7 @@ public class UpdateUserPasswordCommandValidator : AbstractValidator<UpdateUserPa
     }
 }
 
-public class UpdateUserPasswordCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache)
+public class UpdateUserPasswordCommandHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<UpdateUserPasswordCommand>
 {
     public async Task Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
@@ -60,13 +58,12 @@ public class UpdateUserPasswordCommandHandler(
 
         entity.ChangePassword(hash, salt);
 
-        // Persist the aggregate
+        // A password change invalidates every existing session. Stage the update, the alert and the session
+        // revocations (which queue a SessionsRevoked outbox message for cache eviction), then commit in one save.
         unitOfWork.UserRepository.Update(entity);
         await unitOfWork.QueueSecurityAlertAsync(
             entity.Id, entity.Email, entity.PhoneNumber, SecurityAlertTypes.PasswordChanged, cancellationToken);
+        await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(entity.Id, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // A password change invalidates every existing session — force re-authentication everywhere.
-        await unitOfWork.RevokeAllUserSessionsAsync(sessionCache, entity.Id, cancellationToken);
     }
 }

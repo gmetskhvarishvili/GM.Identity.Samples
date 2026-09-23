@@ -488,18 +488,8 @@ public class AuthorizeCommandHandler(
     {
         if (userId is not { } id) return;
 
-        var sessions = await unitOfWork.UserSessionRepository
-            .Query(true, null)
-            .Where(x => x.UserId == id && !x.IsRevoked)
-            .ToListAsync(cancellationToken);
-
-        foreach (var session in sessions)
-        {
-            session.Revoke();
-            await sessionCache.RemoveAsync(session.TokenHash, cancellationToken);
-        }
-
-        unitOfWork.UserSessionRepository.UpdateRange(sessions);
+        // Revocation queues a SessionsRevoked outbox message for reliable cache eviction; just commit here.
+        await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(id, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

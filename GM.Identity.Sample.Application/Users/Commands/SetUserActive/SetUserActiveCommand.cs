@@ -1,7 +1,5 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
-using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -25,9 +23,7 @@ public class SetUserActiveCommandValidator : AbstractValidator<SetUserActiveComm
     public SetUserActiveCommandValidator() => RuleFor(x => x.UserId).NotNull().NotEmpty();
 }
 
-public class SetUserActiveCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IRequestHandler<SetUserActiveCommand>
+public class SetUserActiveCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<SetUserActiveCommand>
 {
     public async Task Handle(SetUserActiveCommand request, CancellationToken cancellationToken)
     {
@@ -43,9 +39,12 @@ public class SetUserActiveCommandHandler(
             user.Deactivate();
 
         unitOfWork.UserRepository.Update(user);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        // Deactivating revokes the user's sessions (which queue a SessionsRevoked outbox message for cache
+        // eviction); stage them so they commit with the change in one save.
         if (!request.Active)
-            await unitOfWork.RevokeAllUserSessionsAsync(sessionCache, user.Id, cancellationToken);
+            await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(user.Id, cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

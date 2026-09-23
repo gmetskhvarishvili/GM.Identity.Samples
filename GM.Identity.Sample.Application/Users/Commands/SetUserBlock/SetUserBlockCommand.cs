@@ -1,6 +1,5 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.Events.Users;
@@ -26,9 +25,7 @@ public class SetUserBlockCommandValidator : AbstractValidator<SetUserBlockComman
     public SetUserBlockCommandValidator() => RuleFor(x => x.UserId).NotNull().NotEmpty();
 }
 
-public class SetUserBlockCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IRequestHandler<SetUserBlockCommand>
+public class SetUserBlockCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<SetUserBlockCommand>
 {
     public async Task Handle(SetUserBlockCommand request, CancellationToken cancellationToken)
     {
@@ -49,10 +46,12 @@ public class SetUserBlockCommandHandler(
                 user.Id, user.Email, user.PhoneNumber, SecurityAlertTypes.AccountBlocked, cancellationToken);
 
         unitOfWork.UserRepository.Update(user);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // A blocked user's live tokens must stop working now, not at their TTL.
+        // A blocked user's live tokens must stop working now, not at their TTL. Stage the revocations (which
+        // queue a SessionsRevoked outbox message for cache eviction) so they commit with the block in one save.
         if (request.Block)
-            await unitOfWork.RevokeAllUserSessionsAsync(sessionCache, user.Id, cancellationToken);
+            await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(user.Id, cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

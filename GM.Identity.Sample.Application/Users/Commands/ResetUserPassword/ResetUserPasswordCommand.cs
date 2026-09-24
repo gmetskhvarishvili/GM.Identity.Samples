@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
@@ -47,5 +49,15 @@ public class ResetUserPasswordCommandHandler(
                 request.Email);
         }
 
+        // Hand off to the downstream notifier (via the outbox): it generates and sends a reset code/link to the
+        // user's contact. The reset is completed later by RecoverUserPassword with the code.
+        var evt = new PasswordResetRequestedIntegrationEvent(entity.Email!, request.NotificationType)
+        {
+            UserId = entity.Id
+        };
+
+        await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.From(entity.Id, evt), cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -10,4 +10,7 @@ public static class OtpPurpose
 
     /// <summary>A one-time code issued as the second factor of a login (grant_type=two_factor).</summary>
     public const string TwoFactor = "TwoFactor";
+
+    /// <summary>A one-time code issued for a forgotten-password reset (ResetUserPassword -> RecoverUserPassword).</summary>
+    public const string ResetPassword = "ResetPassword";
 }

@@ -1,4 +1,5 @@
 using FluentValidation;
+using GM.EntityFramework.Domain.Common;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity;
@@ -57,7 +58,9 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     }
 }
 
-public class CreateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, Guid>
+public class CreateUserCommandHandler(
+    IUnitOfWork unitOfWork,
+    ICurrentActor currentActor) : IRequestHandler<CreateUserCommand, Guid>
 {
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
@@ -133,10 +136,23 @@ public class CreateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
             }
         }
 
+        // Carry the full registration snapshot on the event so consumers don't need a follow-up read: the roles,
+        // 2FA methods and consents that were provisioned, plus who created the user and the request correlation id.
+        var roleIds = request.UserRoles?.Select(r => r.RoleId).ToArray() ?? Array.Empty<Guid>();
+        var twoFactorAuthTypeIds = request.TwoFactorAuthTypeIds?.ToArray() ?? Array.Empty<int>();
+        var consents = request.Consents?
+            .Select(c => new RegisteredConsent(c.ConsentType, c.DocumentVersion))
+            .ToArray() ?? Array.Empty<RegisteredConsent>();
+
         var evt = new UserRegisteredIntegrationEvent(
             request.Email,
             request.Username,
-            request.PhoneNumber)
+            request.PhoneNumber,
+            roleIds,
+            twoFactorAuthTypeIds,
+            consents,
+            currentActor.UserId,
+            currentActor.CorrelationId)
         {
             UserId = entity.Id
         };

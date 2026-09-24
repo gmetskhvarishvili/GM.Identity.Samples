@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using GM.Messaging.Domain.Events;
 using Wolverine.Attributes;
 
@@ -12,4 +14,12 @@ namespace GM.Identity.Sample.Application.Events.Users;
 public sealed record UserRegisteredIntegrationEvent(
     string? Email,
     string? Username,
-    string? PhoneNumber) : IntegrationEvent;
+    string? PhoneNumber,
+    IReadOnlyCollection<Guid> RoleIds,
+    IReadOnlyCollection<int> TwoFactorAuthTypeIds,
+    IReadOnlyCollection<RegisteredConsent> Consents,
+    Guid? CreatedBy,
+    string? CorrelationId) : IntegrationEvent;
+
+/// <summary>A consent the user accepted at registration, carried on <see cref="UserRegisteredIntegrationEvent"/>.</summary>
+public sealed record RegisteredConsent(string ConsentType, string DocumentVersion);

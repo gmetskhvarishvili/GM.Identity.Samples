@@ -55,7 +55,6 @@ public sealed class TwoFactorLoginEndToEndTests : IAsyncLifetime
             _twoFactorTypeId = type.Id;
 
             var enrolment = UserTwoFactorAuthType.Create(_userId, _twoFactorTypeId);
-            enrolment.Confirm(); // Only a confirmed enrolment gates login.
             await context.Set<UserTwoFactorAuthType>().AddAsync(enrolment);
             await context.SaveChangesAsync();
             _infraReady = true;

@@ -56,7 +56,7 @@ public class SetUserTwoFactorCommandHandler(
         if (request.Enabled)
         {
             // Already enrolled and active → nothing to do.
-            if (existing is { IsConfirmed: true })
+            if (existing != null)
                 return;
 
             var typeExists = await unitOfWork.TwoFactorAuthTypeRepository.ExistsAsync(
@@ -65,17 +65,8 @@ public class SetUserTwoFactorCommandHandler(
             if (!typeExists)
                 throw new NotFoundException(StringResource.TwoFactorAuthType, StringResource.Id, request.TwoFactorAuthTypeId);
 
-            if (existing == null)
-            {
-                var entity = UserTwoFactorAuthType.Create(request.UserId, request.TwoFactorAuthTypeId);
-                entity.Confirm();
-                await unitOfWork.UserTwoFactorAuthTypeRepository.AddAsync(entity, cancellationToken);
-            }
-            else
-            {
-                existing.Confirm();
-                unitOfWork.UserTwoFactorAuthTypeRepository.Update(existing);
-            }
+            var entity = UserTwoFactorAuthType.Create(request.UserId, request.TwoFactorAuthTypeId);
+            await unitOfWork.UserTwoFactorAuthTypeRepository.AddAsync(entity, cancellationToken);
         }
         else
         {

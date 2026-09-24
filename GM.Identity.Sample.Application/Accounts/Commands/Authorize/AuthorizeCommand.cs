@@ -230,16 +230,15 @@ public class AuthorizeCommandHandler(
     private static string? TwoFactorSubject(User user) =>
         !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.PhoneNumber;
 
-    // The 2FA methods the user is currently enrolled in AND has confirmed (active, non-deleted). Empty when
-    // the user has no confirmed second factor, in which case login proceeds straight to issuing a session.
-    // A pending (unconfirmed) enrolment deliberately does not gate login, so a user who cannot complete setup
-    // is never locked out.
+    // The 2FA methods the user is currently enrolled in (active, non-deleted). Empty when the user has no
+    // second factor, in which case login proceeds straight to issuing a session. Enrolment activates a method
+    // immediately, so any active enrolment gates login.
     private async Task<IReadOnlyCollection<int>> GetEnrolledTwoFactorTypeIdsAsync(
         Guid userId, CancellationToken cancellationToken) =>
         await unitOfWork.UserTwoFactorAuthTypeRepository
             .Query(false, null)
             .IgnoreQueryFilters()
-            .Where(x => x.UserId == userId && x.IsConfirmed && x.IsActive && !x.IsDeleted && !x.IsHidden)
+            .Where(x => x.UserId == userId && x.IsActive && !x.IsDeleted && !x.IsHidden)
             .Select(x => x.TwoFactorAuthTypeId)
             .ToListAsync(cancellationToken);
 

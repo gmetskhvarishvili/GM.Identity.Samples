@@ -1,5 +1,4 @@
-using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
-using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
+using GM.Identity.Sample.Application.Users.Commands.SetUserTwoFactor;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
@@ -22,9 +21,9 @@ namespace GM.Identity.Sample.Tests;
 
 /// <summary>
 /// End-to-end proof of the second-factor enrolment lifecycle and its effect on login: enabling a method
-/// (<see cref="EnableUserTwoFactorCommand"/>) activates it immediately, so a password grant becomes a challenge;
-/// and removing it (<see cref="DisableUserTwoFactorCommand"/>) restores a direct token grant. Requires
-/// Postgres + Redis; no-ops if they aren't reachable.
+/// (<see cref="SetUserTwoFactorCommand"/> with Enabled=true) activates it immediately, so a password grant
+/// becomes a challenge; and disabling it (Enabled=false) restores a direct token grant. Requires Postgres +
+/// Redis; no-ops if they aren't reachable.
 /// </summary>
 public sealed class TwoFactorManagementEndToEndTests : IAsyncLifetime
 {
@@ -94,17 +93,17 @@ public sealed class TwoFactorManagementEndToEndTests : IAsyncLifetime
         Assert.False(string.IsNullOrEmpty(baseline.AccessToken));
 
         // Enable → active immediately, so the password grant now returns a challenge instead of tokens.
-        await SendAsync(new EnableUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId });
+        await SendAsync(new SetUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId, Enabled = true });
         var enabled = await ReadTokenAsync(await PasswordGrantAsync());
         Assert.True(enabled!.TwoFactorRequired);
         Assert.True(string.IsNullOrEmpty(enabled.AccessToken));
         Assert.Contains(_twoFactorTypeId, enabled.TwoFactorAuthTypeIds ?? new List<int>());
 
         // Enabling again is idempotent (no duplicate enrolment, no error).
-        await SendAsync(new EnableUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId });
+        await SendAsync(new SetUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId, Enabled = true });
 
-        // Remove the method → the password grant issues tokens directly again.
-        await SendAsync(new DisableUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId });
+        // Disable → the password grant issues tokens directly again.
+        await SendAsync(new SetUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId, Enabled = false });
         var disabled = await ReadTokenAsync(await PasswordGrantAsync());
         Assert.False(disabled!.TwoFactorRequired);
         Assert.False(string.IsNullOrEmpty(disabled.AccessToken));

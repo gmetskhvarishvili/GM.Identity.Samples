@@ -1327,6 +1327,12 @@
         <member name="P:GM.Identity.Sample.API.Users.ResetUserPasswordModel.NotificationType">
             <summary>The notification type.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.SetUserTwoFactorModel">
+            <summary>Body to enable or disable a user's second-factor method.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.SetUserTwoFactorModel.Enabled">
+            <summary>True to enrol and activate the method, false to remove it.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UpdateUserModel">
             <summary>Update user model.</summary>
         </member>
@@ -1400,11 +1406,11 @@
         <member name="M:GM.Identity.Sample.API.Users.UsersController.UnlockUser(System.Guid,System.Threading.CancellationToken)">
             <summary>Clear a user's failed-login lockout.</summary>
         </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.EnableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
-            <summary>Enrol a user in a second-factor method (subsequent logins then require a 2FA challenge).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
-            <summary>Remove a second-factor enrolment from a user.</summary>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.SetUserTwoFactor(System.Guid,System.Int32,GM.Identity.Sample.API.Users.SetUserTwoFactorModel,System.Threading.CancellationToken)">
+            <summary>
+            Enable or disable a user's second-factor method in one call. Enabling activates it immediately (login then
+            requires a 2FA challenge); disabling removes it. Both are idempotent.
+            </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.SetupUserTotp(System.Guid,System.Threading.CancellationToken)">
             <summary>

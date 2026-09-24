@@ -141,6 +141,9 @@
   <data name="Email" xml:space="preserve">
     <value>Email</value>
   </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
   <data name="UserRole" xml:space="preserve">
     <value>Role of User</value>
   </data>

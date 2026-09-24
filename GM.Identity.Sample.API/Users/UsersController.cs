@@ -13,8 +13,7 @@ using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
-using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
-using GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
+using GM.Identity.Sample.Application.Users.Commands.SetUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
@@ -170,31 +169,28 @@ public class UsersController : BaseController
         return Ok();
     }
 
-    /// <summary>Enrol a user in a second-factor method (subsequent logins then require a 2FA challenge).</summary>
-    [HasPermission(nameof(EnableUserTwoFactor))]
+    /// <summary>
+    /// Enable or disable a user's second-factor method in one call. Enabling activates it immediately (login then
+    /// requires a 2FA challenge); disabling removes it. Both are idempotent.
+    /// </summary>
+    [HasPermission(nameof(SetUserTwoFactor))]
     [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/TwoFactor/{twoFactorAuthTypeId:int}", Name = nameof(EnableUserTwoFactor))]
+    [HttpPut("{id}/TwoFactor/{twoFactorAuthTypeId:int}", Name = nameof(SetUserTwoFactor))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EnableUserTwoFactor(
-        [FromRoute] Guid id, [FromRoute] int twoFactorAuthTypeId, CancellationToken cancellationToken)
+    public async Task<IActionResult> SetUserTwoFactor(
+        [FromRoute] Guid id,
+        [FromRoute] int twoFactorAuthTypeId,
+        [FromBody] SetUserTwoFactorModel request,
+        CancellationToken cancellationToken)
     {
         await Mediator.Send(
-            new EnableUserTwoFactorCommand { UserId = id, TwoFactorAuthTypeId = twoFactorAuthTypeId },
-            cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Remove a second-factor enrolment from a user.</summary>
-    [HasPermission(nameof(DisableUserTwoFactor))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpDelete("{id}/TwoFactor/{twoFactorAuthTypeId:int}", Name = nameof(DisableUserTwoFactor))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> DisableUserTwoFactor(
-        [FromRoute] Guid id, [FromRoute] int twoFactorAuthTypeId, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(
-            new DisableUserTwoFactorCommand { UserId = id, TwoFactorAuthTypeId = twoFactorAuthTypeId },
+            new SetUserTwoFactorCommand
+            {
+                UserId = id,
+                TwoFactorAuthTypeId = twoFactorAuthTypeId,
+                Enabled = request.Enabled,
+            },
             cancellationToken);
         return Ok();
     }

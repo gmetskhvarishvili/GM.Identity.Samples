@@ -11,7 +11,6 @@ using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
-using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTwoFactor;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DisableUserTwoFactor;
@@ -182,29 +181,6 @@ public class UsersController : BaseController
     {
         await Mediator.Send(
             new EnableUserTwoFactorCommand { UserId = id, TwoFactorAuthTypeId = twoFactorAuthTypeId },
-            cancellationToken);
-        return Ok();
-    }
-
-    /// <summary>Confirm a pending second-factor enrolment with the one-time setup code (this activates it).</summary>
-    [HasPermission(nameof(ConfirmUserTwoFactor))]
-    [RequiresScope(ScopeOperations.ManageIdentity)]
-    [HttpPost("{id}/TwoFactor/{twoFactorAuthTypeId:int}/Confirm", Name = nameof(ConfirmUserTwoFactor))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ConfirmUserTwoFactor(
-        [FromRoute] Guid id,
-        [FromRoute] int twoFactorAuthTypeId,
-        [FromBody] ConfirmUserTwoFactorModel request,
-        CancellationToken cancellationToken)
-    {
-        await Mediator.Send(
-            new ConfirmUserTwoFactorCommand
-            {
-                UserId = id,
-                TwoFactorAuthTypeId = twoFactorAuthTypeId,
-                Code = request.Code,
-            },
             cancellationToken);
         return Ok();
     }

@@ -22,11 +22,9 @@ namespace GM.Identity.Sample.Tests;
 
 /// <summary>
 /// End-to-end proof of the second-factor enrolment lifecycle and its effect on login: enabling a method
-/// (<see cref="EnableUserTwoFactorCommand"/>) leaves it <em>pending</em> so login still issues tokens (a user
-/// who can't complete setup isn't locked out); only once the enrolment is confirmed does a password grant turn
-/// into a challenge; and removing it (<see cref="DisableUserTwoFactorCommand"/>) restores a direct token grant.
-/// The confirm step is driven through the domain (<c>Confirm()</c>) because the setup OTP is delivered by an
-/// external service the test harness doesn't run. Requires Postgres + Redis; no-ops if they aren't reachable.
+/// (<see cref="EnableUserTwoFactorCommand"/>) activates it immediately, so a password grant becomes a challenge;
+/// and removing it (<see cref="DisableUserTwoFactorCommand"/>) restores a direct token grant. Requires
+/// Postgres + Redis; no-ops if they aren't reachable.
 /// </summary>
 public sealed class TwoFactorManagementEndToEndTests : IAsyncLifetime
 {
@@ -86,7 +84,7 @@ public sealed class TwoFactorManagementEndToEndTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Two_factor_enrolment_lifecycle_gates_login_only_once_confirmed()
+    public async Task Two_factor_enable_gates_login_and_disable_restores_direct_grant()
     {
         if (!_infraReady) return;
 
@@ -95,38 +93,21 @@ public sealed class TwoFactorManagementEndToEndTests : IAsyncLifetime
         Assert.False(baseline!.TwoFactorRequired);
         Assert.False(string.IsNullOrEmpty(baseline.AccessToken));
 
-        // Enable → the enrolment is PENDING, so login still issues tokens (the user isn't locked out).
+        // Enable → active immediately, so the password grant now returns a challenge instead of tokens.
         await SendAsync(new EnableUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId });
-        var pending = await ReadTokenAsync(await PasswordGrantAsync());
-        Assert.False(pending!.TwoFactorRequired);
-        Assert.False(string.IsNullOrEmpty(pending.AccessToken));
+        var enabled = await ReadTokenAsync(await PasswordGrantAsync());
+        Assert.True(enabled!.TwoFactorRequired);
+        Assert.True(string.IsNullOrEmpty(enabled.AccessToken));
+        Assert.Contains(_twoFactorTypeId, enabled.TwoFactorAuthTypeIds ?? new List<int>());
 
-        // Enabling again is idempotent (re-issues the setup code, no duplicate enrolment).
+        // Enabling again is idempotent (no duplicate enrolment, no error).
         await SendAsync(new EnableUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId });
-
-        // Confirm the enrolment (domain step-in for the OTP the external service would deliver) → NOW login
-        // returns a challenge instead of tokens.
-        await ConfirmEnrolmentAsync();
-        var confirmed = await ReadTokenAsync(await PasswordGrantAsync());
-        Assert.True(confirmed!.TwoFactorRequired);
-        Assert.True(string.IsNullOrEmpty(confirmed.AccessToken));
-        Assert.Contains(_twoFactorTypeId, confirmed.TwoFactorAuthTypeIds ?? new List<int>());
 
         // Remove the method → the password grant issues tokens directly again.
         await SendAsync(new DisableUserTwoFactorCommand { UserId = _userId, TwoFactorAuthTypeId = _twoFactorTypeId });
         var disabled = await ReadTokenAsync(await PasswordGrantAsync());
         Assert.False(disabled!.TwoFactorRequired);
         Assert.False(string.IsNullOrEmpty(disabled.AccessToken));
-    }
-
-    private async Task ConfirmEnrolmentAsync()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var enrolment = await context.Set<UserTwoFactorAuthType>().IgnoreQueryFilters()
-            .FirstAsync(x => x.UserId == _userId && x.TwoFactorAuthTypeId == _twoFactorTypeId);
-        enrolment.Confirm();
-        await context.SaveChangesAsync();
     }
 
     private async Task SendAsync(IRequest request)

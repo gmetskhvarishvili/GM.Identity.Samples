@@ -1,10 +1,7 @@
 using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
-using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
-using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 
@@ -15,10 +12,9 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Users.Commands.EnableUserTwoFactor;
 
 /// <summary>
-/// Begins enrolling an existing user in a second-factor method. The enrolment starts <em>pending</em>: it does
-/// not gate login until the user confirms it (see the confirm command), so a user who cannot receive codes is
-/// never locked out. A one-time setup code is issued (via the outbox, like the login challenge) so the user can
-/// confirm. Re-enabling a pending method re-issues the code; a method already confirmed is a no-op.
+/// Enrols an existing user in a second-factor method and activates it immediately — no setup code or confirmation
+/// step. From then on the method gates login (the actual one-time code is issued at login time). Enabling a method
+/// the user already has is a no-op.
 /// </summary>
 public class EnableUserTwoFactorCommand : IRequest
 {
@@ -42,9 +38,9 @@ public class EnableUserTwoFactorCommandHandler(
 {
     public async Task Handle(EnableUserTwoFactorCommand request, CancellationToken cancellationToken)
     {
-        var user = await unitOfWork.UserRepository
-            .FirstOrDefaultAsync(x => x.Id == request.UserId && !x.IsDeleted, true, null, cancellationToken);
-        if (user == null)
+        var userExists = await unitOfWork.UserRepository.ExistsAsync(
+            x => x.Id == request.UserId && !x.IsDeleted, cancellationToken);
+        if (!userExists)
             throw new NotFoundException(StringResource.User, StringResource.Id, request.UserId);
 
         var typeExists = await unitOfWork.TwoFactorAuthTypeRepository.ExistsAsync(
@@ -60,31 +56,22 @@ public class EnableUserTwoFactorCommandHandler(
                      && x.IsActive && !x.IsDeleted && !x.IsHidden,
                 true, null, cancellationToken);
 
-        // Already fully enrolled → nothing to do.
+        // Already enrolled and active → nothing to do.
         if (existing is { IsConfirmed: true })
             return;
 
         if (existing == null)
         {
             var entity = UserTwoFactorAuthType.Create(request.UserId, request.TwoFactorAuthTypeId);
+            entity.Confirm();
             await unitOfWork.UserTwoFactorAuthTypeRepository.AddAsync(entity, cancellationToken);
         }
-
-        // Issue a setup code to the user's contact so they can confirm the enrolment. Reuses the same OTP
-        // purpose/subject as the login challenge, so the confirm step validates against it.
-        await IssueSetupCodeAsync(user, cancellationToken);
+        else
+        {
+            existing.Confirm();
+            unitOfWork.UserTwoFactorAuthTypeRepository.Update(existing);
+        }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task IssueSetupCodeAsync(User user, CancellationToken cancellationToken)
-    {
-        var subject = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.PhoneNumber;
-        if (string.IsNullOrWhiteSpace(subject))
-            return; // No contact to send a code to; the enrolment stays pending until confirmed by other means.
-
-        await unitOfWork.OutboxMessageRepository.AddAsync(
-            OutboxMessage.From(user.Id, new TwoFactorChallengeIssuedIntegrationEvent(subject) { UserId = user.Id }),
-            cancellationToken);
     }
 }

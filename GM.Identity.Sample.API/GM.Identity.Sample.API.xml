@@ -1207,12 +1207,6 @@
         <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTotpModel.Code">
             <summary>The code.</summary>
         </member>
-        <member name="T:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel">
-            <summary>Body for confirming a pending 2FA enrolment: the one-time setup code the user received.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel.Code">
-            <summary>The code.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateUserModel">
             <summary>Create user model.</summary>
         </member>
@@ -1408,9 +1402,6 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.EnableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
             <summary>Enrol a user in a second-factor method (subsequent logins then require a 2FA challenge).</summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.ConfirmUserTwoFactor(System.Guid,System.Int32,GM.Identity.Sample.API.Users.ConfirmUserTwoFactorModel,System.Threading.CancellationToken)">
-            <summary>Confirm a pending second-factor enrolment with the one-time setup code (this activates it).</summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Users.UsersController.DisableUserTwoFactor(System.Guid,System.Int32,System.Threading.CancellationToken)">
             <summary>Remove a second-factor enrolment from a user.</summary>

@@ -6,6 +6,7 @@ using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Application.Events.Users;
@@ -17,6 +18,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using ValidationException = GM.Exceptions.ValidationException;
+
 namespace GM.Identity.Sample.Application.Users.Commands.CreateUser;
 
 public class CreateUserCommand : IRequest<Guid>
@@ -30,6 +33,9 @@ public class CreateUserCommand : IRequest<Guid>
 
     /// <summary>Ids of the 2FA methods to enrol the user in (see the TwoFactorAuthType reference data).</summary>
     public IEnumerable<int>? TwoFactorAuthTypeIds { get; set; }
+
+    /// <summary>Consent documents the user accepts at registration; each is recorded as an audit row.</summary>
+    public IEnumerable<CreateUserConsentInput>? Consents { get; set; }
 }
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
@@ -41,6 +47,12 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
         RuleFor(x => x.Username).NotNull().NotEmpty();
         RuleFor(x => x.Password).StrongPassword(passwordPolicy);
         RuleFor(x => x.Password).NotBreached(breachedPasswordChecker);
+
+        RuleForEach(x => x.Consents).ChildRules(consent =>
+        {
+            consent.RuleFor(c => c.ConsentType).NotNull().NotEmpty();
+            consent.RuleFor(c => c.DocumentVersion).NotNull().NotEmpty();
+        });
     }
 }
 
@@ -95,7 +107,31 @@ public class CreateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
 
         // Persist the aggregate
         await unitOfWork.UserRepository.AddAsync(entity, cancellationToken);
-        
+
+        // Record any consents the user accepted at registration. Each is validated against the current document
+        // version (same rule as RecordUserConsent) so we never store acceptance of an unknown or stale version.
+        if (request.Consents?.Any() == true)
+        {
+            foreach (var consent in request.Consents)
+            {
+                var current = await unitOfWork.ConsentDocumentRepository.FirstOrDefaultAsync(
+                    x => x.ConsentType == consent.ConsentType
+                         && x.IsCurrent && x.IsActive && !x.IsDeleted && !x.IsHidden,
+                    false, null, cancellationToken);
+
+                if (current == null)
+                    throw new NotFoundException(
+                        StringResource.ConsentDocument, StringResource.ConsentType, consent.ConsentType);
+
+                if (current.Version != consent.DocumentVersion)
+                    throw new ValidationException(
+                        $"Consent '{consent.ConsentType}' must be accepted at the current version '{current.Version}'.");
+
+                await unitOfWork.UserConsentRepository.AddAsync(
+                    UserConsent.Create(entity.Id, consent.ConsentType, consent.DocumentVersion), cancellationToken);
+            }
+        }
+
         var evt = new UserRegisteredIntegrationEvent(
             request.Email,
             request.Username,

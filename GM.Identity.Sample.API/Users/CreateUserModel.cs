@@ -28,6 +28,10 @@ public class CreateUserModel
     /// <summary>Ids of the 2FA methods to enrol the new user in.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "TwoFactorAuthTypeIds")]
     public IEnumerable<int>? TwoFactorAuthTypeIds { get; set; }
+
+    /// <summary>Consent documents the user accepts at registration.</summary>
+    [Display(ResourceType = typeof(StringResource), Name = "Consents")]
+    public IEnumerable<CreateUserConsentModel>? Consents { get; set; }
 }
 
 public class CreateUserModelValidator : AbstractValidator<CreateUserModel>

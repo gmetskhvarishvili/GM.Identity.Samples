@@ -255,6 +255,9 @@
   <data name="ConsentType" xml:space="preserve">
     <value>Consent Type</value>
   </data>
+  <data name="Consents" xml:space="preserve">
+    <value>Consents</value>
+  </data>
   <data name="CorrelationId" xml:space="preserve">
     <value>Correlation Id</value>
   </data>

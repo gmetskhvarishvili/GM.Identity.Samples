@@ -1207,6 +1207,15 @@
         <member name="P:GM.Identity.Sample.API.Users.ConfirmUserTotpModel.Code">
             <summary>The code.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Users.CreateUserConsentModel">
+            <summary>A consent document the new user accepts at registration.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserConsentModel.ConsentType">
+            <summary>The consent document accepted (e.g. TermsOfService, PrivacyPolicy).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserConsentModel.DocumentVersion">
+            <summary>The version accepted; must match the document's current version.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateUserModel">
             <summary>Create user model.</summary>
         </member>
@@ -1227,6 +1236,9 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.TwoFactorAuthTypeIds">
             <summary>Ids of the 2FA methods to enrol the new user in.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.Consents">
+            <summary>Consent documents the user accepts at registration.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateUserRoleModel">
             <summary>Create user role model.</summary>

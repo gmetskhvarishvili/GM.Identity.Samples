@@ -397,6 +397,12 @@ namespace GM.Identity.Sample.Common.Resources {
             }
         }
 
+        public static string Consents {
+            get {
+                return ResourceManager.GetString("Consents", resourceCulture);
+            }
+        }
+
         public static string CorrelationId {
             get {
                 return ResourceManager.GetString("CorrelationId", resourceCulture);

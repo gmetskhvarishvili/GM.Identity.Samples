@@ -1,7 +1,7 @@
 using GM.Messaging.Domain.Events;
 using Wolverine.Attributes;
 
-namespace GM.Identity.Sample.Domain.Events.Users;
+namespace GM.Identity.Sample.Application.Events.Users;
 
 // Raised when a password login hits a 2FA-enrolled user: the second-factor one-time code should be
 // generated and delivered to Subject (the user's email/phone). UserId is inherited from IntegrationEvent;

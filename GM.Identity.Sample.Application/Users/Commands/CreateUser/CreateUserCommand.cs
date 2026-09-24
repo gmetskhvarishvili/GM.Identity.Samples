@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity;
@@ -8,7 +8,7 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserR
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
-using GM.Identity.Sample.Domain.Events.Users;
+using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 

@@ -1,7 +1,7 @@
 using GM.Messaging.Domain.Events;
 using Wolverine.Attributes;
 
-namespace GM.Identity.Sample.Domain.Events.Users;
+namespace GM.Identity.Sample.Application.Events.Users;
 
 // UserId is inherited from IntegrationEvent; set it via object initializer, not positionally.
 // MessageIdentity sets the cross-service wire name so consumers with their own copy of this

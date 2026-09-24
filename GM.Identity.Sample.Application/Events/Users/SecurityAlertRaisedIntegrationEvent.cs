@@ -1,7 +1,7 @@
 using GM.Messaging.Domain.Events;
 using Wolverine.Attributes;
 
-namespace GM.Identity.Sample.Domain.Events.Users;
+namespace GM.Identity.Sample.Application.Events.Users;
 
 // Raised on a security-relevant account event (blocked, locked out, password changed) so a notification is
 // delivered to the user's contact (Subject = email/phone). UserId is inherited from IntegrationEvent; set it

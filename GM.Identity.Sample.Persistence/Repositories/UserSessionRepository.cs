@@ -2,7 +2,7 @@ using GM.EntityFramework.Persistence.Repositories;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
-using GM.Identity.Sample.Domain.Events.Users;
+using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 

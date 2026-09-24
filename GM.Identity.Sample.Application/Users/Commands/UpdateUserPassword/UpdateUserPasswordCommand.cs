@@ -1,10 +1,10 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity;
 using GM.Identity.Sample.Common.Resources;
-using GM.Identity.Sample.Domain.Events.Users;
+using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 

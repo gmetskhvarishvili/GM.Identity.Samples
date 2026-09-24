@@ -1,9 +1,9 @@
-﻿using FluentValidation;
+using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.Enums;
-using GM.Identity.Sample.Domain.Events.Users;
+using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using ValidationException = FluentValidation.ValidationException;

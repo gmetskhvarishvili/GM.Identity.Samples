@@ -3,7 +3,7 @@ using Wolverine.Attributes;
 
 using System.Collections.Generic;
 
-namespace GM.Identity.Sample.Domain.Events.Users;
+namespace GM.Identity.Sample.Application.Events.Users;
 
 // Raised when a user's active sessions are revoked (block, deactivate, delete, password change, or session-cap
 // eviction) so a consumer reliably evicts the corresponding session-cache entries. Written to the outbox in the

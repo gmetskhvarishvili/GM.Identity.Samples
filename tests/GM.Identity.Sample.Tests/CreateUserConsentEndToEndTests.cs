@@ -1,6 +1,7 @@
 using GM.Exceptions;
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.CreateConsentDocument;
 using GM.Identity.Sample.Application.Users.Commands.CreateUser;
+using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
@@ -85,7 +86,7 @@ public sealed class CreateUserConsentEndToEndTests : IAsyncLifetime
             Username = _userName,
             Email = $"{_userName}@test.local",
             Password = Password,
-            Consents = new[] { new CreateUserConsentInput { ConsentType = _consentType, DocumentVersion = "v1" } },
+            Consents = new[] { new RecordUserConsentCommand { ConsentType = _consentType, DocumentVersion = "v1" } },
         });
 
         // The consent row was persisted.
@@ -111,7 +112,7 @@ public sealed class CreateUserConsentEndToEndTests : IAsyncLifetime
             Username = _userName,
             Email = $"{_userName}@test.local",
             Password = Password,
-            Consents = new[] { new CreateUserConsentInput { ConsentType = _consentType, DocumentVersion = "v0" } },
+            Consents = new[] { new RecordUserConsentCommand { ConsentType = _consentType, DocumentVersion = "v0" } },
         }));
     }
 

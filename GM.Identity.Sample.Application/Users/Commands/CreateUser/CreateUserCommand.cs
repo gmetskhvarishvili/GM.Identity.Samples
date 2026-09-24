@@ -3,6 +3,7 @@ using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity;
 using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
+using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
@@ -35,7 +36,7 @@ public class CreateUserCommand : IRequest<Guid>
     public IEnumerable<int>? TwoFactorAuthTypeIds { get; set; }
 
     /// <summary>Consent documents the user accepts at registration; each is recorded as an audit row.</summary>
-    public IEnumerable<CreateUserConsentInput>? Consents { get; set; }
+    public IEnumerable<RecordUserConsentCommand>? Consents { get; set; }
 }
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>

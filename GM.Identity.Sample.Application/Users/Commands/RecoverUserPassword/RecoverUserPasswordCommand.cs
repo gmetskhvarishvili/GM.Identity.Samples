@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
@@ -17,11 +19,13 @@ public class RecoverUserPasswordCommand : IRequest
 
 public class RecoverUserPasswordCommandValidator : AbstractValidator<RecoverUserPasswordCommand>
 {
-    public RecoverUserPasswordCommandValidator()
+    public RecoverUserPasswordCommandValidator(
+        IPasswordPolicyOptions passwordPolicy, IBreachedPasswordChecker breachedPasswordChecker)
     {
         RuleFor(x => x.Email).NotNull().NotEmpty();
         RuleFor(x => x.Code).NotNull().NotEmpty();
-        RuleFor(x => x.Password).NotNull().NotEmpty();
+        RuleFor(x => x.Password).StrongPassword(passwordPolicy);
+        RuleFor(x => x.Password).NotBreached(breachedPasswordChecker);
     }
 }
 

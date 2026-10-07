@@ -18,9 +18,10 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Tests;
 
 /// <summary>
-/// End-to-end proof of the visibility-scope mechanism: a soft-deleted role drops out of the default
-/// (visible-only) list, is surfaced again when the query asks for <see cref="VisibilityScope.IncludeDeleted"/>,
-/// and is brought back by the restore command. Requires Postgres + Redis; no-ops if they aren't reachable.
+/// End-to-end proof of the visibility-scope mechanism: a soft-removed role drops out of the default
+/// (visible-only) list, is surfaced again when the query asks for <see cref="VisibilityScope.All"/>
+/// (delete soft-removes it — deactivated, hidden, and marked deleted), and is brought back by the
+/// restore command. Requires Postgres + Redis; no-ops if they aren't reachable.
 /// </summary>
 public sealed class RoleVisibilityEndToEndTests : IAsyncLifetime
 {
@@ -81,9 +82,10 @@ public sealed class RoleVisibilityEndToEndTests : IAsyncLifetime
             await mediator.Send(new DeleteRoleCommand { Id = _roleId });
         }
 
-        // Gone from the default list, but surfaced when the query includes deleted rows.
+        // Gone from the default list. DeleteRole soft-removes (deactivate + hide + mark deleted), so the
+        // widest scope (All drops the active/hidden/deleted constraints) is what surfaces it again.
         Assert.False(await RoleIsListed(VisibilityScope.VisibleOnly));
-        Assert.True(await RoleIsListed(VisibilityScope.IncludeDeleted));
+        Assert.True(await RoleIsListed(VisibilityScope.All));
 
         // Restore it, and it is visible again by default.
         using (var scope = _factory.Services.CreateScope())

@@ -1,9 +1,12 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 
@@ -28,7 +31,7 @@ public class CreateUserRoleCommandHandler(
     public async Task Handle(CreateUserRoleCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.UserRoleRepository.ExistsAsync(
-                x => x.UserId == request.RoleId
+                x => x.UserId == request.UserId
                      && x.RoleId == request.RoleId
                      && x.IsActive
                      && !x.IsDeleted
@@ -40,14 +43,10 @@ public class CreateUserRoleCommandHandler(
                 StringResource.RoleId,
                 request.RoleId);
         }
-        
-        
-        // Create the root aggregate
+
         var entity = UserRole
             .Create(request.UserId, request.RoleId);
 
-
-        // Persist the aggregate
         await unitOfWork.UserRoleRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

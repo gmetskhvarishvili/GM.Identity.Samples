@@ -1,10 +1,15 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace GM.Identity.Sample.Application.Clients.Queries.GetClientSessionsList;
 
@@ -36,7 +41,7 @@ public class GetClientSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.ClientId,
             request.IsRevoked,
             request.IsExpired,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.ClientSessionRepository.CountAsync(countSpec, cancellationToken);
 
         var spec = new ClientSessionSpecification(
@@ -44,7 +49,7 @@ public class GetClientSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.ClientId,
             request.IsRevoked,
             request.IsExpired,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ClientSessionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ClientSessionDto>

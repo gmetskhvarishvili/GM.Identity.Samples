@@ -1,4 +1,5 @@
-using GM.EntityFramework.Domain.Specifications;
+﻿using GM.EntityFramework.Domain.Specifications;
+using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Specifications;
 
@@ -11,9 +12,10 @@ public class ClientSessionSpecification : BaseSpecification<ClientSession>
         bool? isExpired,
         AuditDateRange dateRange,
         PagingOptions paging,
-        OrderingOptions ordering)
+        OrderingOptions ordering,
+        VisibilityScope visibility = VisibilityScope.VisibleOnly)
     {
-        AddVisibilityFilter();
+        AddVisibilityFilter(visibility);
 
         if (id.HasValue && id.Value != Guid.Empty)
             AddCriteria(s => s.Id == id);

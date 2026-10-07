@@ -1,9 +1,11 @@
-using GM.EntityFramework.Persistence;
+﻿using GM.EntityFramework.Persistence;
 using GM.Identity.Sample.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
+using System;
+using System.IO;
 namespace GM.Identity.Sample.Persistence.Infrastructure;
 
 public abstract class DesignTimeDbContextFactoryBase<TContext> :

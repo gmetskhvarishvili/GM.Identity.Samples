@@ -1,6 +1,10 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
+using GM.Identity.Sample.Application.Users.Commands.RestoreUser;
+using GM.Identity.Sample.Application.Users.Commands.HideUser;
+using GM.Identity.Sample.Application.Users.Commands.UnhideUser;
 using GM.API.Models;
+using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUser;
 using GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
@@ -9,17 +13,35 @@ using GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 using GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
+using GM.Identity.Sample.Application.Users.Commands.ConfirmUserTotp;
 using GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
+using GM.Identity.Sample.Application.Users.Commands.DisableUserTotp;
+using GM.Identity.Sample.Application.Users.Commands.SetUserTwoFactor;
+using GM.Identity.Sample.Application.Users.Commands.SetupUserTotp;
+using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
+using GM.Identity.Sample.Application.Users.Commands.RegisterPasskey;
+using GM.Identity.Sample.Application.Users.Commands.SetUserActive;
+using GM.Identity.Sample.Application.Users.Commands.SetUserBlock;
+using GM.Identity.Sample.Application.Users.Commands.UnlockUser;
 using GM.Identity.Sample.Application.Users.Commands.RecoverUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.ResetUserPassword;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUser;
 using GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
+using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
+using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
 using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 using GM.Identity.Sample.Application.Users.Queries.GetUserRolesList;
 using GM.Identity.Sample.Application.Users.Queries.GetUserSessionsList;
 using GM.Identity.Sample.Application.Users.Queries.GetUsersList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 
 namespace GM.Identity.Sample.API.Users;
 
@@ -31,6 +53,209 @@ namespace GM.Identity.Sample.API.Users;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class UsersController : BaseController
 {
+    // ---- Per-user operations addressed by user id. Identity is a backend service: the caller passes the user
+    // id explicitly (never derived from the session), and these are admin-gated like the rest of the API.
+    // Reading/updating a user's own profile, sessions, account deletion and logout are the {id} endpoints below
+    // (GetUserDetails, GetUserSessions, UpdateUser, DeleteUser, DeleteUserSessions/DeleteUserSession). ----
+
+    /// <summary>Record a user's acceptance of a consent document (e.g. Terms of Service).</summary>
+    [HasPermission(nameof(RecordUserConsent))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Consents", Name = nameof(RecordUserConsent))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RecordUserConsent(
+        [FromRoute] Guid id,
+        [FromBody] RecordConsentModel request,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RecordUserConsentCommand
+        {
+            UserId = id,
+            ConsentType = request.ConsentType,
+            DocumentVersion = request.DocumentVersion,
+        }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>List a user's recorded consent acceptances.</summary>
+    [HasPermission(nameof(GetUserConsents))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
+    [HttpGet("{id}/Consents", Name = nameof(GetUserConsents))]
+    [ProducesResponseType(typeof(IReadOnlyList<UserConsentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUserConsents(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetUserConsentsQuery { UserId = id }, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// List the mandatory consent documents a user must still accept (never accepted, or an older version).
+    /// </summary>
+    [HasPermission(nameof(GetUserPendingConsents))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
+    [HttpGet("{id}/Consents/Pending", Name = nameof(GetUserPendingConsents))]
+    [ProducesResponseType(typeof(IReadOnlyList<PendingConsentModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUserPendingConsents(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var response = await Mediator.Send(new GetPendingConsentsQuery { UserId = id }, cancellationToken);
+        var result = response.Adapt<IReadOnlyList<PendingConsentModel>>();
+        return Ok(result);
+    }
+
+    // ---- Account state (admin) — block/unblock, activate/deactivate, unlock. Each finds the user
+    // regardless of active/blocked state; the session-revoking ones take effect immediately. ----
+
+    /// <summary>Block a user (and revoke their active sessions).</summary>
+    [HasPermission(nameof(BlockUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Block", Name = nameof(BlockUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> BlockUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserBlockCommand { UserId = id, Block = true }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Unblock a user.</summary>
+    [HasPermission(nameof(UnblockUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Unblock", Name = nameof(UnblockUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnblockUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserBlockCommand { UserId = id, Block = false }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Deactivate a user (and revoke their active sessions).</summary>
+    [HasPermission(nameof(DeactivateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Deactivate", Name = nameof(DeactivateUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserActiveCommand { UserId = id, Active = false }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Reactivate a user.</summary>
+    [HasPermission(nameof(ReactivateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Activate", Name = nameof(ReactivateUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReactivateUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetUserActiveCommand { UserId = id, Active = true }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Clear a user's failed-login lockout.</summary>
+    [HasPermission(nameof(UnlockUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Unlock", Name = nameof(UnlockUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnlockUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new UnlockUserCommand { UserId = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Enable or disable a user's second-factor method in one call. Enabling activates it immediately (login then
+    /// requires a 2FA challenge); disabling removes it. Both are idempotent.
+    /// </summary>
+    [HasPermission(nameof(SetUserTwoFactor))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/TwoFactor/{twoFactorAuthTypeId:int}", Name = nameof(SetUserTwoFactor))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetUserTwoFactor(
+        [FromRoute] Guid id,
+        [FromRoute] int twoFactorAuthTypeId,
+        [FromBody] SetUserTwoFactorModel request,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(
+            new SetUserTwoFactorCommand
+            {
+                UserId = id,
+                TwoFactorAuthTypeId = twoFactorAuthTypeId,
+                Enabled = request.Enabled,
+            },
+            cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Begin authenticator-app (TOTP) enrolment. Returns the shared secret and the otpauth:// URI to render as
+    /// a QR code. The device is pending until confirmed with a code.
+    /// </summary>
+    [HasPermission(nameof(SetupUserTotp))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Totp/Setup", Name = nameof(SetupUserTotp))]
+    [ProducesResponseType(typeof(SetupUserTotpResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetupUserTotp([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new SetupUserTotpCommand { UserId = id }, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Confirm a pending authenticator-app enrolment with a code from the app (activates it).</summary>
+    [HasPermission(nameof(ConfirmUserTotp))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Totp/Confirm", Name = nameof(ConfirmUserTotp))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmUserTotp(
+        [FromRoute] Guid id, [FromBody] ConfirmUserTotpModel request, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new ConfirmUserTotpCommand { UserId = id, Code = request.Code }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Register a WebAuthn passkey for a user (stores the credential's public key).</summary>
+    [HasPermission(nameof(RegisterPasskey))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Passkeys", Name = nameof(RegisterPasskey))]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RegisterPasskey(
+        [FromRoute] Guid id, [FromBody] RegisterPasskeyModel request, CancellationToken cancellationToken)
+    {
+        var passkeyId = await Mediator.Send(new RegisterPasskeyCommand
+        {
+            UserId = id,
+            CredentialId = request.CredentialId,
+            PublicKeySpkiBase64 = request.PublicKeySpkiBase64,
+            Name = request.Name,
+        }, cancellationToken);
+        return Ok(passkeyId);
+    }
+
+    /// <summary>Remove a user's authenticator-app (TOTP) device.</summary>
+    [HasPermission(nameof(DisableUserTotp))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpDelete("{id}/Totp", Name = nameof(DisableUserTotp))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DisableUserTotp([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new DisableUserTotpCommand { UserId = id }, cancellationToken);
+        return Ok();
+    }
+
     /// <summary>
     /// Add User
     /// </summary>
@@ -38,7 +263,7 @@ public class UsersController : BaseController
     /// <param name="cancellationToken"></param>
     /// <returns>User Id</returns>
     [HttpPost(Name = nameof(AddUser))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddUser(
         [FromBody] CreateUserModel request,
         CancellationToken cancellationToken)
@@ -55,6 +280,8 @@ public class UsersController : BaseController
     /// <param name="request">User Role Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(AddUserRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Roles", Name = nameof(AddUserRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddUserRole(
@@ -153,6 +380,8 @@ public class UsersController : BaseController
     /// <param name="request">User Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateUser))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -174,6 +403,8 @@ public class UsersController : BaseController
     /// <param name="request">User Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateUserPassword))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}/Password", Name = nameof(UpdateUserPassword))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -194,6 +425,8 @@ public class UsersController : BaseController
     /// <param name="id">User Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteUser))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -216,6 +449,8 @@ public class UsersController : BaseController
     /// <param name="roleId">Role Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUserRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Roles/{roleId}", Name = nameof(DeleteUserRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -239,6 +474,8 @@ public class UsersController : BaseController
     /// <param name="id">User Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUserSessions))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions", Name = nameof(DeleteUserSessions))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -261,6 +498,8 @@ public class UsersController : BaseController
     /// <param name="sessionId">User Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteUserSession))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions/{sessionId}", Name = nameof(DeleteUserSession))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -285,6 +524,8 @@ public class UsersController : BaseController
     /// <param name="request">User Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Roles</returns>
+    [HasPermission(nameof(GetUsersList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetUsersList))]
     [ProducesResponseType(typeof(IEnumerable<UserModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUsersList(
@@ -305,6 +546,8 @@ public class UsersController : BaseController
     /// <param name="request">User Role Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Roles</returns>
+    [HasPermission(nameof(GetUserRoles))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Roles", Name = nameof(GetUserRoles))]
     [ProducesResponseType(typeof(IEnumerable<RoleModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -328,6 +571,8 @@ public class UsersController : BaseController
     /// <param name="request">User Session Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Sessions</returns>
+    [HasPermission(nameof(GetUserSessions))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Sessions", Name = nameof(GetUserSessions))]
     [ProducesResponseType(typeof(IEnumerable<UserSessionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -348,21 +593,83 @@ public class UsersController : BaseController
     /// Get User Details
     /// </summary>
     /// <param name="id">User Id to Get</param>
+    /// <param name="request">Visibility scope (query string); defaults to visible-only.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Details</returns>
+    [HasPermission(nameof(GetUserDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetUserDetails))]
     [ProducesResponseType(typeof(UserDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserDetails(
         [FromRoute] Guid id,
+        [FromQuery] GetBaseDetailsModel request,
         CancellationToken cancellationToken)
     {
         var query = new GetUserDetailsQuery
         {
-            Id = id
+            Id = id,
+            Visibility = request.Visibility
         };
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Adapt<UserDetailsModel>();
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Restore User
+    /// </summary>
+    /// <param name="id">User Id to restore</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(RestoreUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Restore", Name = nameof(RestoreUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreUser(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RestoreUserCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Hide User
+    /// </summary>
+    /// <param name="id">User Id to hide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(HideUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Hide", Name = nameof(HideUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> HideUser(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new HideUserCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Unhide User
+    /// </summary>
+    /// <param name="id">User Id to unhide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(UnhideUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Unhide", Name = nameof(UnhideUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnhideUser(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new UnhideUserCommand { Id = id }, cancellationToken);
+        return Ok();
     }
 }

@@ -1,15 +1,19 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
+using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
 
-public class GetUserDetailsQuery : IRequest<UserDetailsDto>
+public class GetUserDetailsQuery : GetBaseDetailsQuery, IRequest<UserDetailsDto>
 {
-    public Guid Id { get; set; }
 }
 
 public class GetUserDetailsQueryValidator : AbstractValidator<GetUserDetailsQuery>
@@ -27,9 +31,9 @@ public class GetUserDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
         // the root aggregate
         var entity = await unitOfWork.UserRepository
             .FirstOrDefaultAsync(x => x.Id == request.Id
-                                      && x.IsActive
-                                      && !x.IsDeleted
-                                      && !x.IsHidden,
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeInactive) || x.IsActive)
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeDeleted) || !x.IsDeleted)
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeHidden) || !x.IsHidden),
                 true,
                 null,
                 cancellationToken);
@@ -39,7 +43,7 @@ public class GetUserDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
             throw new NotFoundException(
                 StringResource.User,
                 StringResource.Id,
-                request.Id);
+                request.Id!);
         }
 
         var result = entity.Adapt<UserDetailsDto>();

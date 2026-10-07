@@ -1,10 +1,14 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace GM.Identity.Sample.Application.Permissions.Queries.GetPermissionsList;
 
@@ -25,11 +29,11 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new PermissionSpecification(request.Id, request.Name, request.Description,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.PermissionRepository.CountAsync(countSpec, cancellationToken);
 
         var spec = new PermissionSpecification(request.Id, request.Name, request.Description,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.PermissionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<PermissionDto>

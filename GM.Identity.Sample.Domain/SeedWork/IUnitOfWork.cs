@@ -7,13 +7,23 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleP
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserClientConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuditBoundedContext.AuditAggregate.Interfaces;
 
 namespace GM.Identity.Sample.Domain.SeedWork;
 
@@ -35,6 +45,16 @@ public interface IUnitOfWork : IGenericUnitOfWork
    
     public ITwoFactorAuthTypeRepository TwoFactorAuthTypeRepository { get; }
     public IUserTwoFactorAuthTypeRepository UserTwoFactorAuthTypeRepository { get; }
+    public IUserTotpDeviceRepository UserTotpDeviceRepository { get; }
+    public IClientRedirectUriRepository ClientRedirectUriRepository { get; }
+    public IAuthorizationCodeRepository AuthorizationCodeRepository { get; }
+    public ISsoSessionRepository SsoSessionRepository { get; }
+    public IUserClientConsentRepository UserClientConsentRepository { get; }
+    public IDeviceCodeRepository DeviceCodeRepository { get; }
+    public IUserConsentRepository UserConsentRepository { get; }
+    public IConsentDocumentRepository ConsentDocumentRepository { get; }
+    public IUserPasskeyRepository UserPasskeyRepository { get; }
+    public IPasskeyChallengeRepository PasskeyChallengeRepository { get; }
   
     public IUserRoleRepository UserRoleRepository { get; }
     public IRoleRepository RoleRepository { get; }
@@ -42,4 +62,6 @@ public interface IUnitOfWork : IGenericUnitOfWork
     public IRolePermissionRepository RolePermissionRepository { get; }
     
     public IOutboxMessageRepository OutboxMessageRepository { get; }
+
+    public IDomainEventLogRepository DomainEventLogRepository { get; }
 }

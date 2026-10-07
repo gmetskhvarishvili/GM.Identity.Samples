@@ -1,8 +1,11 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Clients.Commands.UpdateClient;
 
@@ -11,6 +14,15 @@ public class UpdateClientCommand : IRequest
     public Guid Id { get; set; }
     public string? Secret { get; set; }
     public string? Name { get; set; }
+
+    /// <summary>The client's OIDC back-channel logout endpoint. Pass empty to clear it; null leaves it unchanged.</summary>
+    public string? BackchannelLogoutUri { get; set; }
+
+    /// <summary>The client's OIDC front-channel logout endpoint. Pass empty to clear it; null leaves it unchanged.</summary>
+    public string? FrontchannelLogoutUri { get; set; }
+
+    /// <summary>Whether the authorization endpoint must obtain the user's consent for this client. Null leaves it unchanged.</summary>
+    public bool? RequireConsent { get; set; }
 }
 
 public class UpdateClientCommandValidator : AbstractValidator<UpdateClientCommand>
@@ -47,6 +59,17 @@ public class UpdateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
 
         entity.Update(
             request.Name!);
+
+        if (request.BackchannelLogoutUri is not null)
+            entity.SetBackchannelLogoutUri(
+                request.BackchannelLogoutUri.Length == 0 ? null : request.BackchannelLogoutUri);
+
+        if (request.FrontchannelLogoutUri is not null)
+            entity.SetFrontchannelLogoutUri(
+                request.FrontchannelLogoutUri.Length == 0 ? null : request.FrontchannelLogoutUri);
+
+        if (request.RequireConsent is { } requireConsent)
+            entity.SetRequireConsent(requireConsent);
 
         // Persist the aggregate
         unitOfWork.ClientRepository.Update(entity);

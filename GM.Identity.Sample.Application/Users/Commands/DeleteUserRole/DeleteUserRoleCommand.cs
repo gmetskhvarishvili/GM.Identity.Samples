@@ -1,8 +1,11 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteUserRole;
 
@@ -21,7 +24,8 @@ public class DeleteUserRoleCommandValidator : AbstractValidator<DeleteUserRoleCo
     }
 }
 
-public class DeleteUserRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteUserRoleCommand>
+public class DeleteUserRoleCommandHandler(
+    IUnitOfWork unitOfWork) : IRequestHandler<DeleteUserRoleCommand>
 {
     public async Task Handle(DeleteUserRoleCommand request, CancellationToken cancellationToken)
     {
@@ -41,8 +45,9 @@ public class DeleteUserRoleCommandHandler(IUnitOfWork unitOfWork) : IRequestHand
                 request.RoleId);
         }
 
-        // Persist the aggregate
-        unitOfWork.UserRoleRepository.Remove(entity);
+        entity.SoftRemove();
+
+        unitOfWork.UserRoleRepository.Update(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

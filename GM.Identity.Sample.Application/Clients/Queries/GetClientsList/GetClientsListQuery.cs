@@ -1,10 +1,15 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace GM.Identity.Sample.Application.Clients.Queries.GetClientsList;
 
@@ -23,10 +28,10 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new ClientSpecification(request.Id, request.Name,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.ClientRepository.CountAsync(countSpec, cancellationToken);
 
-        var spec = new ClientSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var spec = new ClientSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ClientRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ClientDto>

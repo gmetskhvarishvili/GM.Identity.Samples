@@ -1,5 +1,4 @@
 using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,6 +12,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.AccessControl.ScopeAggregate.Entities;
+using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate;
 
@@ -22,15 +23,17 @@ public class Scope
             UserRole, Role, RolePermission, Permission>
         ,  IAggregateRoot
 {
+    private Scope() // EF Core materialization
+    {
+    }
+
     private Scope(
         string name) : base(name)
     {
     }
-    
+
     public static Scope Create(
-        string name)
-    {
-        return new Scope
-            (name);
-    }
+        string name) => new(name);
+
+
 }

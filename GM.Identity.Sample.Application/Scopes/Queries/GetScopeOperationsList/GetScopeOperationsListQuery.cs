@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Application.Operations.Queries.GetOperationsList;
@@ -6,6 +6,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Scope
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GM.Identity.Sample.Application.Scopes.Queries.GetScopeOperationsList;
 
@@ -25,10 +30,10 @@ public class GetScopeOperationsListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new ScopeOperationSpecification(request.ScopeId,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.ScopeOperationRepository.CountAsync(countSpec, cancellationToken);
 
-        var spec = new ScopeOperationSpecification(request.ScopeId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var spec = new ScopeOperationSpecification(request.ScopeId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ScopeOperationRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<OperationDto>

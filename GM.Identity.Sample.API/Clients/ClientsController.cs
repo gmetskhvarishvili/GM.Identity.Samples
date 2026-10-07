@@ -1,5 +1,8 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
+using GM.Identity.Sample.Application.Clients.Commands.RestoreClient;
+using GM.Identity.Sample.Application.Clients.Commands.HideClient;
+using GM.Identity.Sample.Application.Clients.Commands.UnhideClient;
 using GM.API.Models;
 using GM.Identity.Sample.API.Scopes;
 using GM.Identity.Sample.Application.Clients.Commands.CreateClient;
@@ -8,6 +11,9 @@ using GM.Identity.Sample.Application.Clients.Commands.DeleteAllClientSessions;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClient;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClientScope;
 using GM.Identity.Sample.Application.Clients.Commands.DeleteClientSession;
+using GM.Identity.Sample.Application.Clients.Commands.RegisterClient;
+using GM.Identity.Sample.Application.Clients.Commands.RotateClientSecret;
+using GM.Identity.Sample.Application.Clients.Commands.SetClientActive;
 using GM.Identity.Sample.Application.Clients.Commands.UpdateClient;
 using GM.Identity.Sample.Application.Clients.Queries.GetClientDetails;
 using GM.Identity.Sample.Application.Clients.Queries.GetClientScopesList;
@@ -15,6 +21,13 @@ using GM.Identity.Sample.Application.Clients.Queries.GetClientSessionsList;
 using GM.Identity.Sample.Application.Clients.Queries.GetClientsList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 
 namespace GM.Identity.Sample.API.Clients;
 
@@ -32,8 +45,10 @@ public class ClientsController : BaseController
     /// <param name="request">Client Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Id</returns>
+    [HasPermission(nameof(AddClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddClient))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddClient(
         [FromBody] CreateClientModel request,
         CancellationToken cancellationToken)
@@ -42,7 +57,24 @@ public class ClientsController : BaseController
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
     }
-    
+
+    /// <summary>
+    /// OAuth 2.0 Dynamic Client Registration (RFC 7591). Provisions a client and returns its generated
+    /// client_id and client_secret (the secret is shown once). Admin-gated, at the well-known /connect/register.
+    /// </summary>
+    [HasPermission(nameof(AddClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("~/connect/register", Name = nameof(RegisterClient))]
+    [ProducesResponseType(typeof(RegisterClientResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RegisterClient(
+        [FromBody] RegisterClientModel request,
+        CancellationToken cancellationToken)
+    {
+        var command = request.Adapt<RegisterClientCommand>();
+        var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
     /// <summary>
     /// Add Client Scope
     /// </summary>
@@ -50,6 +82,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Scope Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(AddClientScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Scopes", Name = nameof(AddClientScope))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddClientScope(
@@ -70,6 +104,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateClient))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -90,6 +126,8 @@ public class ClientsController : BaseController
     /// <param name="id">Client Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteClient))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -104,7 +142,51 @@ public class ClientsController : BaseController
         await Mediator.Send(command, cancellationToken);
         return Ok();
     }
-    
+
+    /// <summary>
+    /// Rotate a client's secret. Returns the new plaintext secret exactly once and revokes the client's active
+    /// sessions, so tokens minted under the old secret stop working immediately.
+    /// </summary>
+    /// <param name="id">Client Id whose secret to rotate</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The new client secret (shown only once)</returns>
+    [HasPermission(nameof(RotateClientSecret))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Secret/Rotate", Name = nameof(RotateClientSecret))]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RotateClientSecret(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var secret = await Mediator.Send(new RotateClientSecretCommand { ClientId = id }, cancellationToken);
+        return Ok(secret);
+    }
+
+    /// <summary>Deactivate a client — it can no longer authenticate, and its active sessions are revoked.</summary>
+    [HasPermission(nameof(DeactivateClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Deactivate", Name = nameof(DeactivateClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateClient([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetClientActiveCommand { ClientId = id, Active = false }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Reactivate a previously deactivated client.</summary>
+    [HasPermission(nameof(ActivateClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPut("{id}/Activate", Name = nameof(ActivateClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ActivateClient([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SetClientActiveCommand { ClientId = id, Active = true }, cancellationToken);
+        return Ok();
+    }
+
     /// <summary>
     /// Delete Client Scope
     /// </summary>
@@ -112,6 +194,8 @@ public class ClientsController : BaseController
     /// <param name="scopeId">Scope Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClientScope))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Scopes/{scopeId}", Name = nameof(DeleteClientScope))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -135,6 +219,8 @@ public class ClientsController : BaseController
     /// <param name="id">Client Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClientSessions))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions", Name = nameof(DeleteClientSessions))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -157,6 +243,8 @@ public class ClientsController : BaseController
     /// <param name="sessionId">Session Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteClientSession))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Sessions/{sessionId}", Name = nameof(DeleteClientSession))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -180,6 +268,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Roles</returns>
+    [HasPermission(nameof(GetClientsList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetClientsList))]
     [ProducesResponseType(typeof(IEnumerable<ClientModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClientsList(
@@ -200,6 +290,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Scope Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Scopes</returns>
+    [HasPermission(nameof(GetClientScopes))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Scopes", Name = nameof(GetClientScopes))]
     [ProducesResponseType(typeof(IEnumerable<ClientModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -223,6 +315,8 @@ public class ClientsController : BaseController
     /// <param name="request">Client Session Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Sessions</returns>
+    [HasPermission(nameof(GetClientSessions))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Sessions", Name = nameof(GetClientSessions))]
     [ProducesResponseType(typeof(IEnumerable<ClientSessionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -243,21 +337,83 @@ public class ClientsController : BaseController
     /// Get Client Details
     /// </summary>
     /// <param name="id">Client Id to Get</param>
+    /// <param name="request">Visibility scope (query string); defaults to visible-only.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Details</returns>
+    [HasPermission(nameof(GetClientDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetClientDetails))]
     [ProducesResponseType(typeof(ClientDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetClientDetails(
         [FromRoute] Guid id,
+        [FromQuery] GetBaseDetailsModel request,
         CancellationToken cancellationToken)
     {
         var query = new GetClientDetailsQuery
         {
-            Id = id
+            Id = id,
+            Visibility = request.Visibility
         };
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Adapt<ClientDetailsModel>();
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Restore Client
+    /// </summary>
+    /// <param name="id">Client Id to restore</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(RestoreClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Restore", Name = nameof(RestoreClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreClient(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RestoreClientCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Hide Client
+    /// </summary>
+    /// <param name="id">Client Id to hide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(HideClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Hide", Name = nameof(HideClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> HideClient(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new HideClientCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Unhide Client
+    /// </summary>
+    /// <param name="id">Client Id to unhide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(UnhideClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Unhide", Name = nameof(UnhideClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnhideClient(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new UnhideClientCommand { Id = id }, cancellationToken);
+        return Ok();
     }
 }

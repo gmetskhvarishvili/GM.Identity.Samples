@@ -1,17 +1,29 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using GM.API.Controllers;
 using GM.API.Models;
 using GM.Identity.Sample.API.Permissions;
 using GM.Identity.Sample.Application.Roles.Commands.CreateRole;
 using GM.Identity.Sample.Application.Roles.Commands.CreateRolePermission;
+using GM.Identity.Sample.Application.Roles.Commands.ActivateRole;
+using GM.Identity.Sample.Application.Roles.Commands.DeactivateRole;
 using GM.Identity.Sample.Application.Roles.Commands.DeleteRole;
 using GM.Identity.Sample.Application.Roles.Commands.DeleteRolePermission;
+using GM.Identity.Sample.Application.Roles.Commands.HideRole;
+using GM.Identity.Sample.Application.Roles.Commands.RestoreRole;
+using GM.Identity.Sample.Application.Roles.Commands.UnhideRole;
 using GM.Identity.Sample.Application.Roles.Commands.UpdateRole;
 using GM.Identity.Sample.Application.Roles.Queries.GetRoleDetails;
 using GM.Identity.Sample.Application.Roles.Queries.GetRolePermissionsList;
 using GM.Identity.Sample.Application.Roles.Queries.GetRolesList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GM.API.Authorization;
+using GM.Identity.Sample.Domain.SeedWork;
 
 namespace GM.Identity.Sample.API.Roles;
 
@@ -29,8 +41,10 @@ public class RolesController : BaseController
     /// <param name="request">Role Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Id</returns>
+    [HasPermission(nameof(AddRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost(Name = nameof(AddRole))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddRole(
         [FromBody] CreateRoleModel request,
         CancellationToken cancellationToken)
@@ -47,8 +61,10 @@ public class RolesController : BaseController
     /// <param name="request">Role Permission Model to Add</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Id</returns>
+    [HasPermission(nameof(AddRolePermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Permissions", Name = nameof(AddRolePermission))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> AddRolePermission(
         [FromRoute] Guid id,
         [FromBody] CreateRolePermissionModel request,
@@ -67,6 +83,8 @@ public class RolesController : BaseController
     /// <param name="request">Role Model to Update</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(UpdateRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPut("{id}", Name = nameof(UpdateRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -87,6 +105,8 @@ public class RolesController : BaseController
     /// <param name="id">Role Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}", Name = nameof(DeleteRole))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -103,12 +123,129 @@ public class RolesController : BaseController
     }
 
     /// <summary>
+    /// Restore Role
+    /// </summary>
+    /// <param name="id">Role Id to restore (reactivate, undelete, and unhide)</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(RestoreRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Restore", Name = nameof(RestoreRole))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreRole(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new RestoreRoleCommand
+        {
+            Id = id
+        };
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Activate Role
+    /// </summary>
+    /// <param name="id">Role Id to activate</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(ActivateRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Activate", Name = nameof(ActivateRole))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ActivateRole(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new ActivateRoleCommand
+        {
+            Id = id
+        };
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Deactivate Role
+    /// </summary>
+    /// <param name="id">Role Id to deactivate</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(DeactivateRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Deactivate", Name = nameof(DeactivateRole))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateRole(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeactivateRoleCommand
+        {
+            Id = id
+        };
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Hide Role
+    /// </summary>
+    /// <param name="id">Role Id to hide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(HideRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Hide", Name = nameof(HideRole))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> HideRole(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new HideRoleCommand
+        {
+            Id = id
+        };
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Unhide Role
+    /// </summary>
+    /// <param name="id">Role Id to unhide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(UnhideRole))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Unhide", Name = nameof(UnhideRole))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnhideRole(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new UnhideRoleCommand
+        {
+            Id = id
+        };
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
     /// Delete Role Permission
     /// </summary>
     /// <param name="id">Role Id to Delete</param>
     /// <param name="permissionId">Permission Id to Delete</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Result</returns>
+    [HasPermission(nameof(DeleteRolePermission))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpDelete("{id}/Permissions/{permissionId}", Name = nameof(DeleteRolePermission))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -132,6 +269,8 @@ public class RolesController : BaseController
     /// <param name="request">Role Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>IEnumerable of Roles</returns>
+    [HasPermission(nameof(GetRolesList))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet(Name = nameof(GetRolesList))]
     [ProducesResponseType(typeof(IEnumerable<RoleModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRolesList(
@@ -152,6 +291,8 @@ public class RolesController : BaseController
     /// <param name="request">Role Permission Model to Get</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Permissions</returns>
+    [HasPermission(nameof(GetRolePermissions))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}/Permissions", Name = nameof(GetRolePermissions))]
     [ProducesResponseType(typeof(IEnumerable<PermissionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -172,18 +313,23 @@ public class RolesController : BaseController
     /// Get Role Details
     /// </summary>
     /// <param name="id">Role Id to Get</param>
+    /// <param name="request">Visibility scope (query string); defaults to visible-only.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Role Details</returns>
+    [HasPermission(nameof(GetRoleDetails))]
+    [RequiresScope(ScopeOperations.ReadIdentity)]
     [HttpGet("{id}", Name = nameof(GetRoleDetails))]
     [ProducesResponseType(typeof(RoleDetailsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRoleDetails(
         [FromRoute] Guid id,
+        [FromQuery] GetBaseDetailsModel request,
         CancellationToken cancellationToken)
     {
         var query = new GetRoleDetailsQuery
         {
-            Id = id
+            Id = id,
+            Visibility = request.Visibility
         };
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Adapt<RoleDetailsModel>();

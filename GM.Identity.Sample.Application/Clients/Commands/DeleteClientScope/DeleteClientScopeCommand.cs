@@ -1,8 +1,11 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Clients.Commands.DeleteClientScope;
 
@@ -21,7 +24,8 @@ public class DeleteClientScopeCommandValidator : AbstractValidator<DeleteClientS
     }
 }
 
-public class DeleteClientScopeCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteClientScopeCommand>
+public class DeleteClientScopeCommandHandler(
+    IUnitOfWork unitOfWork) : IRequestHandler<DeleteClientScopeCommand>
 {
     public async Task Handle(DeleteClientScopeCommand request, CancellationToken cancellationToken)
     {

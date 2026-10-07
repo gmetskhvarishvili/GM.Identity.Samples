@@ -1,10 +1,15 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace GM.Identity.Sample.Application.Roles.Queries.GetRolesList;
 
@@ -24,10 +29,10 @@ public class GetRolesListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new RoleSpecification(request.Id, request.Name,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.RoleRepository.CountAsync(countSpec, cancellationToken);
 
-        var spec = new RoleSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var spec = new RoleSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.RoleRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<RoleDto>

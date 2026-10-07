@@ -1,7 +1,9 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Mediator.Contracts;
 using Mapster;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 
@@ -25,7 +27,6 @@ public class GetOAuthRedirectUriQueryHandler(IOAuthService oAuthService)
 {
     public Task<string> Handle(GetOAuthRedirectUriQuery request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(oAuthService.GetRedirectUri(
-            request.Adapt<GetRedirectUriDto>()));
+        return oAuthService.GetRedirectUri(request.Adapt<GetRedirectUriDto>(), cancellationToken);
     }
 }

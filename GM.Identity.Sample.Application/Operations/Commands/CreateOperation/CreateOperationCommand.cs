@@ -1,13 +1,16 @@
-using FluentValidation;
+﻿using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.Operations.Commands.CreateOperation;
 
-public class CreateOperationCommand : IRequest<string>
+public class CreateOperationCommand : IRequest<Guid>
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
@@ -22,10 +25,11 @@ public class CreateOperationCommandValidator : AbstractValidator<CreateOperation
     }
 }
 
-public class CreateOperationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateOperationCommand, string>
+public class CreateOperationCommandHandler(
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateOperationCommand, Guid>
 {
 
-    public async Task<string> Handle(CreateOperationCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateOperationCommand request, CancellationToken cancellationToken)
     {
         if (await unitOfWork.OperationRepository.ExistsAsync(
                 x => x.Name == request.Name
@@ -48,6 +52,6 @@ public class CreateOperationCommandHandler(IUnitOfWork unitOfWork) : IRequestHan
         await unitOfWork.OperationRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.Id.ToString();
+        return entity.Id;
     }
 }

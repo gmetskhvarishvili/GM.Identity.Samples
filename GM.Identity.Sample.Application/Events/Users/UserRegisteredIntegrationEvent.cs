@@ -1,0 +1,23 @@
+using System;
+using System.Collections.Generic;
+using GM.Messaging.Domain.Events;
+using Wolverine.Attributes;
+
+namespace GM.Identity.Sample.Application.Events.Users;
+
+// UserId is inherited from IntegrationEvent and must be set via object initializer
+// (a positional parameter matching the inherited init-only property is silently dropped).
+// MessageIdentity sets the cross-service wire name so consumers with their own copy of this
+// contract (different namespace) resolve the same Wolverine message-type. Must match the alias
+// on the consumer side.
+[MessageIdentity("user.registered")]
+public sealed record UserRegisteredIntegrationEvent(
+    string? Email,
+    string? Username,
+    string? PhoneNumber,
+    IReadOnlyCollection<Guid> RoleIds,
+    IReadOnlyCollection<int> TwoFactorAuthTypeIds,
+    IReadOnlyCollection<RegisteredConsent> Consents) : IntegrationEvent;
+
+/// <summary>A consent the user accepted at registration, carried on <see cref="UserRegisteredIntegrationEvent"/>.</summary>
+public sealed record RegisteredConsent(string ConsentType, string DocumentVersion);

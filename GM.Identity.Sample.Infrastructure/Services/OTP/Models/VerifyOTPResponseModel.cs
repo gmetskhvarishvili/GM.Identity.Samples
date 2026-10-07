@@ -1,3 +1,5 @@
+﻿using System;
+
 namespace GM.Identity.Sample.Infrastructure.Services.OTP.Models;
 
 public class VerifyOTPResponseModel

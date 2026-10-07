@@ -1,5 +1,4 @@
 using GM.EntityFramework.Domain.Abstractions;
-using GM.Identity.Domain.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate;
@@ -13,6 +12,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Domain.AccessControl.RoleAggregate.Entities;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate;
 
@@ -21,13 +21,14 @@ public class Role : GMRole
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
     UserRole, Role, RolePermission, Permission>, IAggregateRoot
 {
+    private Role()
+    {
+    }
+
     private Role(string name)
         : base(name)
     {
     }
 
-    public static Role Create(string name)
-    {
-        return new Role(name);
-    }
+    public static Role Create(string name) => new(name);
 }

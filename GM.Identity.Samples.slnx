@@ -13,6 +13,7 @@
     <File Path=".github/workflows/ci.yml" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="GM.Identity.Sample.Admin.Gateway.API/GM.Identity.Sample.Admin.Gateway.API.csproj" />
     <Project Path="GM.Identity.Sample.API/GM.Identity.Sample.API.csproj" />
     <Project Path="GM.Identity.Sample.Application/GM.Identity.Sample.Application.csproj" />
     <Project Path="GM.Identity.Sample.Common/GM.Identity.Sample.Common.csproj" />

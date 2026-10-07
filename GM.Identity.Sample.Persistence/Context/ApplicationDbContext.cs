@@ -1,69 +1,76 @@
-using System.Reflection;
 using GM.EntityFramework.Domain.Common;
+using GM.EntityFramework.Domain.Events;
 using GM.EntityFramework.Persistence;
-using GM.EntityFramework.Persistence.Infrastructure;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleAggregate;
-using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using GM.EntityFramework.Persistence.Extensions;
+using GM.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Persistence.Context;
 
-public class ApplicationDbContext (
-    DbContextOptions<ApplicationDbContext> options, 
-    IClock? clock = null) : GenericDbContext(options)
+public class ApplicationDbContext : GenericDbContext
 {
     public const string DefaultSchema = "application";
-    private readonly IClock _clock = clock ?? new SystemClock();
+
+    private readonly ICurrentActor _currentActor;
+    private readonly IDomainEventDispatcher _dispatcher;
+
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentActor currentActor,
+        IDomainEventDispatcher dispatcher) : base(options)
+    {
+        _currentActor = currentActor;
+        _dispatcher = dispatcher;
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(DefaultSchema);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Multi-tenancy: scope every tenant-owned aggregate (IHasTenant) to the ambient tenant, resolved
+        // per request from the gateway-forwarded X-Tenant-Id header via ICurrentActor. The mechanism lives
+        // in GM.EntityFramework.Persistence; the sample's tenant-owned roots (users, roles, permissions,
+        // clients, scopes, operations) just implement IHasTenant. Join aggregates stay global — they're
+        // id-referenced and the reconcile jobs read the roots with IgnoreQueryFilters().
+        modelBuilder.ApplyTenantQueryFilters(_currentActor);
     }
 
-    public override int SaveChanges()
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        AddAuditData();
-        return base.SaveChanges();
+        ChangeTracker.StampTenants(_currentActor);
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ChangeTracker.StampTenants(_currentActor);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        AddAuditData();
-        return await base.SaveChangesAsync(cancellationToken);
-    }
+        // Snapshot the raised domain events before persisting: the base save copies each to the durable
+        // DomainEvents log and clears the aggregates' in-memory lists. We then dispatch to the in-process
+        // handlers (e.g. the RBAC cache write-through) once the changes — event rows included — are saved.
+        var domainEvents = ChangeTracker.Entries<IHasDomainEvents>()
+            .SelectMany(entry => entry.Entity.DomainEvents)
+            .ToList();
 
-    private void AddAuditData()
-    {
-        foreach (var entityEntry in ChangeTracker.Entries().Where(e =>
-                 {
-                     var flag = e.State switch
-                     {
-                         EntityState.Modified or EntityState.Added => true,
-                         _ => false
-                     };
-                     return flag;
-                 }).ToList())
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (domainEvents.Count > 0)
         {
-            var entity = entityEntry.Entity;
-            var utcNow = this._clock.UtcNow;
-            var properties = entity.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-            if (entityEntry.State == EntityState.Added)
-                SetPropertyIfExists(properties, entity, "CreatedAt", utcNow);
-            SetPropertyIfExists(properties, entity, "UpdatedAt", utcNow);
+            await _dispatcher.DispatchRangeAsync(domainEvents, cancellationToken);
         }
-    }
 
-    private static void SetPropertyIfExists(
-        PropertyInfo[] props,
-        object entity,
-        string name,
-        object? value)
-    {
-        props.FirstOrDefault((Func<PropertyInfo, bool>) (p => p.Name == name && p.CanWrite))?.SetValue(entity, value);
+        return result;
     }
 }

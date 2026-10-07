@@ -7,10 +7,10 @@ using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using ValidationException = FluentValidation.ValidationException;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Users.Commands.ConfirmUserInit;
 
 public class ConfirmUserInitCommand : IRequest

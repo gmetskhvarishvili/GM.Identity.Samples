@@ -8,7 +8,6 @@ using GM.Secrets;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

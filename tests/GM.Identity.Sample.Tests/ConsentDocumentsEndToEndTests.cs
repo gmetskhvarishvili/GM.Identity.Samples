@@ -2,9 +2,9 @@ using GM.Identity.Sample.Application.ConsentDocuments.Commands.AddConsentDocumen
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.CreateConsentDocument;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Queries.GetPendingConsents;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Mediator.Contracts;
 using GM.Testing.AspNetCore;

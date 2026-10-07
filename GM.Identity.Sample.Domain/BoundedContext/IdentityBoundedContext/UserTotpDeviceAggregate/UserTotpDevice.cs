@@ -1,40 +1,27 @@
 using GM.EntityFramework.Domain.Abstractions;
-using GM.EntityFramework.Domain.Base;
+using GM.OTP.Domain.Entities;
 
 using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate;
 
 /// <summary>
-/// An authenticator-app (TOTP) enrolment for a user: the shared secret plus its confirmation state. Starts
-/// unconfirmed — only once the user proves they can produce a code (confirm) does it gate login. The secret is
-/// stored as Base32 (a production system should additionally encrypt it at rest).
+/// The sample's concrete authenticator-app (TOTP) enrolment. Its shape and behaviour live in the GM.OTP base
+/// <see cref="TotpEnrolment"/> — consolidating all one-time-password concerns in GM.OTP — while this type fixes
+/// it as the application's aggregate and exposes the factory. Codes are verified with GM.OTP's
+/// <c>ITotpCodeService</c> (RFC 6238).
 /// </summary>
-public class UserTotpDevice : SoftDeletableEntity<Guid>, IAggregateRoot
+public class UserTotpDevice : TotpEnrolment, IAggregateRoot
 {
     private UserTotpDevice() // EF Core materialization
     {
     }
 
-    private UserTotpDevice(Guid userId, string secretBase32)
+    private UserTotpDevice(string subject, string secretBase32, Guid userId)
+        : base(subject, secretBase32, userId)
     {
-        Id = Guid.NewGuid();
-        UserId = userId;
-        SecretBase32 = secretBase32;
     }
 
-    public static UserTotpDevice Create(Guid userId, string secretBase32) => new(userId, secretBase32);
-
-    public Guid UserId { get; private set; }
-    public string SecretBase32 { get; private set; } = null!;
-    public bool IsConfirmed { get; private set; }
-    public DateTime? ConfirmedAt { get; private set; }
-
-    /// <summary>Marks the device confirmed (idempotent). The caller verifies a code before calling this.</summary>
-    public void Confirm()
-    {
-        if (IsConfirmed) return;
-        IsConfirmed = true;
-        ConfirmedAt = DateTime.UtcNow;
-    }
+    public static UserTotpDevice Create(Guid userId, string subject, string secretBase32) =>
+        new(subject, secretBase32, userId);
 }

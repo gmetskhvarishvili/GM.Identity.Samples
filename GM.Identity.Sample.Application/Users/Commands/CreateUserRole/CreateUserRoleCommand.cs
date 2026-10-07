@@ -1,14 +1,13 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Users.Commands.CreateUserRole;
 
 public class CreateUserRoleCommand : IRequest
@@ -27,8 +26,7 @@ public class CreateUserRoleCommandValidator : AbstractValidator<CreateUserRoleCo
 }
 
 public class CreateUserRoleCommandHandler(
-    IUnitOfWork unitOfWork,
-    IPermissionCache permissionCache) : IRequestHandler<CreateUserRoleCommand>
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserRoleCommand>
 {
     public async Task Handle(CreateUserRoleCommand request, CancellationToken cancellationToken)
     {
@@ -45,18 +43,11 @@ public class CreateUserRoleCommandHandler(
                 StringResource.RoleId,
                 request.RoleId);
         }
-        
-        
-        // Create the root aggregate
+
         var entity = UserRole
             .Create(request.UserId, request.RoleId);
 
-
-        // Persist the aggregate
         await unitOfWork.UserRoleRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Write-through to the Redis RBAC projection.
-        await permissionCache.AddUserRoleAsync(request.UserId, request.RoleId, cancellationToken);
     }
 }

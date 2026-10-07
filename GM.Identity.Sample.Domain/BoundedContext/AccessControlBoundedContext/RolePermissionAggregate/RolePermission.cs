@@ -13,8 +13,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.AccessControl.RolePermissionAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate;
 
 public class RolePermission : GMRolePermission
@@ -22,7 +22,7 @@ public class RolePermission : GMRolePermission
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
     UserRole, Role, RolePermission, Permission>, IAggregateRoot
 {
-    private RolePermission() // EF Core materialization
+    private RolePermission()
     {
     }
 
@@ -32,10 +32,5 @@ public class RolePermission : GMRolePermission
     {
     }
 
-    public static RolePermission Create(
-        Guid roleId,
-        Guid permissionId)
-    {
-        return new RolePermission(roleId, permissionId);
-    }
+    public static RolePermission Create(Guid roleId, Guid permissionId) => new(roleId, permissionId);
 }

@@ -1,5 +1,8 @@
 ﻿using Asp.Versioning;
 using GM.API.Controllers;
+using GM.Identity.Sample.Application.Clients.Commands.RestoreClient;
+using GM.Identity.Sample.Application.Clients.Commands.HideClient;
+using GM.Identity.Sample.Application.Clients.Commands.UnhideClient;
 using GM.API.Models;
 using GM.Identity.Sample.API.Scopes;
 using GM.Identity.Sample.Application.Clients.Commands.CreateClient;
@@ -18,7 +21,6 @@ using GM.Identity.Sample.Application.Clients.Queries.GetClientSessionsList;
 using GM.Identity.Sample.Application.Clients.Queries.GetClientsList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GM.API.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
+
 namespace GM.Identity.Sample.API.Clients;
 
 /// <summary>
@@ -334,6 +337,7 @@ public class ClientsController : BaseController
     /// Get Client Details
     /// </summary>
     /// <param name="id">Client Id to Get</param>
+    /// <param name="request">Visibility scope (query string); defaults to visible-only.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Client Details</returns>
     [HasPermission(nameof(GetClientDetails))]
@@ -343,14 +347,73 @@ public class ClientsController : BaseController
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetClientDetails(
         [FromRoute] Guid id,
+        [FromQuery] GetBaseDetailsModel request,
         CancellationToken cancellationToken)
     {
         var query = new GetClientDetailsQuery
         {
-            Id = id
+            Id = id,
+            Visibility = request.Visibility
         };
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Adapt<ClientDetailsModel>();
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Restore Client
+    /// </summary>
+    /// <param name="id">Client Id to restore</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(RestoreClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Restore", Name = nameof(RestoreClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreClient(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RestoreClientCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Hide Client
+    /// </summary>
+    /// <param name="id">Client Id to hide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(HideClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Hide", Name = nameof(HideClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> HideClient(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new HideClientCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Unhide Client
+    /// </summary>
+    /// <param name="id">Client Id to unhide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(UnhideClient))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Unhide", Name = nameof(UnhideClient))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnhideClient(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new UnhideClientCommand { Id = id }, cancellationToken);
+        return Ok();
     }
 }

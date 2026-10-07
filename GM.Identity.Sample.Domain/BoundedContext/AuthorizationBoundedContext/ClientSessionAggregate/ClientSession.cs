@@ -13,8 +13,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.Authorization.ClientSessionAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
 
 public class ClientSession
@@ -37,8 +37,5 @@ public class ClientSession
     public static ClientSession Create(
         Guid clientId,
         string tokenHash,
-        DateTime expiresAt)
-    {
-        return new ClientSession(clientId, tokenHash, expiresAt);
-    }
+        DateTime expiresAt) => new(clientId, tokenHash, expiresAt);
 }

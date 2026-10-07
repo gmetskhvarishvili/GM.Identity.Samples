@@ -16,11 +16,11 @@ using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = FluentValidation.ValidationException;
-
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 
 public class ExternalAuthorizeCommand : IRequest<AuthorizeResponseDto>

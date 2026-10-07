@@ -13,8 +13,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Domain.Identity.UserTwoFactorAuthTypeAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 
 public class UserTwoFactorAuthType : GMUserTwoFactorAuthType
@@ -36,8 +36,5 @@ public class UserTwoFactorAuthType : GMUserTwoFactorAuthType
 
     public static UserTwoFactorAuthType Create(
         Guid userId,
-        int twoFactorAuthTypeId)
-    {
-        return new UserTwoFactorAuthType(userId, twoFactorAuthTypeId);
-    }
+        int twoFactorAuthTypeId) => new(userId, twoFactorAuthTypeId);
 }

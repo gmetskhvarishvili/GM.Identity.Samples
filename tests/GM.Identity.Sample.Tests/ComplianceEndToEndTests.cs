@@ -1,9 +1,9 @@
 using GM.EntityFramework.Persistence.Events;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate;
 using GM.Identity.Sample.Infrastructure.Maintenance;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Mediator.Contracts;

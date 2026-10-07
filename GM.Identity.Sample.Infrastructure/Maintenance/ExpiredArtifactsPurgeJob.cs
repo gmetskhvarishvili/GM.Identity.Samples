@@ -1,7 +1,6 @@
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Scheduling;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Linq;
 using System.Threading;

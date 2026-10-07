@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.Accounts;
 
 /// <summary>External authorize model.</summary>

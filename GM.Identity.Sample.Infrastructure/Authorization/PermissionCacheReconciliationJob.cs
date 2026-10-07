@@ -2,12 +2,12 @@
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Scheduling;
-
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+
 namespace GM.Identity.Sample.Infrastructure.Authorization;
 
 /// <summary>

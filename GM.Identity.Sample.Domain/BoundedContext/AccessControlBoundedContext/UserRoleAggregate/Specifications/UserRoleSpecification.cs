@@ -1,14 +1,15 @@
 ﻿using GM.EntityFramework.Domain.Specifications;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Specifications;
 
 public class UserRoleSpecification : BaseSpecification<UserRole>
 {
     public UserRoleSpecification(Guid? userId,
-        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering,
+        VisibilityScope visibility = VisibilityScope.VisibleOnly)
     {
-        AddVisibilityFilter();
+        AddVisibilityFilter(visibility);
 
         AddCriteria(s => s.Role.IsActive && !s.Role.IsDeleted && !s.Role.IsHidden);
 

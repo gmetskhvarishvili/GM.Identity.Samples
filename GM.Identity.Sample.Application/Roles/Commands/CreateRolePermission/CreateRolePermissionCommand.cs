@@ -1,15 +1,13 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Roles.Commands.CreateRolePermission;
 
 public class CreateRolePermissionCommand : IRequest<Guid>
@@ -28,8 +26,7 @@ public class CreateRolePermissionCommandValidator : AbstractValidator<CreateRole
 }
 
 public class CreateRolePermissionCommandHandler(
-    IUnitOfWork unitOfWork,
-    IPermissionCache permissionCache) : IRequestHandler<CreateRolePermissionCommand, Guid>
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateRolePermissionCommand, Guid>
 {
 
     public async Task<Guid> Handle(CreateRolePermissionCommand request, CancellationToken cancellationToken)
@@ -47,18 +44,17 @@ public class CreateRolePermissionCommandHandler(
                 StringResource.PermissionId,
                 request.PermissionId);
         }
-        
-        // Create the root aggregate
+
+        // Create the root aggregate. Create raises GMRolePermissionCreatedDomainEvent (in the GMRolePermission
+        // constructor), which the dispatcher hands to its handler after SaveChangesAsync — that handler triggers
+        // the background job projecting the grant into the Redis RBAC cache (deferred, not an inline write).
         var entity = RolePermission
             .Create(request.RoleId,
                 request.PermissionId);
 
-        // Persist the aggregate
+        // Persist the aggregate (and dispatch its domain events).
         await unitOfWork.RolePermissionRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Write-through to the Redis RBAC projection.
-        await permissionCache.AddRolePermissionAsync(request.RoleId, request.PermissionId, cancellationToken);
 
         return entity.Id;
     }

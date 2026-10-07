@@ -1,35 +1,22 @@
 using GM.EntityFramework.Domain.Abstractions;
-using GM.EntityFramework.Domain.Base;
+using GM.Identity.Domain.Identity.PasskeyChallengeAggregate.Entities;
 
 using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate;
 
 /// <summary>
-/// A short-lived, single-use challenge issued at the start of a passkey login. The authenticator signs it (via
-/// clientDataJSON) and the server matches it on completion, preventing replay. Consumed once used.
+/// The sample's concrete passkey-login challenge aggregate root. Its shape lives in the GM.Identity base
+/// <see cref="GMPasskeyChallenge"/>; this type fixes it as the application's aggregate and exposes the factory,
+/// mirroring how the other sample entities specialise their GM.Identity bases.
 /// </summary>
-public class PasskeyChallenge : SoftDeletableEntity<Guid>, IAggregateRoot
+public class PasskeyChallenge : GMPasskeyChallenge, IAggregateRoot
 {
     private PasskeyChallenge() { } // EF Core materialization
 
     private PasskeyChallenge(Guid userId, string challenge, DateTime expiresAt)
-    {
-        Id = Guid.NewGuid();
-        UserId = userId;
-        Challenge = challenge;
-        ExpiresAt = expiresAt;
-    }
+        : base(userId, challenge, expiresAt) { }
 
     public static PasskeyChallenge Create(Guid userId, string challenge, DateTime expiresAt) =>
         new(userId, challenge, expiresAt);
-
-    public Guid UserId { get; private set; }
-
-    /// <summary>The challenge (base64url).</summary>
-    public string Challenge { get; private set; } = null!;
-
-    public DateTime ExpiresAt { get; private set; }
-
-    public bool IsExpired(DateTime now) => ExpiresAt <= now;
 }

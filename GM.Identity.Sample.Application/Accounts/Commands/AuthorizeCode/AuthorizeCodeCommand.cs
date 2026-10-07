@@ -13,7 +13,6 @@ using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

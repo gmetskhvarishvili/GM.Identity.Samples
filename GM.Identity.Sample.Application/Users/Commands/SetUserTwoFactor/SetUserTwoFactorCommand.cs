@@ -4,7 +4,6 @@ using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;

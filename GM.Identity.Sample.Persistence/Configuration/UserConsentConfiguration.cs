@@ -1,19 +1,8 @@
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using GM.Identity.Persistence.Configuration;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate;
 
 namespace GM.Identity.Sample.Persistence.Configuration;
 
-public class UserConsentConfiguration : IEntityTypeConfiguration<UserConsent>
-{
-    public void Configure(EntityTypeBuilder<UserConsent> builder)
-    {
-        builder.ToTable("user_consents");
-        builder.HasKey(x => x.Id);
-        builder.Property(x => x.UserId).IsRequired();
-        builder.Property(x => x.ConsentType).IsRequired();
-        builder.Property(x => x.DocumentVersion).IsRequired();
-        builder.Property(x => x.AcceptedAt).IsRequired();
-        builder.HasIndex(x => new { x.UserId, x.ConsentType });
-    }
-}
+// The user-consent mapping lives in the GM.Identity base config; this fixes it to the sample's
+// aggregate and its "compliance" schema table.
+public class UserConsentConfiguration() : GMUserConsentConfiguration<UserConsent>("compliance", "user_consents");

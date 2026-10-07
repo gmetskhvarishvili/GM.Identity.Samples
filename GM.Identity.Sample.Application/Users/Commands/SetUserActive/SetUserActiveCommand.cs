@@ -4,7 +4,6 @@ using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,8 +39,8 @@ public class SetUserActiveCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
 
         unitOfWork.UserRepository.Update(user);
 
-        // Deactivating revokes the user's sessions (which queue a SessionsRevoked outbox message for cache
-        // eviction); stage them so they commit with the change in one save.
+        // Deactivating revokes the user's sessions (each revocation raises a domain event that drives cache
+        // eviction after commit); stage them so they commit with the change in one save.
         if (!request.Active)
             await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(user.Id, cancellationToken);
 

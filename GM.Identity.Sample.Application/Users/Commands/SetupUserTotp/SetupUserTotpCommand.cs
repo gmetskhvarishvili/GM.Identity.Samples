@@ -1,12 +1,11 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using GM.OTP.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Linq;
 using System.Threading;
@@ -29,7 +28,7 @@ public class SetupUserTotpCommandValidator : AbstractValidator<SetupUserTotpComm
     public SetupUserTotpCommandValidator() => RuleFor(x => x.UserId).NotNull().NotEmpty();
 }
 
-public class SetupUserTotpCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<SetupUserTotpCommand, SetupUserTotpResultDto>
+public class SetupUserTotpCommandHandler(IUnitOfWork unitOfWork, ITotpCodeService totpService) : IRequestHandler<SetupUserTotpCommand, SetupUserTotpResultDto>
 {
     private const string Issuer = "GM Identity Sample";
 
@@ -48,13 +47,13 @@ public class SetupUserTotpCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
         if (existing.Count > 0)
             unitOfWork.UserTotpDeviceRepository.RemoveRange(existing);
 
-        var secret = Totp.GenerateSecret();
+        var accountName = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.UserName;
+        var secret = totpService.GenerateSecret();
         await unitOfWork.UserTotpDeviceRepository.AddAsync(
-            UserTotpDevice.Create(request.UserId, secret), cancellationToken);
+            UserTotpDevice.Create(request.UserId, accountName!, secret), cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var accountName = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.UserName;
-        return new SetupUserTotpResultDto(secret, Totp.BuildProvisioningUri(secret, Issuer, accountName!));
+        return new SetupUserTotpResultDto(secret, totpService.BuildProvisioningUri(Issuer, accountName!, secret));
     }
 }
 

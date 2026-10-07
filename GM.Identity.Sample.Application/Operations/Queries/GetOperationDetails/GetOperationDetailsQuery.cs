@@ -1,19 +1,19 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Common;
+using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Operations.Queries.GetOperationDetails;
 
-public class GetOperationDetailsQuery : IRequest<OperationDetailsDto>
+public class GetOperationDetailsQuery : GetBaseDetailsQuery, IRequest<OperationDetailsDto>
 {
-    public Guid? Id { get; set; }
 }
 
 public class GetOperationDetailsQueryValidator : AbstractValidator<GetOperationDetailsQuery>
@@ -31,9 +31,9 @@ public class GetOperationDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestH
         // the root aggregate
         var entity = await unitOfWork.OperationRepository
             .FirstOrDefaultAsync(x => x.Id == request.Id
-                                      && x.IsActive
-                                      && !x.IsDeleted
-                                      && !x.IsHidden,
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeInactive) || x.IsActive)
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeDeleted) || !x.IsDeleted)
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeHidden) || !x.IsHidden),
                 true,
                 null,
                 cancellationToken);

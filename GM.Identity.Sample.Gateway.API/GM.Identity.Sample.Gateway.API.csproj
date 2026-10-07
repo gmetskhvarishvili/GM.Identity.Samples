@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <!-- YARP reverse proxy + GM edge rate limiting, driven from configuration. -->
-        <PackageReference Include="GM.Gateway" Version="1.3.0" />
+        <PackageReference Include="GM.Gateway" Version="1.1.0" />
 
         <!-- Redis-backed counter store + distributed lock for cross-instance rate limiting. -->
         <PackageReference Include="GM.Caching.Redis" Version="1.0.1" />
@@ -16,7 +16,7 @@
         <PackageReference Include="GM.RateLimiting.Redis" Version="1.0.1" />
 
         <!-- Opaque bearer-token validation against the Redis session store (TokenGenerator.Hash + IConnectionMultiplexer). -->
-        <PackageReference Include="GM.Identity" Version="1.11.0" />
+        <PackageReference Include="GM.Identity" Version="2.0.0" />
         <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
 
         <!-- Liveness/readiness endpoints for the edge. -->

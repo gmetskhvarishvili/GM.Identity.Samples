@@ -13,8 +13,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.AccessControl.ClientScopeAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 
 public class ClientScope
@@ -37,8 +37,5 @@ public class ClientScope
 
     public static ClientScope Create(
         Guid clientId,
-        Guid scopeId)
-    {
-        return new ClientScope(clientId, scopeId);
-    }
+        Guid scopeId) => new(clientId, scopeId);
 }

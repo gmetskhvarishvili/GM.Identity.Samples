@@ -1,7 +1,7 @@
 using FluentValidation;
-
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.ConsentDocuments;
 
 /// <summary>Publish a new version of an existing consent document type. The new version becomes current.</summary>

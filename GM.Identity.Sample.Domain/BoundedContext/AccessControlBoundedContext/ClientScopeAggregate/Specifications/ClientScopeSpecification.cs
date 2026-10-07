@@ -1,14 +1,15 @@
 ﻿using GM.EntityFramework.Domain.Specifications;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.Specifications;
 
 public class ClientScopeSpecification : BaseSpecification<ClientScope>
 {
     public ClientScopeSpecification(Guid? userId,
-        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering,
+        VisibilityScope visibility = VisibilityScope.VisibleOnly)
     {
-        AddVisibilityFilter();
+        AddVisibilityFilter(visibility);
 
         if (userId.HasValue && userId.Value != Guid.Empty)
             AddCriteria(s => s.ClientId == userId);

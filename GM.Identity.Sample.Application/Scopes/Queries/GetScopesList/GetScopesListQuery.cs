@@ -6,11 +6,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Scope
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
 namespace GM.Identity.Sample.Application.Scopes.Queries.GetScopesList;
 
 public class GetScopesListQuery : GetBaseListQuery, IRequest<PagedListDto<ScopeDto>>
@@ -29,10 +29,10 @@ public class GetScopesListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new ScopeSpecification(request.Id, request.Name,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.ScopeRepository.CountAsync(countSpec, cancellationToken);
 
-        var spec = new ScopeSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var spec = new ScopeSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ScopeRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ScopeDto>

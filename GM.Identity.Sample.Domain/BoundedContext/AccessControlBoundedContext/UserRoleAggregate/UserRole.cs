@@ -13,8 +13,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.AccessControl.UserRoleAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 
 public class UserRole : GMUserRole
@@ -32,11 +32,6 @@ public class UserRole : GMUserRole
     {
     }
 
-    public static UserRole Create(
-        Guid userId,
-        Guid roleId)
-    {
-        return new UserRole(userId, roleId);
-    }
+    public static UserRole Create(Guid userId, Guid roleId) => new(userId, roleId);
 }
 

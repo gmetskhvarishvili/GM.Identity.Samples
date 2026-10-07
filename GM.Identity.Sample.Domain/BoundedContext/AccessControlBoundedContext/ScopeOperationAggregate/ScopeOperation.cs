@@ -13,8 +13,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.AccessControl.ScopeOperationAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate;
 
 public class ScopeOperation
@@ -35,8 +35,5 @@ public class ScopeOperation
 
     public static ScopeOperation Create(
         Guid scopeId,
-        Guid operationId)
-    {
-        return new ScopeOperation(scopeId, operationId);
-    }
+        Guid operationId) => new(scopeId, operationId);
 }

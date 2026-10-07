@@ -15,14 +15,15 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserC
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuditBoundedContext.AuditAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Identity.Sample.Persistence.Context;
 
@@ -54,10 +55,12 @@ public sealed class UnitOfWork(
     ITwoFactorAuthTypeRepository twoFactorAuthTypeRepository,
     IRoleRepository roleRepository,
     IRolePermissionRepository rolePermissionRepository,
-    IPermissionRepository permissionRepository)
+    IPermissionRepository permissionRepository,
+    IDomainEventLogRepository domainEventLogRepository)
     : GenericUnitOfWork<ApplicationDbContext>(context), IUnitOfWork
 {
     public IOutboxMessageRepository OutboxMessageRepository { get; } = outboxMessageRepository;
+    public IDomainEventLogRepository DomainEventLogRepository { get; } = domainEventLogRepository;
     public IClientRepository ClientRepository { get; } = clientRepository;
     public IClientSessionRepository ClientSessionRepository { get; } = clientSessionRepository;
     public IClientScopeRepository ClientScopeRepository { get; } = clientScopeRepository;

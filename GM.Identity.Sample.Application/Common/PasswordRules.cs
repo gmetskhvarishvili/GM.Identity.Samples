@@ -1,6 +1,5 @@
 using FluentValidation;
 using GM.Identity;
-
 using System.Linq;
 using System.Threading;
 

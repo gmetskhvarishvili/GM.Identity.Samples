@@ -1,6 +1,5 @@
 using GM.Identity.Oidc;
 using GM.Mediator.Contracts;
-
 using System.Threading;
 using System.Threading.Tasks;
 

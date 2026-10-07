@@ -1,7 +1,7 @@
 using FluentValidation;
-
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.ConsentDocuments;
 
 /// <summary>Create consent document model.</summary>

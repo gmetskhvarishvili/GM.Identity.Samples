@@ -17,9 +17,7 @@ public sealed record UserRegisteredIntegrationEvent(
     string? PhoneNumber,
     IReadOnlyCollection<Guid> RoleIds,
     IReadOnlyCollection<int> TwoFactorAuthTypeIds,
-    IReadOnlyCollection<RegisteredConsent> Consents,
-    Guid? CreatedBy,
-    string? CorrelationId) : IntegrationEvent;
+    IReadOnlyCollection<RegisteredConsent> Consents) : IntegrationEvent;
 
 /// <summary>A consent the user accepted at registration, carried on <see cref="UserRegisteredIntegrationEvent"/>.</summary>
 public sealed record RegisteredConsent(string ConsentType, string DocumentVersion);

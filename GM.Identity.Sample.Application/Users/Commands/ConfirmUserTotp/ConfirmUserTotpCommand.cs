@@ -1,11 +1,10 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using GM.OTP.Domain.Abstractions;
 using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +30,7 @@ public class ConfirmUserTotpCommandValidator : AbstractValidator<ConfirmUserTotp
     }
 }
 
-public class ConfirmUserTotpCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ConfirmUserTotpCommand>
+public class ConfirmUserTotpCommandHandler(IUnitOfWork unitOfWork, ITotpCodeService totpService) : IRequestHandler<ConfirmUserTotpCommand>
 {
     public async Task Handle(ConfirmUserTotpCommand request, CancellationToken cancellationToken)
     {
@@ -46,10 +45,10 @@ public class ConfirmUserTotpCommandHandler(IUnitOfWork unitOfWork) : IRequestHan
         if (device.IsConfirmed)
             return;
 
-        if (!Totp.Verify(device.SecretBase32, request.Code))
+        if (!totpService.VerifyCode(device.SecretBase32, request.Code, DateTime.UtcNow))
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
 
-        device.Confirm();
+        device.Confirm(DateTime.UtcNow);
         unitOfWork.UserTotpDeviceRepository.Update(device);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

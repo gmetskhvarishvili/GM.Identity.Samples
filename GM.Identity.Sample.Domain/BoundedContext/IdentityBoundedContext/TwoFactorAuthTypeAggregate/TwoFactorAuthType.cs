@@ -33,8 +33,5 @@ public class TwoFactorAuthType : GMTwoFactorAuthType
 
     public static TwoFactorAuthType Create(
         string name,
-        string displayName)
-    {
-        return new TwoFactorAuthType(name, displayName);
-    }
+        string displayName) => new(name, displayName);
 }

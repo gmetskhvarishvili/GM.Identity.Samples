@@ -18,11 +18,11 @@ using GM.Identity.Sample.Application.Accounts.Queries.GetUserInfo;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.API.Accounts;
 
 /// <summary>

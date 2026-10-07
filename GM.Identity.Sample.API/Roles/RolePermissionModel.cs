@@ -1,8 +1,8 @@
 ﻿using GM.Identity.Sample.API.Permissions;
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.Roles;
 
 /// <summary>Role permission model.</summary>

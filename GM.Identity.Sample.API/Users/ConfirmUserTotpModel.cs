@@ -1,7 +1,7 @@
 using FluentValidation;
-
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.Users;
 
 /// <summary>Body for confirming an authenticator-app enrolment: a code produced by the app.</summary>

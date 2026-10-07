@@ -7,9 +7,9 @@ using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Users.Commands.RecoverUserPassword;
 
 public class RecoverUserPasswordCommand : IRequest
@@ -60,10 +60,10 @@ public class RecoverUserPasswordCommandHandler(
             new VerifyOTPDto { Subject = entity.Email!, Purpose = OtpPurpose.ResetPassword, Code = request.Code },
             cancellationToken);
 
-        // Set the new password and, since a reset invalidates prior access, revoke the user's sessions (which also
-        // queues a SessionsRevoked outbox message for cache eviction) — all committed in one save.
+        // Set the new password and, since a reset invalidates prior access, revoke the user's sessions (each
+        // revocation raises a domain event that drives cache eviction after commit) — all committed in one save.
         var (hash, salt) = PasswordHasher.Hash(request.Password);
-        entity.ChangePassword(hash, salt);
+        entity.UpdatePassword(hash, salt);
 
         unitOfWork.UserRepository.Update(entity);
         await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(entity.Id, cancellationToken);

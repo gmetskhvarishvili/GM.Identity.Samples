@@ -3,7 +3,6 @@ using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Text.Json.Serialization;
 using System.Threading;

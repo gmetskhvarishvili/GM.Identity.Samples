@@ -2,12 +2,12 @@ using FluentValidation;
 using GM.Exceptions;
 using GM.Identity;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Domain.Authorization.DeviceCodeAggregate.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;

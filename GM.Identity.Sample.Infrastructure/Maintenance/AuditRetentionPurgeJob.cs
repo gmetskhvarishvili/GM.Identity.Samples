@@ -3,7 +3,6 @@ using GM.Identity.Sample.Persistence.Context;
 using GM.Scheduling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-
 using System;
 using System.Linq;
 using System.Threading;

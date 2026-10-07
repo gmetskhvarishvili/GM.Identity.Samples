@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-
 using System;
-
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.Accounts;
 
 /// <summary>Form body for the OpenID Connect end-session (logout) endpoint. The SSO session itself is taken

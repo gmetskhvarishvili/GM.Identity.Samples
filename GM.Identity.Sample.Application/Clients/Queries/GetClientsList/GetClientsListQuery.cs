@@ -6,11 +6,11 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggr
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
 namespace GM.Identity.Sample.Application.Clients.Queries.GetClientsList;
 
 public class GetClientsListQuery: GetBaseListQuery, IRequest<PagedListDto<ClientDto>>
@@ -28,10 +28,10 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new ClientSpecification(request.Id, request.Name,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.ClientRepository.CountAsync(countSpec, cancellationToken);
 
-        var spec = new ClientSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+        var spec = new ClientSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ClientRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ClientDto>

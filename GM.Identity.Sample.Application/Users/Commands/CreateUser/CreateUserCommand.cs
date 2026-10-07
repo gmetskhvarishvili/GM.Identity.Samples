@@ -8,13 +8,12 @@ using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -59,8 +58,7 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 }
 
 public class CreateUserCommandHandler(
-    IUnitOfWork unitOfWork,
-    ICurrentActor currentActor) : IRequestHandler<CreateUserCommand, Guid>
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, Guid>
 {
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
@@ -124,25 +122,27 @@ public class CreateUserCommandHandler(
                     false, null, cancellationToken);
 
                 if (current == null)
+                {
                     throw new NotFoundException(
                         StringResource.ConsentDocument, StringResource.ConsentType, consent.ConsentType);
+                }
 
                 if (current.Version != consent.DocumentVersion)
+                {
                     throw new ValidationException(
                         $"Consent '{consent.ConsentType}' must be accepted at the current version '{current.Version}'.");
+                }
 
                 await unitOfWork.UserConsentRepository.AddAsync(
                     UserConsent.Create(entity.Id, consent.ConsentType, consent.DocumentVersion), cancellationToken);
             }
         }
 
-        // Carry the full registration snapshot on the event so consumers don't need a follow-up read: the roles,
-        // 2FA methods and consents that were provisioned, plus who created the user and the request correlation id.
-        var roleIds = request.UserRoles?.Select(r => r.RoleId).ToArray() ?? Array.Empty<Guid>();
-        var twoFactorAuthTypeIds = request.TwoFactorAuthTypeIds?.ToArray() ?? Array.Empty<int>();
+        var roleIds = request.UserRoles?.Select(r => r.RoleId).ToArray() ?? [];
+        var twoFactorAuthTypeIds = request.TwoFactorAuthTypeIds?.ToArray() ?? [];
         var consents = request.Consents?
             .Select(c => new RegisteredConsent(c.ConsentType, c.DocumentVersion))
-            .ToArray() ?? Array.Empty<RegisteredConsent>();
+            .ToArray() ?? [];
 
         var evt = new UserRegisteredIntegrationEvent(
             request.Email,
@@ -150,15 +150,13 @@ public class CreateUserCommandHandler(
             request.PhoneNumber,
             roleIds,
             twoFactorAuthTypeIds,
-            consents,
-            currentActor.UserId,
-            currentActor.CorrelationId)
+            consents)
         {
             UserId = entity.Id
         };
-        
+
         await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.From(entity.Id, evt), cancellationToken);
-        
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return entity.Id;

@@ -1,7 +1,7 @@
 using FluentValidation;
-
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.Users;
 
 /// <summary>Body to register a passkey: the credential id, its ES256 public key (SPKI, base64), and a label.</summary>

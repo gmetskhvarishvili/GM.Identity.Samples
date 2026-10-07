@@ -3,10 +3,10 @@ using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Operations.Commands.DeleteOperation;
 
 public class DeleteOperationCommand : IRequest

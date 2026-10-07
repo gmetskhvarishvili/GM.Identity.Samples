@@ -14,8 +14,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.Authorization.UserSessionAggregate.Entities;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 
 public class UserSession : GMUserSession
@@ -75,8 +75,5 @@ public class UserSession : GMUserSession
         string tokenHash,
         DateTime expiresAt,
         string? refreshTokenHash = null,
-        Guid? ssoSessionId = null)
-    {
-        return new UserSession(userId, clientId, provider, tokenHash, refreshTokenHash, expiresAt, ssoSessionId);
-    }
+        Guid? ssoSessionId = null) => new(userId, clientId, provider, tokenHash, refreshTokenHash, expiresAt, ssoSessionId);
 }

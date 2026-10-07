@@ -111,6 +111,17 @@ Dependencies flow inward: Domain has no infrastructure dependencies; Application
 Persistence and Infrastructure implement outward concerns; the APIs are the composition roots.
 `ImplicitUsings` is disabled solution-wide — every file carries explicit `using` directives.
 
+## Documentation
+
+Deeper reference material lives in [`docs/`](docs):
+
+- **[Security model & threat notes](docs/security.md)** — trust boundaries, how every credential/token is stored and verified, hardening (lockout, rate limiting, PKCE), and a production checklist of what is intentionally sample-grade.
+- **[Architecture decision records](docs/architecture-decisions.md)** — the *why* behind the core patterns: clean architecture, GM.\* base-entity inheritance, event-driven cache projection, opaque hashed tokens, outbox/inbox + separate services, the two gateways, soft-delete, and multi-tenancy.
+- **[Multi-tenancy & scope isolation](docs/tenancy.md)** — the `TenantId` model, cross-tenant authentication, per-request tenant assertion, and how visibility and scope hardening interact with it.
+- **[Configuration reference](docs/configuration.md)** — every setting the Identity API, gateways, OTP, and Notifications services read, with defaults and override rules.
+- **[Integration event catalog](docs/events.md)** — every event crossing a service boundary: payload, publisher, consumer, and the outbox/inbox delivery semantics.
+- **[Extending the sample](docs/extending.md)** — how-to recipes: promote an entity onto a GM.\* base, add an RBAC endpoint, an OAuth grant, a 2FA method, a notification channel, or register a client.
+
 ## Requirements
 
 - [Docker](https://docs.docker.com/get-docker/) — the whole stack (PostgreSQL, Redis, the Identity API and

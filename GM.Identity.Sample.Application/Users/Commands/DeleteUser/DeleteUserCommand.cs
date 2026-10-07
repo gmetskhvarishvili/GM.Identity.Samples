@@ -1,12 +1,14 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteUser;
 
 public class DeleteUserCommand : IRequest
@@ -46,10 +48,12 @@ public class DeleteUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
 
         entity.SoftRemove();
 
-        // A deleted user must not keep active sessions. Stage the soft-delete and the session revocations (which
-        // also queue a SessionsRevoked outbox message for cache eviction), then commit them in one save.
         unitOfWork.UserRepository.Update(entity);
         await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(entity.Id, cancellationToken);
+
+        var evt = new UserDeletedIntegrationEvent { UserId = entity.Id };
+        await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.From(entity.Id, evt), cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

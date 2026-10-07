@@ -14,15 +14,16 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserC
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientRedirectUriAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserConsentAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.AuditBoundedContext.AuditAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Identity.Sample.Persistence.Repositories;
@@ -100,7 +101,13 @@ public static class DependencyInjection
         services.AddTransient<IPasskeyChallengeRepository, PasskeyChallengeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
+        // Dispatches domain events raised by aggregates to their in-process IDomainEventHandler<>s after
+        // ApplicationDbContext.SaveChangesAsync persists them. Handlers are registered by the layers that own
+        // them (e.g. the RBAC cache write-through in Infrastructure).
+        services.AddDomainEventDispatcher();
+
         // Read-side over the durable domain-event log (the audit trail).
+        services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
 
         services.AddTransient<OutboxMessageRepository>();
         services.AddTransient<IOutboxMessageRepository>(sp => sp.GetRequiredService<OutboxMessageRepository>());

@@ -6,11 +6,11 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserS
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
 namespace GM.Identity.Sample.Application.Users.Queries.GetUserSessionsList;
 
 public class GetUserSessionsListQuery : GetBaseListQuery, IRequest<PagedListDto<UserSessionDto>>
@@ -43,7 +43,7 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.ClientId,
             request.IsRevoked,
             request.IsExpired,
-            dateRange, PagingOptions.None, OrderingOptions.None);
+            dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.UserSessionRepository.CountAsync(countSpec, cancellationToken);
 
         var spec = new UserSessionSpecification(
@@ -52,7 +52,7 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.ClientId,
             request.IsRevoked,
             request.IsExpired,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.UserSessionRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<UserSessionDto>

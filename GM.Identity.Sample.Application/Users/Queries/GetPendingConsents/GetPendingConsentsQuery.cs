@@ -2,7 +2,6 @@ using FluentValidation;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

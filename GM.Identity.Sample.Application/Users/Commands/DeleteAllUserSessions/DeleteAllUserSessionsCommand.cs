@@ -1,13 +1,12 @@
 ﻿using FluentValidation;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteAllUserSessions;
 
 public class DeleteAllUserSessionsCommand : IRequest
@@ -24,8 +23,7 @@ public class DeleteAllUserSessionsCommandValidator : AbstractValidator<DeleteAll
 }
 
 public class DeleteAllUserSessionsCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache)
+    IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteAllUserSessionsCommand>
 {
     public async Task Handle(DeleteAllUserSessionsCommand request, CancellationToken cancellationToken)
@@ -37,17 +35,15 @@ public class DeleteAllUserSessionsCommandHandler(
             .Where(x => x.UserId == request.UserId)
             .ToListAsync(cancellationToken);
 
+        // Each Revoke() raises GMUserSessionRevokedDomainEvent; after SaveChangesAsync the dispatcher hands each
+        // to its handler, which fires the background job that evicts that session from the cache. No inline write.
         foreach (var entity in entities)
         {
             entity.Revoke();
         }
-        
-        // Persist the aggregate
+
+        // Persist the aggregate (and dispatch its domain events).
         unitOfWork.UserSessionRepository.UpdateRange(entities);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Invalidate every cached session immediately (don't wait for their TTLs).
-        foreach (var entity in entities)
-            await sessionCache.RemoveAsync(entity.TokenHash, cancellationToken);
     }
 }

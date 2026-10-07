@@ -13,7 +13,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.AccessControl.ScopeAggregate.Entities;
-
 using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeAggregate;
@@ -34,10 +33,7 @@ public class Scope
     }
 
     public static Scope Create(
-        string name)
-    {
-        return new Scope(name);
-    }
+        string name) => new(name);
 
 
 }

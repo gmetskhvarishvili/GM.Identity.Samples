@@ -1,5 +1,8 @@
 ﻿using Asp.Versioning;
 using GM.API.Controllers;
+using GM.Identity.Sample.Application.Users.Commands.RestoreUser;
+using GM.Identity.Sample.Application.Users.Commands.HideUser;
+using GM.Identity.Sample.Application.Users.Commands.UnhideUser;
 using GM.API.Models;
 using GM.EntityFramework.Domain.Common;
 using GM.Identity.Sample.API.Roles;
@@ -32,7 +35,6 @@ using GM.Identity.Sample.Application.Users.Queries.GetUserSessionsList;
 using GM.Identity.Sample.Application.Users.Queries.GetUsersList;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -40,6 +42,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GM.API.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
+
 namespace GM.Identity.Sample.API.Users;
 
 /// <summary>
@@ -590,6 +593,7 @@ public class UsersController : BaseController
     /// Get User Details
     /// </summary>
     /// <param name="id">User Id to Get</param>
+    /// <param name="request">Visibility scope (query string); defaults to visible-only.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>User Details</returns>
     [HasPermission(nameof(GetUserDetails))]
@@ -599,14 +603,73 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserDetails(
         [FromRoute] Guid id,
+        [FromQuery] GetBaseDetailsModel request,
         CancellationToken cancellationToken)
     {
         var query = new GetUserDetailsQuery
         {
-            Id = id
+            Id = id,
+            Visibility = request.Visibility
         };
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Adapt<UserDetailsModel>();
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Restore User
+    /// </summary>
+    /// <param name="id">User Id to restore</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(RestoreUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Restore", Name = nameof(RestoreUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreUser(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new RestoreUserCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Hide User
+    /// </summary>
+    /// <param name="id">User Id to hide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(HideUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Hide", Name = nameof(HideUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> HideUser(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new HideUserCommand { Id = id }, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Unhide User
+    /// </summary>
+    /// <param name="id">User Id to unhide</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [HasPermission(nameof(UnhideUser))]
+    [RequiresScope(ScopeOperations.ManageIdentity)]
+    [HttpPost("{id}/Unhide", Name = nameof(UnhideUser))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnhideUser(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new UnhideUserCommand { Id = id }, cancellationToken);
+        return Ok();
     }
 }

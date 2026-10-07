@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
+
 namespace GM.Identity.Sample.API.Users;
 
 /// <summary>A consent document the current user must still accept.</summary>

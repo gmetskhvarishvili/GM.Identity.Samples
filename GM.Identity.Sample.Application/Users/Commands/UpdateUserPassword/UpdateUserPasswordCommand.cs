@@ -7,10 +7,10 @@ using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Users.Commands.UpdateUserPassword;
 
 public class UpdateUserPasswordCommand : IRequest
@@ -56,10 +56,10 @@ public class UpdateUserPasswordCommandHandler(IUnitOfWork unitOfWork)
         var (hash, salt) = PasswordHasher
             .Hash(request.Password);
 
-        entity.ChangePassword(hash, salt);
+        entity.UpdatePassword(hash, salt);
 
         // A password change invalidates every existing session. Stage the update, the alert and the session
-        // revocations (which queue a SessionsRevoked outbox message for cache eviction), then commit in one save.
+        // revocations (each raises a domain event that drives cache eviction after commit), then commit in one save.
         unitOfWork.UserRepository.Update(entity);
         await unitOfWork.QueueSecurityAlertAsync(
             entity.Id, entity.Email, entity.PhoneNumber, SecurityAlertTypes.PasswordChanged, cancellationToken);

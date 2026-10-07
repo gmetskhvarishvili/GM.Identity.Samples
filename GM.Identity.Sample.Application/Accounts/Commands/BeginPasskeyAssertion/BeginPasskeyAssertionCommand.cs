@@ -6,7 +6,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAgg
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Security.Cryptography;
 using System.Threading;

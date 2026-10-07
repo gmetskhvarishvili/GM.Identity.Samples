@@ -1,13 +1,12 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Users.Commands.DeleteUserSession;
 
 public class DeleteUserSessionCommand : IRequest
@@ -26,8 +25,7 @@ public class DeleteUserSessionCommandValidator : AbstractValidator<DeleteUserSes
 }
 
 public class DeleteUserSessionCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IRequestHandler<DeleteUserSessionCommand>
+    IUnitOfWork unitOfWork) : IRequestHandler<DeleteUserSessionCommand>
 {
     public async Task Handle(DeleteUserSessionCommand request, CancellationToken cancellationToken)
     {
@@ -47,13 +45,13 @@ public class DeleteUserSessionCommandHandler(
                 request.Id);
         }
         
+        // Revoke raises GMUserSessionRevokedDomainEvent (in the GMUserSession base), which the dispatcher hands
+        // to its handler after SaveChangesAsync — that handler triggers the background job that invalidates the
+        // cached session (deferred, not an inline write), so it can't be used before its TTL expires.
         entity.Revoke();
 
-        // Persist the aggregate
+        // Persist the aggregate (and dispatch its domain events).
         unitOfWork.UserSessionRepository.Update(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Invalidate the cached session immediately (don't wait for its TTL).
-        await sessionCache.RemoveAsync(entity.TokenHash, cancellationToken);
     }
 }

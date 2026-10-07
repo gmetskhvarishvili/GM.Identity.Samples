@@ -2,11 +2,10 @@ using FluentValidation;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Application.Common;
-using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ConsentDocumentAggregate.Specifications;
+using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate.Specifications;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -35,11 +34,11 @@ public class GetConsentDocumentsListQueryHandler(IUnitOfWork unitOfWork)
         var dateRange = request.ToAuditDateRange();
 
         var countSpec = new ConsentDocumentSpecification(request.Id, request.ConsentType, request.IsMandatory,
-            request.IsCurrent, dateRange, PagingOptions.None, OrderingOptions.None);
+            request.IsCurrent, dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
         var totalCount = await unitOfWork.ConsentDocumentRepository.CountAsync(countSpec, cancellationToken);
 
         var spec = new ConsentDocumentSpecification(request.Id, request.ConsentType, request.IsMandatory,
-            request.IsCurrent, dateRange, request.ToPagingOptions(), request.ToOrderingOptions());
+            request.IsCurrent, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ConsentDocumentRepository.ListAsync(spec, cancellationToken);
 
         return new PagedListDto<ConsentDocumentDto>

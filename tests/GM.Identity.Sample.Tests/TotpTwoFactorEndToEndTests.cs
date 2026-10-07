@@ -6,6 +6,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggreg
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDeviceAggregate;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Mediator.Contracts;
+using GM.OTP.Domain.Abstractions;
 using GM.Testing;
 using GM.Testing.AspNetCore;
 using Microsoft.EntityFrameworkCore;
@@ -98,7 +99,7 @@ public sealed class TotpTwoFactorEndToEndTests : IAsyncLifetime
             await mediator.Send(new ConfirmUserTotpCommand
             {
                 UserId = _userId,
-                Code = Totp.ComputeForTest(secret, DateTimeOffset.UtcNow),
+                Code = CurrentCode(secret),
             });
         }
 
@@ -110,7 +111,7 @@ public sealed class TotpTwoFactorEndToEndTests : IAsyncLifetime
         // Complete the login with a fresh TOTP code.
         var completed = await TokenAsync(
             ("grant_type", "two_factor"), ("username", _userName), ("password", Password),
-            ("code", Totp.ComputeForTest(secret, DateTimeOffset.UtcNow)),
+            ("code", CurrentCode(secret)),
             ("client_id", ClientId), ("client_secret", ClientSecret));
         await completed.ShouldBeOkAsync();
         var tokens = await ReadTokenAsync(completed);
@@ -122,6 +123,11 @@ public sealed class TotpTwoFactorEndToEndTests : IAsyncLifetime
             ("code", "000000"), ("client_id", ClientId), ("client_secret", ClientSecret));
         Assert.False(wrong.IsSuccessStatusCode);
     }
+
+    // Compute the current RFC 6238 code with the same service the app uses (GM.OTP), so the test proves the
+    // real verification path rather than a parallel implementation.
+    private string CurrentCode(string secret) =>
+        _factory.Services.GetRequiredService<ITotpCodeService>().GetCode(secret, DateTime.UtcNow);
 
     private Task<HttpResponseMessage> PasswordGrantAsync() =>
         TokenAsync(

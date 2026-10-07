@@ -428,13 +428,38 @@
             <param name="cancellationToken"></param>
             <returns>Client Sessions</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.GetClientDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.GetClientDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get Client Details
             </summary>
             <param name="id">Client Id to Get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>Client Details</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.RestoreClient(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Restore Client
+            </summary>
+            <param name="id">Client Id to restore</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.HideClient(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Hide Client
+            </summary>
+            <param name="id">Client Id to hide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.UnhideClient(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Unhide Client
+            </summary>
+            <param name="id">Client Id to unhide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
         </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientSessionModel">
             <summary>Client session model.</summary>
@@ -625,11 +650,12 @@
             <param name="cancellationToken"></param>
             <returns>IEnumerable of consent documents</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.GetConsentDocumentDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.ConsentDocuments.ConsentDocumentsController.GetConsentDocumentDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get Consent Document Details
             </summary>
             <param name="id">Consent document Id to get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>Consent document details</returns>
         </member>
@@ -671,6 +697,59 @@
         </member>
         <member name="M:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModelValidator.#ctor">
             <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.DomainEvents.DomainEventModel">
+            <summary>A domain-event (audit-trail) record returned to admins, including the actor/request metadata.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.DomainEvents.DomainEventsController">
+            <summary>
+            Admin access to the domain-event log (audit trail): filter by user, client, session, tenant, ip, channel,
+            event type, and occurred/created time ranges — e.g. the full action history of a given user.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.DomainEvents.DomainEventsController.GetDomainEvents(GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel,System.Threading.CancellationToken)">
+            <summary>
+            Get Domain Events
+            </summary>
+            <param name="request">Audit-trail filters (all optional).</param>
+            <param name="cancellationToken"></param>
+            <returns>Matching domain-event records, newest first.</returns>
+        </member>
+        <member name="T:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel">
+            <summary>Filters for the domain-event (audit-trail) list endpoint. All optional; combine to narrow the history.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.UserId">
+            <summary>The acting user whose action history to return.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.ClientId">
+            <summary>The acting OAuth client/application.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.SessionId">
+            <summary>The session the action was performed under.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.TenantId">
+            <summary>The tenant the action was performed under.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.IpAddress">
+            <summary>The caller's IP address (exact match).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.ChannelId">
+            <summary>The originating frontend channel (e.g. <c>web</c>, <c>admin</c>).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.EventType">
+            <summary>The event type name (e.g. <c>GMUserPasswordChangedDomainEvent</c>).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.OccurredFrom">
+            <summary>Inclusive lower bound of when the event occurred (UTC).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.OccurredTo">
+            <summary>Inclusive upper bound of when the event occurred (UTC).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.CreatedFrom">
+            <summary>Inclusive lower bound of when the row was written (UTC).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.CreatedTo">
+            <summary>Inclusive upper bound of when the row was written (UTC).</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Operations.CreateOperationModel">
             <summary>Create operation model.</summary>
@@ -769,13 +848,54 @@
             <param name="cancellationToken"></param>
             <returns>IEnumerable of Operations</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.GetOperationDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.GetOperationDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get Operation Details
             </summary>
             <param name="id">Operation Id to Get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>Operation Details</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.RestoreOperation(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Restore Operation
+            </summary>
+            <param name="id">Operation Id to restore</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.ActivateOperation(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Activate Operation
+            </summary>
+            <param name="id">Operation Id to activate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.DeactivateOperation(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Deactivate Operation
+            </summary>
+            <param name="id">Operation Id to deactivate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.HideOperation(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Hide Operation
+            </summary>
+            <param name="id">Operation Id to hide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Operations.OperationsController.UnhideOperation(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Unhide Operation
+            </summary>
+            <param name="id">Operation Id to unhide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
         </member>
         <member name="T:GM.Identity.Sample.API.Operations.UpdateOperationModel">
             <summary>Update operation model.</summary>
@@ -883,13 +1003,54 @@
             <param name="cancellationToken"></param>
             <returns>IEnumerable of Permissions</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.GetPermissionDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.GetPermissionDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get Permission Details
             </summary>
             <param name="id">Permission Id to Get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>Permission Details</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.RestorePermission(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Restore Permission
+            </summary>
+            <param name="id">Permission Id to restore</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.ActivatePermission(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Activate Permission
+            </summary>
+            <param name="id">Permission Id to activate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.DeactivatePermission(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Deactivate Permission
+            </summary>
+            <param name="id">Permission Id to deactivate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.HidePermission(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Hide Permission
+            </summary>
+            <param name="id">Permission Id to hide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Permissions.PermissionsController.UnhidePermission(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Unhide Permission
+            </summary>
+            <param name="id">Permission Id to unhide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
         </member>
         <member name="T:GM.Identity.Sample.API.Permissions.UpdatePermissionModel">
             <summary>Update permission model.</summary>
@@ -1003,6 +1164,46 @@
             <param name="cancellationToken"></param>
             <returns>Result</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.RestoreRole(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Restore Role
+            </summary>
+            <param name="id">Role Id to restore (reactivate, undelete, and unhide)</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.ActivateRole(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Activate Role
+            </summary>
+            <param name="id">Role Id to activate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.DeactivateRole(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Deactivate Role
+            </summary>
+            <param name="id">Role Id to deactivate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.HideRole(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Hide Role
+            </summary>
+            <param name="id">Role Id to hide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.UnhideRole(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Unhide Role
+            </summary>
+            <param name="id">Role Id to unhide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
         <member name="M:GM.Identity.Sample.API.Roles.RolesController.DeleteRolePermission(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete Role Permission
@@ -1029,11 +1230,12 @@
             <param name="cancellationToken"></param>
             <returns>Role Permissions</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Roles.RolesController.GetRoleDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Roles.RolesController.GetRoleDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get Role Details
             </summary>
             <param name="id">Role Id to Get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>Role Details</returns>
         </member>
@@ -1172,13 +1374,54 @@
             <param name="cancellationToken"></param>
             <returns>Scope Operations</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.GetScopeDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.GetScopeDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get Scope Details
             </summary>
             <param name="id">Scope Id to Get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>Scope Details</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.RestoreScope(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Restore Scope
+            </summary>
+            <param name="id">Scope Id to restore</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.ActivateScope(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Activate Scope
+            </summary>
+            <param name="id">Scope Id to activate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.DeactivateScope(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Deactivate Scope
+            </summary>
+            <param name="id">Scope Id to deactivate</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.HideScope(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Hide Scope
+            </summary>
+            <param name="id">Scope Id to hide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Scopes.ScopesController.UnhideScope(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Unhide Scope
+            </summary>
+            <param name="id">Scope Id to unhide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
         </member>
         <member name="T:GM.Identity.Sample.API.Scopes.UpdateScopeModel">
             <summary>Update scope model.</summary>
@@ -1568,13 +1811,38 @@
             <param name="cancellationToken"></param>
             <returns>User Sessions</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserDetails(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.GetUserDetails(System.Guid,GM.API.Models.GetBaseDetailsModel,System.Threading.CancellationToken)">
             <summary>
             Get User Details
             </summary>
             <param name="id">User Id to Get</param>
+            <param name="request">Visibility scope (query string); defaults to visible-only.</param>
             <param name="cancellationToken"></param>
             <returns>User Details</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.RestoreUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Restore User
+            </summary>
+            <param name="id">User Id to restore</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.HideUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Hide User
+            </summary>
+            <param name="id">User Id to hide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.UsersController.UnhideUser(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Unhide User
+            </summary>
+            <param name="id">User Id to unhide</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UserSessionModel">
             <summary>User session model.</summary>

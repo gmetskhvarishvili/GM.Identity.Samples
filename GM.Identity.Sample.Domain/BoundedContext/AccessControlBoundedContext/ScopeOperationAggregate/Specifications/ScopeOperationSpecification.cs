@@ -1,14 +1,15 @@
 ﻿using GM.EntityFramework.Domain.Specifications;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate.Specifications;
 
 public class ScopeOperationSpecification : BaseSpecification<ScopeOperation>
 {
     public ScopeOperationSpecification(Guid? scopeId,
-        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering,
+        VisibilityScope visibility = VisibilityScope.VisibleOnly)
     {
-        AddVisibilityFilter();
+        AddVisibilityFilter(visibility);
 
         if (scopeId.HasValue && scopeId.Value != Guid.Empty)
             AddCriteria(s => s.ScopeId == scopeId);

@@ -1,15 +1,14 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ScopeOperationAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Scopes.Commands.CreateScopeOperation;
 
 public class CreateScopeOperationCommand : IRequest<Guid>
@@ -28,8 +27,7 @@ public class CreateScopeOperationCommandValidator : AbstractValidator<CreateScop
 }
 
 public class CreateScopeOperationCommandHandler(
-    IUnitOfWork unitOfWork,
-    IScopeCache scopeCache) : IRequestHandler<CreateScopeOperationCommand, Guid>
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateScopeOperationCommand, Guid>
 {
 
     public async Task<Guid> Handle(CreateScopeOperationCommand request, CancellationToken cancellationToken)
@@ -56,9 +54,6 @@ public class CreateScopeOperationCommandHandler(
         // Persist the aggregate
         await unitOfWork.ScopeOperationRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Write-through: add the operation to the scope's projected set.
-        await scopeCache.AddScopeOperationAsync(request.ScopeId, request.OperationId, cancellationToken);
 
         return entity.Id;
     }

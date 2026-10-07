@@ -6,7 +6,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAgg
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;

@@ -5,7 +5,6 @@ using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,8 +27,7 @@ public class RotateClientSecretCommandValidator : AbstractValidator<RotateClient
 }
 
 public class RotateClientSecretCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IRequestHandler<RotateClientSecretCommand, string>
+    IUnitOfWork unitOfWork) : IRequestHandler<RotateClientSecretCommand, string>
 {
     public async Task<string> Handle(RotateClientSecretCommand request, CancellationToken cancellationToken)
     {
@@ -46,8 +44,9 @@ public class RotateClientSecretCommandHandler(
         unitOfWork.ClientRepository.Update(client);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // The old secret is void — kill any sessions it still backs.
-        await unitOfWork.RevokeAllClientSessionsAsync(sessionCache, client.Id, cancellationToken);
+        // The old secret is void — kill any sessions it still backs (each revocation raises a domain event that
+        // drives cache eviction after commit).
+        await unitOfWork.RevokeAllClientSessionsAsync(client.Id, cancellationToken);
 
         return newSecret;
     }

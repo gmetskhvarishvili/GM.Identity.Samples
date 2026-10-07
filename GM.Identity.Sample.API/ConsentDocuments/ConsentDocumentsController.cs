@@ -11,7 +11,6 @@ using GM.Identity.Sample.Domain.SeedWork;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -114,6 +113,7 @@ public class ConsentDocumentsController : BaseController
     /// Get Consent Document Details
     /// </summary>
     /// <param name="id">Consent document Id to get</param>
+    /// <param name="request">Visibility scope (query string); defaults to visible-only.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Consent document details</returns>
     [HasPermission(nameof(GetConsentDocumentDetails))]
@@ -123,9 +123,10 @@ public class ConsentDocumentsController : BaseController
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetConsentDocumentDetails(
         [FromRoute] Guid id,
+        [FromQuery] GetBaseDetailsModel request,
         CancellationToken cancellationToken)
     {
-        var response = await Mediator.Send(new GetConsentDocumentDetailsQuery { Id = id }, cancellationToken);
+        var response = await Mediator.Send(new GetConsentDocumentDetailsQuery { Id = id, Visibility = request.Visibility }, cancellationToken);
         var result = response.Adapt<ConsentDocumentDetailsModel>();
         return Ok(result);
     }

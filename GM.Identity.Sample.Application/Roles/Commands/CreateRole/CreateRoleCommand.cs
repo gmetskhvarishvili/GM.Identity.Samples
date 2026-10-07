@@ -6,12 +6,12 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RoleA
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+
 namespace GM.Identity.Sample.Application.Roles.Commands.CreateRole;
 
 public class CreateRoleCommand : IRequest<Guid>

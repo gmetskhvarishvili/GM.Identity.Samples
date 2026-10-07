@@ -1,28 +1,8 @@
+using GM.Identity.Persistence.Configuration;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GM.Identity.Sample.Persistence.Configuration;
 
-public class AuthorizationCodeConfiguration : IEntityTypeConfiguration<AuthorizationCode>
-{
-    public void Configure(EntityTypeBuilder<AuthorizationCode> builder)
-    {
-        builder.ToTable("authorization_codes");
-        builder.HasKey(x => x.Id);
-        builder.Property(x => x.ClientId).IsRequired();
-        builder.Property(x => x.UserId).IsRequired();
-        builder.Property(x => x.CodeHash).IsRequired();
-        builder.Property(x => x.RedirectUri).IsRequired();
-        builder.Property(x => x.Scope);
-        builder.Property(x => x.CodeChallenge).IsRequired();
-        builder.Property(x => x.CodeChallengeMethod).IsRequired();
-        builder.Property(x => x.ExpiresAt).IsRequired();
-        builder.Property(x => x.ConsumedAt);
-        builder.Property(x => x.SsoSessionId);
-        builder.Property(x => x.Nonce);
-
-        // The token exchange looks a code up by its hash.
-        builder.HasIndex(x => x.CodeHash);
-    }
-}
+// The authorization-code mapping lives in the GM.Identity base config; this fixes it to the sample's aggregate
+// and table (default schema).
+public class AuthorizationCodeConfiguration() : GMAuthorizationCodeConfiguration<AuthorizationCode>(null, "authorization_codes");

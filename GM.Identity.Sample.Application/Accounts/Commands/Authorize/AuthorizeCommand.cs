@@ -7,6 +7,7 @@ using GM.Identity.Oidc;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
+using GM.Identity.Domain.Authorization.DeviceCodeAggregate.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
@@ -14,9 +15,9 @@ using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMes
 using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using GM.OTP.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = GM.Exceptions.ValidationException;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +69,7 @@ public class AuthorizeCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
     IOTPService otpService,
+    ITotpCodeService totpService,
     IIdTokenGenerator idTokenGenerator,
     IAuthOptions options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
 {
@@ -151,7 +153,7 @@ public class AuthorizeCommandHandler(
         // contact. Try each in turn; only if none matches is the second factor rejected.
         var subject = TwoFactorSubject(user);
         var verified =
-            (totpSecret != null && Totp.Verify(totpSecret, request.Code))
+            (totpSecret != null && totpService.VerifyCode(totpSecret, request.Code, DateTime.UtcNow))
             || (twoFactorTypeIds.Count > 0 && !string.IsNullOrWhiteSpace(subject)
                 && await TryVerifyOtpAsync(subject, request.Code, cancellationToken));
 
@@ -487,7 +489,7 @@ public class AuthorizeCommandHandler(
     {
         if (userId is not { } id) return;
 
-        // Revocation queues a SessionsRevoked outbox message for reliable cache eviction; just commit here.
+        // Revocation raises a domain event per session that drives cache eviction after commit; just commit here.
         await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(id, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

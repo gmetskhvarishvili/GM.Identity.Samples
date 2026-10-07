@@ -1,11 +1,9 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,8 +26,7 @@ public class SetClientActiveCommandValidator : AbstractValidator<SetClientActive
 }
 
 public class SetClientActiveCommandHandler(
-    IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IRequestHandler<SetClientActiveCommand>
+    IUnitOfWork unitOfWork) : IRequestHandler<SetClientActiveCommand>
 {
     public async Task Handle(SetClientActiveCommand request, CancellationToken cancellationToken)
     {
@@ -48,6 +45,6 @@ public class SetClientActiveCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         if (!request.Active)
-            await unitOfWork.RevokeAllClientSessionsAsync(sessionCache, client.Id, cancellationToken);
+            await unitOfWork.RevokeAllClientSessionsAsync(client.Id, cancellationToken);
     }
 }

@@ -1,3 +1,10 @@
+using GM.EntityFramework.Domain.Events;
+using GM.Identity.Domain.AccessControl.ClientScopeAggregate.Events;
+using GM.Identity.Domain.AccessControl.OperationAggregate.Events;
+using GM.Identity.Domain.AccessControl.RolePermissionAggregate.Events;
+using GM.Identity.Domain.AccessControl.ScopeOperationAggregate.Events;
+using GM.Identity.Domain.Authorization.ClientSessionAggregate.Events;
+using GM.Identity.Domain.Authorization.UserSessionAggregate.Events;
 using GM.HealthChecks.Caching;
 using GM.HealthChecks.DistributedLock;
 using GM.HealthChecks.EntityFramework;
@@ -7,12 +14,14 @@ using GM.Identity.Sample.Application.Common;
 using GM.Identity.Oidc;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
+using GM.Identity.Domain.AccessControl.UserRoleAggregate.Events;
 using GM.Identity.Sample.Infrastructure.Authorization;
 using GM.Identity.Sample.Infrastructure.Options;
 using GM.Identity.Sample.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Persistence.Context;
 using GM.Messaging;
+using GM.OTP;
 using GM.Scheduling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,6 +71,7 @@ public static class DependencyInjection
         services.AddSingleton<IIdTokenReader, IdTokenReader>();
         services.AddScoped<IBackchannelLogoutNotifier, BackchannelLogoutNotifier>();
         services.AddScoped<IOTPService, OTPService>();
+        services.AddGMTotp();
         services.AddGMHttpClient<IOTPAPIService, GMAPIClientOptions>(
             configuration.GetSection("ApiServices:OTPAPIService"),
             "OTPAPIService");
@@ -80,6 +90,33 @@ public static class DependencyInjection
             services.AddGMIdentityRedisAuthorization();
             services.AddGMScheduling(builder =>
                 builder.ScanAssemblies(new[] { typeof(PermissionCacheReconciliationJob).Assembly }));
+
+            // Project role-grant changes into the Redis RBAC cache off domain events. Registered alongside the
+            // caches/scheduler they depend on, so they're only wired when Redis is configured. A grant is
+            // written through synchronously; a revocation is evicted asynchronously via UserRoleCacheEvictionJob
+            // (auto-discovered by the scan above).
+            services.AddScoped<IDomainEventHandler<GMUserRoleCreatedDomainEvent>, UserRoleCreatedPermissionCacheHandler>();
+            services.AddScoped<IDomainEventHandler<GMUserRoleDeletedDomainEvent>, UserRoleDeletedCacheEvictionHandler>();
+
+            // Role-permission grant changes are applied to the RBAC cache asynchronously via the
+            // RolePermissionCache*Job jobs (auto-discovered by the scan above), off the library-raised
+            // GMRolePermissionCreated/DeletedDomainEvents.
+            services.AddScoped<IDomainEventHandler<GMRolePermissionCreatedDomainEvent>, RolePermissionCreatedCacheProjectionHandler>();
+            services.AddScoped<IDomainEventHandler<GMRolePermissionDeletedDomainEvent>, RolePermissionDeletedCacheEvictionHandler>();
+
+            // A revoked user session is evicted from the Redis session cache asynchronously via
+            // UserSessionCacheEvictionJob (auto-discovered by the scan above), off the library-raised
+            // GMUserSessionRevokedDomainEvent.
+            services.AddScoped<IDomainEventHandler<GMUserSessionRevokedDomainEvent>, UserSessionRevokedCacheEvictionHandler>();
+
+            // Client-session eviction, and scope-cache projection/eviction (client-scope, scope-operation, and the
+            // operation name→id map), all deferred to jobs (auto-discovered by the scan above) off library events.
+            services.AddScoped<IDomainEventHandler<GMClientSessionRevokedDomainEvent>, ClientSessionRevokedCacheEvictionHandler>();
+            services.AddScoped<IDomainEventHandler<GMClientScopeCreatedDomainEvent>, ClientScopeCreatedCacheProjectionHandler>();
+            services.AddScoped<IDomainEventHandler<GMClientScopeDeletedDomainEvent>, ClientScopeDeletedCacheEvictionHandler>();
+            services.AddScoped<IDomainEventHandler<GMScopeOperationCreatedDomainEvent>, ScopeOperationCreatedCacheProjectionHandler>();
+            services.AddScoped<IDomainEventHandler<GMScopeOperationDeletedDomainEvent>, ScopeOperationDeletedCacheEvictionHandler>();
+            services.AddScoped<IDomainEventHandler<GMOperationCreatedDomainEvent>, OperationCreatedScopeCacheProjectionHandler>();
         }
 
         return services;

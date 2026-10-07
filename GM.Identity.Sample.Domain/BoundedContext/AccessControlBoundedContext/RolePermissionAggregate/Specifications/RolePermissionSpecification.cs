@@ -1,14 +1,15 @@
 ﻿using GM.EntityFramework.Domain.Specifications;
-
 using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.RolePermissionAggregate.Specifications;
 
 public class RolePermissionSpecification : BaseSpecification<RolePermission>
 {
     public RolePermissionSpecification(Guid? roleId,
-        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering)
+        AuditDateRange dateRange, PagingOptions paging, OrderingOptions ordering,
+        VisibilityScope visibility = VisibilityScope.VisibleOnly)
     {
-        AddVisibilityFilter();
+        AddVisibilityFilter(visibility);
 
         if (roleId.HasValue && roleId.Value != Guid.Empty)
             AddCriteria(s => s.RoleId == roleId);

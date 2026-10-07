@@ -1,20 +1,19 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Sample.Application.Common;
+using GM.API.Application.Models;
+using GM.EntityFramework.Domain.Specifications;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Application.ConsentDocuments.Queries.GetConsentDocumentDetails;
 
-public class GetConsentDocumentDetailsQuery : IRequest<ConsentDocumentDetailsDto>
+public class GetConsentDocumentDetailsQuery : GetBaseDetailsQuery, IRequest<ConsentDocumentDetailsDto>
 {
-    public Guid? Id { get; set; }
 }
 
 public class GetConsentDocumentDetailsQueryValidator : AbstractValidator<GetConsentDocumentDetailsQuery>
@@ -33,9 +32,9 @@ public class GetConsentDocumentDetailsQueryHandler(IUnitOfWork unitOfWork)
     {
         var entity = await unitOfWork.ConsentDocumentRepository
             .FirstOrDefaultAsync(x => x.Id == request.Id
-                                      && x.IsActive
-                                      && !x.IsDeleted
-                                      && !x.IsHidden,
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeInactive) || x.IsActive)
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeDeleted) || !x.IsDeleted)
+                                      && (request.Visibility.HasFlag(VisibilityScope.IncludeHidden) || !x.IsHidden),
                 true,
                 null,
                 cancellationToken);

@@ -1,13 +1,12 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Roles.Commands.DeleteRolePermission;
 
 public class DeleteRolePermissionCommand : IRequest
@@ -26,8 +25,7 @@ public class DeleteRolePermissionCommandValidator : AbstractValidator<DeleteRole
 }
 
 public class DeleteRolePermissionCommandHandler(
-    IUnitOfWork unitOfWork,
-    IPermissionCache permissionCache) : IRequestHandler<DeleteRolePermissionCommand>
+    IUnitOfWork unitOfWork) : IRequestHandler<DeleteRolePermissionCommand>
 {
     public async Task Handle(DeleteRolePermissionCommand request, CancellationToken cancellationToken)
     {
@@ -50,13 +48,13 @@ public class DeleteRolePermissionCommandHandler(
                 request.PermissionId);
         }
 
+        // SoftRemove raises GMRolePermissionDeletedDomainEvent (in the GMRolePermission base), which the
+        // dispatcher hands to its handler after SaveChangesAsync — that handler triggers the background job
+        // evicting the grant from the Redis RBAC cache (deferred, not an inline write).
         entity.SoftRemove();
 
-        // Persist the aggregate
+        // Persist the aggregate (and dispatch its domain events).
         unitOfWork.RolePermissionRepository.Update(entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Write-through to the Redis RBAC projection.
-        await permissionCache.RemoveRolePermissionAsync(request.RoleId, request.PermissionId, cancellationToken);
     }
 }

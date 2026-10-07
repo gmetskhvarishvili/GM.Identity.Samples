@@ -6,7 +6,6 @@ using GM.Identity.Sample.Application.Events.Users;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,8 +46,8 @@ public class SetUserBlockCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
 
         unitOfWork.UserRepository.Update(user);
 
-        // A blocked user's live tokens must stop working now, not at their TTL. Stage the revocations (which
-        // queue a SessionsRevoked outbox message for cache eviction) so they commit with the block in one save.
+        // A blocked user's live tokens must stop working now, not at their TTL. Stage the revocations (each raises
+        // a domain event that drives cache eviction after commit) so they commit with the block in one save.
         if (request.Block)
             await unitOfWork.UserSessionRepository.RevokeAllForUserAsync(user.Id, cancellationToken);
 

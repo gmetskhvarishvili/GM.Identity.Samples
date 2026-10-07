@@ -13,7 +13,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.Identity.ClientAggregate.Entities;
-
 using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.ClientAggregate;
@@ -34,10 +33,7 @@ public class Client : GMClient<Client, ClientSession, ClientScope, Scope, ScopeO
     }
 
     public static Client Create(
-        string name)
-    {
-        return new Client(name);
-    }
+        string name) => new(name);
 
 
 

@@ -13,7 +13,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.AccessControl.OperationAggregate.Entities;
-
 using System;
 
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate;
@@ -36,10 +35,7 @@ public class Operation
 
     public static Operation Create(
         string name,
-        string description)
-    {
-        return new Operation(name, description);
-    }
+        string description) => new(name, description);
 
 
 }

@@ -1,14 +1,13 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace GM.Identity.Sample.Application.Clients.Commands.CreateClientScope;
 
 public class CreateClientScopeCommand : IRequest
@@ -27,8 +26,7 @@ public class CreateClientScopeCommandValidator : AbstractValidator<CreateClientS
 }
 
 public class CreateClientScopeCommandHandler(
-    IUnitOfWork unitOfWork,
-    IScopeCache scopeCache) : IRequestHandler<CreateClientScopeCommand>
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateClientScopeCommand>
 {
     public async Task Handle(CreateClientScopeCommand request, CancellationToken cancellationToken)
     {
@@ -53,8 +51,5 @@ public class CreateClientScopeCommandHandler(
         // Persist the aggregate
         await unitOfWork.ClientScopeRepository.AddAsync(entity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Write-through: grant the scope to the client in the projected set.
-        await scopeCache.AddClientScopeAsync(request.ClientId, request.ScopeId, cancellationToken);
     }
 }

@@ -115,6 +115,7 @@ Persistence and Infrastructure implement outward concerns; the APIs are the comp
 
 Deeper reference material lives in [`docs/`](docs):
 
+- **[Sample flows & dependency diagrams](docs/sample-flows.md)** — every request path (password/2FA, OAuth/OIDC, passkeys, account lifecycle, sessions, RBAC admin, audit) as sequence diagrams, plus project/package/runtime dependency graphs, ER models, state machines, and a C4 (Structurizr) model across the Identity, OTP, and Notifications samples. A rendered [`sample-flows.html`](docs/sample-flows.html) is included.
 - **[Security model & threat notes](docs/security.md)** — trust boundaries, how every credential/token is stored and verified, hardening (lockout, rate limiting, PKCE), and a production checklist of what is intentionally sample-grade.
 - **[Architecture decision records](docs/architecture-decisions.md)** — the *why* behind the core patterns: clean architecture, GM.\* base-entity inheritance, event-driven cache projection, opaque hashed tokens, outbox/inbox + separate services, the two gateways, soft-delete, and multi-tenancy.
 - **[Multi-tenancy & scope isolation](docs/tenancy.md)** — the `TenantId` model, cross-tenant authentication, per-request tenant assertion, and how visibility and scope hardening interact with it.

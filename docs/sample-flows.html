@@ -1,0 +1,2466 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>GM Sample Flows</title>
+<style>
+  /* Layout: a single-column developer reference — sticky masthead, grouped sections,
+     each flow a short brief above a light "figure" card holding a mermaid sequence diagram. */
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --fg: #1b1f29;
+    --muted: #5a6373;
+    --border: #e4e8ef;
+    --accent: #3a46a8;
+    --ok: #1f7a4d;
+    --warn: #916400;
+    --danger: #b23b3b;
+    --figure: #fbfbfd;      /* constant light ground for diagrams in both themes */
+    --figure-ink: #222733;
+    --figure-border: #e1e4ec;
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11141b;
+      --surface: #1a1e28;
+      --fg: #e7eaf1;
+      --muted: #99a2b2;
+      --border: #2a3140;
+      --accent: #93a0ff;
+      --ok: #5bd39a;
+      --warn: #e2b14e;
+      --danger: #ef8a8a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11141b;
+    --surface: #1a1e28;
+    --fg: #e7eaf1;
+    --muted: #99a2b2;
+    --border: #2a3140;
+    --accent: #93a0ff;
+    --ok: #5bd39a;
+    --warn: #e2b14e;
+    --danger: #ef8a8a;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .masthead {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .masthead-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .masthead h1 {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .masthead .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+    min-width: 0;
+  }
+  .theme-btn {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .theme-btn:hover { color: var(--fg); border-color: var(--accent); }
+  .theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding-block: 36px 72px;
+    padding-inline: 20px;
+  }
+
+  .lede {
+    max-width: 68ch;
+    color: var(--fg);
+  }
+  .lede p { margin: 0 0 14px; }
+  .lede .fine { color: var(--muted); font-size: 13.5px; }
+
+  .legend {
+    margin: 22px 0 8px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 6px 22px;
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0 0 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+  .legend dl { display: contents; }
+  .legend .row { display: flex; gap: 10px; align-items: baseline; }
+  .legend dt { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); white-space: nowrap; }
+  .legend dd { margin: 0; color: var(--muted); font-size: 13px; }
+
+  nav.toc {
+    margin: 30px 0 10px;
+  }
+  nav.toc h2 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin: 0 0 12px;
+  }
+  .toc-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px 28px;
+  }
+  .toc-group strong {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+  }
+  .toc-group ol { margin: 0; padding: 0; list-style: none; }
+  .toc-group li { margin: 2px 0; }
+  .toc-group a {
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 14px;
+    border-bottom: 1px solid transparent;
+  }
+  .toc-group a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+  .group-head {
+    margin: 52px 0 6px;
+    padding-top: 14px;
+    border-top: 2px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    scroll-margin-top: 80px;
+  }
+
+  section.flow { margin-top: 30px; scroll-margin-top: 80px; }
+  section.flow h3 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .endpoint {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin: 0 0 10px;
+  }
+  section.flow > p { max-width: 68ch; margin: 0 0 14px; color: var(--muted); }
+  section.flow > p b { color: var(--fg); font-weight: 600; }
+
+  .figure {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    box-shadow: 0 1px 2px rgba(16,20,32,0.04);
+  }
+  .figure .mmd { display: none; }           /* source holder; rendered into .mmd-out */
+  .figure .mmd-out { min-width: 0; text-align: center; }
+  .figure .mmd-out svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .figure .mmd-out.err { color: var(--danger); font-family: var(--font-mono); font-size: 12.5px; text-align: left; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 68ch;
+  }
+  footer code { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); }
+
+  @media (max-width: 480px) {
+    .wrap { padding-block: 26px 56px; }
+    section.flow h3 { font-size: 18px; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1>GM Sample Flows</h1>
+    <p class="sub">Flows &amp; dependencies across the GM Identity, OTP, and Notifications samples</p>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle colour theme">theme</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="lede">
+    <p>Every flow this identity provider exposes — from a user's first sign-in to logout, plus the administration behind them. Each diagram traces one request path through the OAuth 2.0 / OpenID Connect endpoints at <code>/connect/*</code> and the account and RBAC endpoints under <code>/Users</code>, <code>/Roles</code>, <code>/Permissions</code>, <code>/Scopes</code>, and <code>/Clients</code>.</p>
+    <p class="fine">Opaque access and refresh tokens are stored only as hashes; a session is cached by its access-token hash for fast validation. One-time codes (email/SMS) are generated and delivered out of band by a notifier that consumes outbox events; authenticator-app (TOTP) and passkey proofs are verified in-process. RBAC writes don't touch Redis inline: the aggregate raises a domain event, and after the save the dispatcher projects it into (or evicts it from) the cache, directly or through a background job.</p>
+    <p class="fine">The provider doesn't send codes or messages itself. It publishes integration events that two sibling services consume: the <b>OTP sample</b> generates and verifies one-time codes, and the <b>Notifications sample</b> delivers email, SMS, push, Slack, and WhatsApp. Their flows and dependencies are documented alongside the provider's, with a cross-service view at the end.</p>
+  </div>
+
+  <div class="legend">
+    <h2>Participants</h2>
+    <dl>
+      <div class="row"><dt>Identity API</dt><dd>the provider — endpoints at <code>/connect</code> and <code>/Users</code></dd></div>
+      <div class="row"><dt>Database</dt><dd>users, sessions, codes, consents (PostgreSQL)</dd></div>
+      <div class="row"><dt>Session cache</dt><dd>Redis projection keyed by access-token hash</dd></div>
+      <div class="row"><dt>Outbox → Notifier</dt><dd>integration events that fan out to email/SMS</dd></div>
+      <div class="row"><dt>OTP service</dt><dd>generates and verifies delivered one-time codes</dd></div>
+      <div class="row"><dt>Authenticator</dt><dd>the user's TOTP app or WebAuthn device</dd></div>
+    </dl>
+  </div>
+
+  <nav class="toc">
+    <h2>Flows</h2>
+    <div class="toc-groups">
+      <div class="toc-group">
+        <strong>Password &amp; 2FA</strong>
+        <ol>
+          <li><a href="#password">Password sign-in</a></li>
+          <li><a href="#twofactor">Two-factor completion</a></li>
+          <li><a href="#totp">Authenticator (TOTP) enrolment</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>OAuth / OIDC</strong>
+        <ol>
+          <li><a href="#authcode">Authorization code + PKCE</a></li>
+          <li><a href="#silent">Silent SSO authorization</a></li>
+          <li><a href="#refresh">Refresh token</a></li>
+          <li><a href="#device">Device authorization grant</a></li>
+          <li><a href="#clientcreds">Client credentials</a></li>
+          <li><a href="#discovery">Discovery &amp; keys</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Passkeys &amp; social</strong>
+        <ol>
+          <li><a href="#passkey-reg">Passkey registration</a></li>
+          <li><a href="#passkey-login">Passkey sign-in</a></li>
+          <li><a href="#external">External / social sign-in</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Account lifecycle</strong>
+        <ol>
+          <li><a href="#register">Registration</a></li>
+          <li><a href="#confirm">Account confirmation</a></li>
+          <li><a href="#reset">Password reset</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Account self-service</strong>
+        <ol>
+          <li><a href="#change-pw">Change password</a></li>
+          <li><a href="#contact-2fa">Manage contact 2FA</a></li>
+          <li><a href="#disable-totp">Disable authenticator</a></li>
+          <li><a href="#accept-consent">Accept a consent document</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Sessions</strong>
+        <ol>
+          <li><a href="#logout">End session (single logout)</a></li>
+          <li><a href="#validate">Token validation &amp; revocation</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Administration &amp; RBAC</strong>
+        <ol>
+          <li><a href="#enforce">Permission enforcement</a></li>
+          <li><a href="#role-perm">Grant &amp; revoke role permissions</a></li>
+          <li><a href="#user-role">Assign &amp; remove user roles</a></li>
+          <li><a href="#scope-op">Scope ↔ operation mapping</a></li>
+          <li><a href="#lifecycle">Entity lifecycle</a></li>
+          <li><a href="#block">Block or unlock a user</a></li>
+          <li><a href="#revoke-sessions">Revoke a user's sessions</a></li>
+          <li><a href="#crud">Create, update &amp; delete</a></li>
+          <li><a href="#client">Register client &amp; rotate secret</a></li>
+          <li><a href="#client-scope">Grant &amp; revoke client scopes</a></li>
+          <li><a href="#client-sessions">Revoke client sessions</a></li>
+          <li><a href="#delete-user">Delete a user</a></li>
+          <li><a href="#publish-consent">Publish a consent document</a></li>
+          <li><a href="#reconcile">RBAC cache reconciliation</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Audit</strong>
+        <ol>
+          <li><a href="#audit">Action history</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Architecture</strong>
+        <ol>
+          <li><a href="#edge-public">Edge: GM Identity Gateway</a></li>
+          <li><a href="#edge-admin">Edge: Admin gateway</a></li>
+          <li><a href="#gw-public-deps">Gateway deps: public</a></li>
+          <li><a href="#gw-admin-deps">Gateway deps: admin</a></li>
+          <li><a href="#proj-deps">Project dependencies</a></li>
+          <li><a href="#pkg-deps">GM.* package families</a></li>
+          <li><a href="#runtime-deps">Runtime &amp; external systems</a></li>
+          <li><a href="#structurizr">C4 model (Structurizr)</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>OTP sample</strong>
+        <ol>
+          <li><a href="#otp-generate">Generate a code</a></li>
+          <li><a href="#otp-verify">Verify a code</a></li>
+          <li><a href="#otp-intake">Event-driven issuance</a></li>
+          <li><a href="#otp-deps">Project dependencies</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Notifications sample</strong>
+        <ol>
+          <li><a href="#notif-send">Queue a notification</a></li>
+          <li><a href="#notif-deliver">Channel delivery</a></li>
+          <li><a href="#notif-cancel">Cancel a queued message</a></li>
+          <li><a href="#notif-intake">Event-driven intake</a></li>
+          <li><a href="#notif-deps">Project dependencies</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Ecosystem</strong>
+        <ol>
+          <li><a href="#ecosystem">Cross-service runtime</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Data model</strong>
+        <ol>
+          <li><a href="#erd-identity">Identity schema</a></li>
+          <li><a href="#erd-services">OTP &amp; Notifications schema</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>State machines</strong>
+        <ol>
+          <li><a href="#sm-devicecode">Device code</a></li>
+          <li><a href="#sm-otp">OTP challenge</a></li>
+          <li><a href="#sm-notification">Notification</a></li>
+          <li><a href="#sm-session">Session</a></li>
+          <li><a href="#sm-softdelete">Entity visibility</a></li>
+        </ol>
+      </div>
+      <div class="toc-group">
+        <strong>Domain model</strong>
+        <ol>
+          <li><a href="#class-domain">Aggregate inheritance</a></li>
+        </ol>
+      </div>
+    </div>
+  </nav>
+
+  <h2 class="group-head" id="g-password">Password &amp; two-factor</h2>
+
+  <section class="flow" id="password">
+    <h3>Password sign-in</h3>
+    <div class="endpoint">POST /connect/token &nbsp;·&nbsp; grant_type=password</div>
+    <p>Authenticates the client, then the user. If the account has <b>any confirmed second factor</b>, the password alone returns a challenge instead of tokens; otherwise a session is issued. Failed attempts count toward a lockout.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant R as Session cache
+  participant OB as Outbox → Notifier
+  App->>GW: POST /connect/token (password)
+  GW->>API: proxy
+  API->>DB: load client, verify secret
+  API->>DB: find user by username (cross-tenant)
+  Note over API: reject if blocked or locked out
+  API->>API: verify password hash
+  alt password invalid
+    API->>DB: increment failed count, lock at threshold
+    API-->>GW: forward
+    GW-->>App: 400 invalid_credentials
+  else second factor enrolled
+    opt contact OTP method
+      API->>OB: TwoFactorChallengeIssued
+      OB-->>App: code delivered to user
+    end
+    API-->>GW: forward
+    GW-->>App: twoFactorRequired + methods
+  else no second factor
+    API->>DB: create UserSession (token hashes)
+    API->>R: cache session by access hash
+    API-->>GW: forward
+    GW-->>App: access_token + refresh_token
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="twofactor">
+    <h3>Two-factor completion</h3>
+    <div class="endpoint">POST /connect/token &nbsp;·&nbsp; grant_type=two_factor</div>
+    <p>Completes a challenged sign-in. The password is <b>re-verified</b> (the challenge carries no trust on its own), then the submitted code is checked against the authenticator (RFC 6238) or the delivered one-time code — whichever matches.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant OTP as OTP service
+  participant R as Session cache
+  App->>GW: POST /connect/token (two_factor) + code
+  GW->>API: proxy
+  API->>DB: load client + user, re-verify password
+  API->>DB: load enrolled factors / TOTP secret
+  alt TOTP code
+    API->>API: verify code against secret (RFC 6238)
+  else delivered OTP
+    API->>OTP: verify delivered code
+  end
+  Note over API: reject if neither matches
+  API->>DB: create UserSession
+  API->>R: cache session
+  API-->>GW: forward
+  GW-->>App: access_token + refresh_token
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="totp">
+    <h3>Authenticator (TOTP) enrolment</h3>
+    <div class="endpoint">POST setup &nbsp;·&nbsp; POST confirm</div>
+    <p>Setup mints a fresh secret and an <code>otpauth://</code> URI to show as a QR code, storing a <b>pending</b> device. It does not gate login until a generated code confirms it.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant AUTH as Authenticator app
+  App->>GW: setup TOTP (userId)
+  GW->>API: proxy
+  API->>DB: drop any pending device
+  API->>API: generate Base32 secret + otpauth URI
+  API->>DB: store pending UserTotpDevice
+  API-->>GW: forward
+  GW-->>App: secret + QR
+  U->>AUTH: scan QR
+  AUTH-->>U: 6-digit code
+  U->>App: enter code
+  App->>GW: confirm TOTP (userId, code)
+  GW->>API: proxy
+  API->>DB: load pending device
+  API->>API: verify code (RFC 6238)
+  API->>DB: mark confirmed
+  API-->>GW: forward
+  GW-->>App: enrolled — TOTP now gates login
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-oauth">OAuth 2.0 / OpenID Connect</h2>
+
+  <section class="flow" id="authcode">
+    <h3>Authorization code + PKCE</h3>
+    <div class="endpoint">POST /connect/authorize &nbsp;→&nbsp; POST /connect/token (authorization_code)</div>
+    <p>The browser-based flow. Authorize mints a single-use code bound to the client, redirect URI, PKCE challenge, and OIDC nonce; the token exchange verifies the <b>PKCE code verifier</b> before issuing a session and id_token.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant C as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant R as Session cache
+  Note over C: build code_verifier + code_challenge
+  C->>GW: POST /connect/authorize (challenge, credentials)
+  GW->>API: proxy
+  API->>DB: verify client + redirect URI registered
+  API->>API: authenticate user
+  opt client requires consent
+    API-->>GW: forward
+    GW-->>C: consent_required
+    C->>GW: re-submit with approval
+    GW->>API: proxy
+    API->>DB: save UserClientConsent
+  end
+  API->>DB: store AuthorizationCode (hashed) + nonce
+  opt establish SSO
+    API->>DB: create SsoSession
+    API-->>GW: forward
+    GW-->>C: set SSO cookie
+  end
+  API-->>GW: forward
+  GW-->>C: authorization code + redirect
+  C->>GW: POST /connect/token (authorization_code) + verifier
+  GW->>API: proxy
+  API->>DB: load code by hash, check unused, unexpired, redirect URI
+  Note over API: PKCE — SHA256(verifier) equals stored challenge
+  API->>DB: consume code, create UserSession (SSO link)
+  API->>R: cache session
+  API-->>GW: forward
+  GW-->>C: access_token + refresh_token + id_token (nonce echoed)
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="silent">
+    <h3>Silent SSO authorization</h3>
+    <div class="endpoint">POST /connect/authorize &nbsp;·&nbsp; prompt=none</div>
+    <p>Once an SSO session exists, a <b>second</b> client can get a code without re-entering credentials — the browser presents the SSO cookie and the provider mints a code silently, or returns <code>login_required</code>.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant B as Browser
+  participant C2 as Second Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  B->>C2: open app (needs login)
+  C2->>GW: POST /connect/authorize (prompt=none) + SSO cookie
+  GW->>API: proxy
+  API->>DB: look up SsoSession by cookie hash
+  alt session active
+    API->>DB: mint AuthorizationCode (no re-auth)
+    API-->>GW: forward
+    GW-->>C2: code + redirect
+  else none or expired
+    API-->>GW: forward
+    GW-->>C2: login_required
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="refresh">
+    <h3>Refresh token</h3>
+    <div class="endpoint">POST /connect/token &nbsp;·&nbsp; grant_type=refresh_token</div>
+    <p>Rotates the session: the presented refresh token is matched by hash, the old session is <b>revoked and evicted</b>, and a fresh pair is issued — carrying the SSO link forward so single logout still reaches it.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant R as Session cache
+  App->>GW: POST /connect/token (refresh_token)
+  GW->>API: proxy
+  API->>DB: verify client, find session by refresh hash
+  Note over API: reject if revoked or expired
+  API->>DB: revoke old session (rotation)
+  API->>R: evict old access hash
+  API->>DB: create new UserSession (keep SSO link)
+  API->>R: cache new session
+  API-->>GW: forward
+  GW-->>App: new access_token + refresh_token
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="device">
+    <h3>Device authorization grant</h3>
+    <div class="endpoint">POST /connect/device_authorization &nbsp;·&nbsp; /connect/device &nbsp;·&nbsp; token (device_code)</div>
+    <p>For input-constrained devices (RFC 8628). The device shows a short user code and polls; the user approves on a second screen. Polling returns <code>authorization_pending</code> / <code>slow_down</code> until approval.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant D as Device
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant U as User (2nd screen)
+  participant R as Session cache
+  D->>GW: POST /connect/device_authorization (client creds)
+  GW->>API: proxy
+  API->>DB: store DeviceCode (hashed) + user_code [Pending]
+  API-->>GW: forward
+  GW-->>D: device_code, user_code, verification_uri, interval
+  par user approves
+    U->>GW: POST /connect/device (user_code, credentials)
+    GW->>API: proxy
+    API->>DB: verify user, approve DeviceCode
+  and device polls
+    loop every interval
+      D->>GW: POST /connect/token (device_code)
+      GW->>API: proxy
+      alt still pending
+        API-->>GW: forward
+        GW-->>D: authorization_pending / slow_down
+      else approved
+        API->>DB: consume DeviceCode, create UserSession
+        API->>R: cache session
+        API-->>GW: forward
+        GW-->>D: access_token + refresh_token
+      else denied or expired
+        API-->>GW: forward
+        GW-->>D: access_denied / expired_token
+      end
+    end
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="clientcreds">
+    <h3>Client credentials</h3>
+    <div class="endpoint">POST /connect/token &nbsp;·&nbsp; grant_type=ClientCredentials</div>
+    <p>Machine-to-machine: no user, no refresh token. The client authenticates with its secret and receives an application access token.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant App as Service Client
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  App->>GW: POST /connect/token (ClientCredentials)
+  GW->>API: proxy
+  API->>DB: verify client secret
+  API-->>GW: forward
+  GW-->>App: access_token (app context, no refresh)
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="discovery">
+    <h3>Discovery &amp; keys</h3>
+    <div class="endpoint">GET /.well-known/openid-configuration &nbsp;·&nbsp; /.well-known/jwks.json</div>
+    <p>How a client bootstraps: it reads the discovery document for endpoint URLs and capabilities, then fetches the <b>JWKS</b> signing keys it uses to validate id_token signatures.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant C as Client
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  C->>GW: GET /.well-known/openid-configuration
+  GW->>API: proxy
+  API-->>GW: forward
+  GW-->>C: endpoints, grant types, scopes, jwks_uri
+  C->>GW: GET /.well-known/jwks.json
+  GW->>API: proxy
+  API-->>GW: forward
+  GW-->>C: signing public keys (JWKS)
+  Note over C: cache keys to validate id_token signatures
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-passkey">Passkeys &amp; social</h2>
+
+  <section class="flow" id="passkey-reg">
+    <h3>Passkey registration</h3>
+    <div class="endpoint">POST /Users/{id}/Passkeys</div>
+    <p>The authenticator creates a keypair; only the <b>public key</b> and credential id reach the server. The private key never leaves the device.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant B as Browser (WebAuthn)
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant AUTH as Authenticator
+  U->>B: add a passkey
+  B->>AUTH: navigator.credentials.create()
+  AUTH-->>B: public key + credential id
+  B->>App: send public key (SPKI) + credential id
+  App->>GW: POST /Users/{id}/Passkeys
+  GW->>API: proxy
+  API->>DB: ensure credential not already registered
+  API->>DB: store UserPasskey (public key only)
+  API-->>GW: forward
+  GW-->>App: passkey id
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="passkey-login">
+    <h3>Passkey sign-in</h3>
+    <div class="endpoint">POST /connect/passkey/begin &nbsp;→&nbsp; /connect/passkey/complete</div>
+    <p>Begin issues a single-use challenge (5 min). Complete verifies the <b>ES256 assertion signature</b> against the stored public key, binds it to the issued challenge, records the signature counter, and mints a session. No password involved.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant B as Browser (WebAuthn)
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant AUTH as Authenticator
+  participant R as Session cache
+  B->>GW: POST /connect/passkey/begin (username)
+  GW->>API: proxy
+  API->>DB: store single-use PasskeyChallenge (5 min)
+  API-->>GW: forward
+  GW-->>B: challenge
+  B->>AUTH: navigator.credentials.get(challenge)
+  AUTH-->>B: assertion (authenticatorData, clientData, signature)
+  B->>GW: POST /connect/passkey/complete
+  GW->>API: proxy
+  API->>DB: load credential + live challenge
+  Note over API: verify clientData + ES256 signature
+  API->>DB: record sign-count, consume challenge, create UserSession
+  API->>R: cache session
+  API-->>GW: forward
+  GW-->>B: access_token + refresh_token
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="external">
+    <h3>External / social sign-in</h3>
+    <div class="endpoint">GET /connect/{provider} &nbsp;→&nbsp; POST /connect/{provider}/token</div>
+    <p>Delegates authentication to Google, Facebook, or another provider. On first sign-in the account is <b>auto-provisioned</b> from the provider's email, then a local session is issued.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant B as Browser
+  participant P as Provider
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant R as Session cache
+  B->>P: sign in with provider + consent
+  P-->>App: provider token
+  App->>GW: POST /connect/{provider}/token (provider token)
+  GW->>API: proxy
+  API->>P: validate token, read email
+  alt user exists
+    API->>DB: load user
+  else first time
+    API->>DB: auto-create user from email
+  end
+  API->>DB: create UserSession
+  API->>R: cache session
+  API-->>GW: forward
+  GW-->>App: access_token + refresh_token
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-lifecycle">Account lifecycle</h2>
+
+  <section class="flow" id="register">
+    <h3>Registration</h3>
+    <div class="endpoint">POST /Users</div>
+    <p>Creates the account with a hashed password, optional roles and 2FA preferences, and records consent against the <b>current</b> document versions. A registration event fans out for welcome/notification.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Caller as Caller
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant OB as Outbox → Notifier
+  Caller->>GW: POST /Users (username, email, password, roles, 2FA, consents)
+  GW->>API: proxy
+  API->>DB: ensure username + email unique
+  API->>API: hash password
+  API->>DB: create User (+ roles, 2FA prefs)
+  opt consents supplied
+    API->>DB: record UserConsent vs current documents
+  end
+  API->>OB: UserRegistered
+  API-->>GW: forward
+  GW-->>Caller: new user id
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="confirm">
+    <h3>Account confirmation</h3>
+    <div class="endpoint">POST confirm-init &nbsp;→&nbsp; POST confirm</div>
+    <p>Init raises an event that makes the notifier generate and send a code; confirm verifies it and marks the account confirmed.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant OB as Outbox → Notifier
+  participant OTP as OTP service
+  App->>GW: confirm-init (userId)
+  GW->>API: proxy
+  API->>OB: UserConfirmationInitiated
+  OB->>OTP: generate + send code
+  OTP-->>U: code (email/SMS)
+  U->>App: enter code
+  App->>GW: confirm (userId, code)
+  GW->>API: proxy
+  API->>OTP: verify code
+  API->>DB: mark user confirmed
+  API->>OB: UserConfirmed
+  API-->>GW: forward
+  GW-->>App: confirmed
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="reset">
+    <h3>Password reset</h3>
+    <div class="endpoint">POST reset-request &nbsp;→&nbsp; POST recover</div>
+    <p>A request raises an event to send a reset code; recovery verifies the code, sets the new password, and <b>revokes every existing session</b> so old tokens stop working.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant OB as Outbox → Notifier
+  participant OTP as OTP service
+  U->>App: forgot password (email)
+  App->>GW: reset-request (email)
+  GW->>API: proxy
+  API->>OB: PasswordResetRequested
+  OB->>OTP: generate + send reset code
+  OTP-->>U: reset code
+  U->>App: enter code + new password
+  App->>GW: recover (code, new password)
+  GW->>API: proxy
+  API->>OTP: verify reset code
+  API->>API: hash new password
+  API->>DB: update password, revoke all sessions
+  API-->>GW: forward
+  GW-->>App: password changed
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-self">Account self-service</h2>
+
+  <section class="flow" id="change-pw">
+    <h3>Change password</h3>
+    <div class="endpoint">update password</div>
+    <p>Setting a new password <b>revokes every existing session</b>, so other devices must sign in again with the new credentials.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant JOB as Session eviction
+  participant R as Session cache
+  U->>GW: change password (new password)
+  GW->>API: proxy
+  API->>API: hash the new password
+  API->>DB: update password, revoke all sessions
+  DB-->>JOB: revoked events evict sessions
+  JOB->>R: remove each session
+  API-->>GW: forward
+  GW-->>U: changed — re-authentication required
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="contact-2fa">
+    <h3>Manage contact 2FA</h3>
+    <div class="endpoint">set two-factor (typeId, enabled)</div>
+    <p>Turns a contact one-time-code method (email/SMS) on or off for the account. Enabling checks the method is a valid active type before recording the preference.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  U->>GW: enable / disable a 2FA method (typeId)
+  GW->>API: proxy
+  alt enable
+    API->>DB: verify method is active, add UserTwoFactorAuthType
+  else disable
+    API->>DB: remove the user's method
+  end
+  API-->>GW: forward
+  GW-->>U: 200 — second factor updated
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="disable-totp">
+    <h3>Disable authenticator</h3>
+    <div class="endpoint">disable TOTP</div>
+    <p>Removes the user's authenticator-app device. Idempotent — a no-op when none is enrolled.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  U->>GW: disable authenticator (userId)
+  GW->>API: proxy
+  API->>DB: remove the user's TOTP device(s)
+  API-->>GW: forward
+  GW-->>U: 200 — TOTP no longer required
+  Note over API: idempotent if none enrolled
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="accept-consent">
+    <h3>Accept a consent document</h3>
+    <div class="endpoint">record consent (type, version)</div>
+    <p>Records that the user accepted a document, but only against its <b>current</b> version — a stale version is rejected so acceptance always points at live text.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  U->>GW: accept consent (type, version)
+  GW->>API: proxy
+  API->>DB: confirm it matches the current version
+  API->>DB: record UserConsent (user, type, version)
+  API-->>GW: forward
+  GW-->>U: 200 — acceptance stored
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-sessions">Sessions</h2>
+
+  <section class="flow" id="logout">
+    <h3>End session (single logout)</h3>
+    <div class="endpoint">POST /connect/endsession</div>
+    <p>Revokes the SSO session and <b>every app session spawned under it</b>, evicts each from the cache, and returns front-channel logout URIs so the other clients clear their own state.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant B as Browser
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant R as Session cache
+  participant Apps as Other client apps
+  B->>GW: POST /connect/endsession (SSO cookie)
+  GW->>API: proxy
+  API->>DB: find SsoSession by cookie hash, revoke
+  API->>DB: revoke all UserSessions it spawned
+  API->>R: evict each session from cache
+  API-->>Apps: front-channel logout URIs
+  API-->>GW: forward
+  GW-->>B: post-logout redirect
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="validate">
+    <h3>Token validation &amp; revocation</h3>
+    <div class="endpoint">/connect/introspect &nbsp;·&nbsp; /connect/userinfo &nbsp;·&nbsp; /connect/revoke</div>
+    <p>How a token is checked and retired. Validation reads the session (cache first, then database); revocation marks the session and evicts it so it fails validation immediately.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant RS as Resource Server
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant R as Session cache
+  participant DB as Database
+  RS->>GW: POST /connect/introspect (token)
+  GW->>API: proxy
+  API->>R: look up token hash
+  opt cache miss
+    API->>DB: look up session
+  end
+  API-->>GW: forward
+  GW-->>RS: active, sub, client_id, exp
+  App->>GW: GET /connect/userinfo (Bearer)
+  GW->>API: proxy
+  API->>R: validate access hash → session
+  API-->>GW: forward
+  GW-->>App: user claims (sub, email, ...)
+  App->>GW: POST /connect/revoke (token)
+  GW->>API: proxy
+  API->>DB: revoke matching session
+  API->>R: evict from cache
+  API-->>GW: forward
+  GW-->>App: 200 OK
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-admin">Administration &amp; RBAC</h2>
+
+  <section class="flow" id="enforce">
+    <h3>Permission enforcement</h3>
+    <div class="endpoint">any [HasPermission] endpoint</div>
+    <p>How access control runs on every protected call. The bearer token is validated against the <b>session cache</b>, then the required permission is checked against the <b>RBAC projection</b> in Redis — no database round-trip on the hot path.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant App as Caller (Bearer)
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant R as Session cache
+  participant RC as RBAC cache
+  App->>GW: call a [HasPermission] endpoint
+  GW->>API: proxy
+  API->>R: validate access-token hash → session
+  Note over API: 401 if no valid session
+  API->>RC: does the user hold the required permission?
+  alt granted
+    API-->>GW: forward
+    GW-->>App: 200 + result
+  else missing
+    API-->>GW: forward
+    GW-->>App: 403 forbidden
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="role-perm">
+    <h3>Grant &amp; revoke role permissions</h3>
+    <div class="endpoint">POST /Roles/{id}/Permissions &nbsp;·&nbsp; DELETE …</div>
+    <p>The command only writes the <code>RolePermission</code> row and raises a domain event. After the save, the dispatcher hands the event to a handler that <b>triggers a background job</b> to project it into — or evict it from — the Redis RBAC cache. The write and the cache update are decoupled.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Background job
+  participant RC as RBAC cache
+  Admin->>GW: grant / revoke role permission
+  GW->>API: proxy
+  API->>DB: add or soft-remove RolePermission
+  Note over API,DB: aggregate raises a domain event
+  DB-->>EV: after SaveChanges, dispatch event
+  EV->>JOB: trigger projection / eviction job
+  alt granted
+    JOB->>RC: add (role → permission)
+  else revoked
+    JOB->>RC: remove (role → permission)
+  end
+  API-->>GW: forward
+  GW-->>Admin: 200 — cache updates asynchronously
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="user-role">
+    <h3>Assign &amp; remove user roles</h3>
+    <div class="endpoint">POST /Users/{id}/Roles &nbsp;·&nbsp; DELETE …</div>
+    <p>Same event-driven shape, with one asymmetry: an <b>assignment</b> is projected into the cache directly by the handler, while a <b>removal</b> goes through an eviction job.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Eviction job
+  participant RC as RBAC cache
+  Admin->>GW: assign / remove user role
+  GW->>API: proxy
+  API->>DB: add or soft-remove UserRole
+  DB-->>EV: dispatch domain event after save
+  alt assigned
+    EV->>RC: add (user → role)
+  else removed
+    EV->>JOB: trigger eviction job
+    JOB->>RC: remove (user → role)
+  end
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="scope-op">
+    <h3>Scope ↔ operation mapping</h3>
+    <div class="endpoint">POST /Scopes/{id}/Operations &nbsp;·&nbsp; DELETE …</div>
+    <p>Mapping an operation into a scope (or removing it) drives the <b>scope cache</b> the same way — write the <code>ScopeOperation</code> row, raise the event, reproject in the background.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Background job
+  participant SC as Scope cache
+  Admin->>GW: map / unmap operation in scope
+  GW->>API: proxy
+  API->>DB: add or soft-remove ScopeOperation
+  DB-->>EV: dispatch event after save
+  EV->>JOB: trigger scope projection / eviction
+  JOB->>SC: update (scope → operations)
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="lifecycle">
+    <h3>Entity lifecycle</h3>
+    <div class="endpoint">activate · deactivate · hide · unhide · restore · delete</div>
+    <p>Every RBAC aggregate shares a soft-state lifecycle. Each transition is a method on the aggregate that <b>raises its own domain event</b>; transitions on a cached entity trigger a reprojection so the cache follows the row.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Projection jobs
+  Note over API: Role · Permission · Scope · Operation · Client · User
+  Admin->>GW: activate / deactivate / hide / unhide / restore / delete
+  GW->>API: proxy
+  API->>DB: apply soft-state change on aggregate
+  Note over API,DB: each override raises its domain event
+  DB-->>EV: dispatch events after save
+  opt affects a cached projection
+    EV->>JOB: trigger reprojection / eviction
+  end
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="block">
+    <h3>Block or unlock a user</h3>
+    <div class="endpoint">set-block &nbsp;·&nbsp; unlock</div>
+    <p>Blocking an account <b>revokes all its sessions</b> at the same time, so access stops immediately; unlocking just clears the failed-attempt lockout left by the sign-in flow.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant JOB as Session eviction
+  participant R as Session cache
+  alt block
+    Admin->>GW: block user
+    GW->>API: proxy
+    API->>DB: mark blocked, revoke all sessions
+    DB-->>JOB: dispatched events evict sessions
+    JOB->>R: remove each session
+  else unlock
+    Admin->>GW: unlock user
+    GW->>API: proxy
+    API->>DB: clear lockout + failed count
+  end
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="revoke-sessions">
+    <h3>Revoke a user's sessions</h3>
+    <div class="endpoint">DELETE one session &nbsp;·&nbsp; DELETE all sessions</div>
+    <p>Revoking marks the session(s) in the database; the <b>session-revoked event</b> drives a job that evicts the token hash from Redis, so the next call with that token fails validation.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Session eviction job
+  participant R as Session cache
+  Admin->>GW: revoke one / all user sessions
+  GW->>API: proxy
+  API->>DB: Revoke() session(s)
+  Note over API,DB: Revoke raises a session-revoked event
+  DB-->>EV: dispatch after save
+  EV->>JOB: trigger eviction job (token hash)
+  JOB->>R: remove session from cache
+  API-->>GW: forward
+  GW-->>Admin: 200 — token rejected next call
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="crud">
+    <h3>Create, update &amp; delete</h3>
+    <div class="endpoint">Role · Permission · Scope · Operation · Client</div>
+    <p>The shared shape for reference data. Creates enforce a unique name; deletes are <b>soft-removes</b>. Creates and removes raise domain events so any cached projection follows; list and detail reads use the standard paged query with visibility filters.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  alt create
+    Admin->>GW: create (unique name)
+    GW->>API: proxy
+    API->>DB: insert aggregate
+  else update
+    Admin->>GW: update fields
+    GW->>API: proxy
+    API->>DB: apply changes
+  else delete
+    Admin->>GW: delete
+    GW->>API: proxy
+    API->>DB: soft-remove aggregate
+  end
+  Note over API,DB: creates and removes raise domain events
+  DB-->>EV: dispatch after save (reproject if cached)
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="client">
+    <h3>Register client &amp; rotate secret</h3>
+    <div class="endpoint">POST /Clients &nbsp;·&nbsp; rotate-secret</div>
+    <p>A client secret is generated server-side, <b>hashed and salted</b>, and only the hash is stored — the plaintext is returned once. Rotation replaces the stored hash with a fresh secret.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  Admin->>GW: register client (+ redirect URIs)
+  GW->>API: proxy
+  API->>API: generate secret, hash + salt
+  API->>DB: store Client (secret hash only) + redirect URIs
+  API-->>GW: forward
+  GW-->>Admin: client_id + secret (shown once)
+  Note over Admin,API: later
+  Admin->>GW: rotate client secret
+  GW->>API: proxy
+  API->>API: generate new secret, hash + salt
+  API->>DB: replace stored hash
+  API-->>GW: forward
+  GW-->>Admin: new secret (shown once)
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="client-scope">
+    <h3>Grant &amp; revoke client scopes</h3>
+    <div class="endpoint">POST /Clients/{id}/Scopes &nbsp;·&nbsp; DELETE …</div>
+    <p>Controls which scopes a client may request. Same event-driven projection: write the <code>ClientScope</code> row, raise the event, update the scope cache in the background.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Background job
+  participant SC as Scope cache
+  Admin->>GW: grant / revoke client scope
+  GW->>API: proxy
+  API->>DB: add or soft-remove ClientScope
+  DB-->>EV: dispatch event after save
+  EV->>JOB: trigger projection / eviction
+  JOB->>SC: update (client → scopes)
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="client-sessions">
+    <h3>Revoke client sessions</h3>
+    <div class="endpoint">DELETE one &nbsp;·&nbsp; DELETE all client sessions</div>
+    <p>Retires machine-to-machine sessions the same way user sessions are retired: <code>Revoke()</code> raises an event, and a job evicts the client session from the cache.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant EV as Domain dispatcher
+  participant JOB as Client-session eviction
+  participant R as Session cache
+  Admin->>GW: revoke one / all client sessions
+  GW->>API: proxy
+  API->>DB: Revoke() client session(s)
+  Note over API,DB: Revoke raises a client-session-revoked event
+  DB-->>EV: dispatch after save
+  EV->>JOB: trigger eviction job
+  JOB->>R: remove client session from cache
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="delete-user">
+    <h3>Delete a user</h3>
+    <div class="endpoint">DELETE /Users/{id}</div>
+    <p>A <b>soft delete</b>: the row is retained but marked removed, every session is revoked, and a <code>UserDeleted</code> integration event goes out so downstream systems can react.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  participant R as Session cache
+  participant OB as Outbox → downstream
+  Admin->>GW: delete user
+  GW->>API: proxy
+  API->>DB: soft-remove user, revoke all sessions
+  API->>R: sessions evicted (via revoked events)
+  API->>OB: UserDeleted
+  API-->>GW: forward
+  GW-->>Admin: 200
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="publish-consent">
+    <h3>Publish a consent document</h3>
+    <div class="endpoint">POST /ConsentDocuments &nbsp;·&nbsp; add version</div>
+    <p>Each version is an immutable row. Publishing a new version <b>supersedes the current one</b>; every prior version is kept so existing acceptances still point at the exact text accepted.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  alt first version
+    Admin->>GW: create consent document (type, v1)
+    GW->>API: proxy
+    API->>DB: insert as current
+  else new version
+    Admin->>GW: add version (type, vN)
+    GW->>API: proxy
+    API->>DB: supersede current, insert vN as current
+  end
+  API-->>GW: forward
+  GW-->>Admin: document id
+  Note over DB: every version retained, one current per type
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="reconcile">
+    <h3>RBAC cache reconciliation</h3>
+    <div class="endpoint">scheduled job &nbsp;·&nbsp; every 10 minutes</div>
+    <p>A safety net for the event-driven projection. On a schedule the job reads the <b>desired</b> user→role and role→permission sets from the database, replaces them in Redis, and drops anything no longer present — repairing any drift from a missed event.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant CRON as Scheduler
+  participant JOB as Reconciliation job
+  participant DB as Database
+  participant RC as RBAC cache
+  CRON->>JOB: every 10 minutes
+  JOB->>DB: read desired user→role and role→permission sets
+  JOB->>RC: replace each user's roles and each role's permissions
+  JOB->>RC: drop users / roles no longer present
+  Note over JOB,RC: repairs drift from any missed event
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-audit">Audit</h2>
+
+  <section class="flow" id="audit">
+    <h3>Action history</h3>
+    <div class="endpoint">GET domain events &nbsp;·&nbsp; filtered, paged</div>
+    <p>Every domain event is persisted with its actor context, giving admins a queryable <b>action history</b> — for example everything a given user did. Reads filter across actor, session, tenant, channel, event type, and date range.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Admin as Admin
+  participant API as Identity API
+  participant GW as Admin Gateway
+  participant DB as Database
+  Admin->>GW: query domain events (filters)
+  GW->>API: proxy
+  Note over Admin,API: userId · clientId · sessionId · tenantId · ip · channel · eventType · dates
+  API->>DB: read stored domain-event log (paged, newest first)
+  API-->>GW: forward
+  GW-->>Admin: action history page
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-arch">Architecture &amp; dependencies</h2>
+
+  <section class="flow" id="edge-public">
+    <h3>Edge: GM Identity Gateway</h3>
+    <div class="endpoint">GM.Identity.Sample.Gateway.API (YARP + GM.Gateway)</div>
+    <p>The public front door. <code>/connect/*</code> and registration pass through anonymously; the <code>/me</code> self routes require an opaque token and are <b>rewritten to owner-scoped backend endpoints</b> using the principal, so a caller only ever sees their own data. Every route is rate-limited and has the caller's actor claims forwarded as headers.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant C as Client / User
+  participant GW as GM Identity Gateway
+  participant RL as Redis (rate limits)
+  participant API as Identity API
+  C->>GW: /connect/*, POST register, GET /me, GET /me/sessions
+  GW->>RL: check the route's rate-limit policy
+  alt over limit
+    GW-->>C: 429 Too Many Requests
+  else /connect/* or register (public)
+    GW->>API: proxy (forward actor claims if present)
+    API-->>GW: response
+    GW-->>C: response
+  else /me, /me/sessions (owner-scoped)
+    GW->>GW: authenticate opaque token (user id, session id)
+    GW->>GW: rewrite /me to the backend user endpoint for that user
+    GW->>API: proxy with forwarded actor headers
+    API-->>GW: response
+    GW-->>C: response
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="edge-admin">
+    <h3>Edge: Admin gateway</h3>
+    <div class="endpoint">GM.Identity.Sample.Admin.Gateway.API (YARP + GM.Gateway)</div>
+    <p>The administrative front door for the RBAC and client-management routes (<code>/clients</code>, <code>/roles</code>, <code>/permissions</code>, <code>/scopes</code>, <code>/operations</code>, <code>/users</code>). Unlike the public gateway, <b>every admin route requires an opaque token</b> and satisfies the default authorization policy before it is proxied; rate limiting and actor forwarding apply here too.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant A as Administrator
+  participant GW as Admin Gateway
+  participant RL as Redis (rate limits)
+  participant API as Identity API
+  A->>GW: /api/v1/{clients|roles|permissions|scopes|operations|users}
+  GW->>RL: check the route's rate-limit policy
+  alt over limit
+    GW-->>A: 429 Too Many Requests
+  else allowed
+    GW->>GW: authenticate opaque token, enforce authorization policy
+    alt not authenticated / not authorized
+      GW-->>A: 401 / 403
+    else authorized
+      GW->>GW: forward actor claims as headers (user id, session id)
+      GW->>API: proxy to the backend cluster
+      API-->>GW: response
+      GW-->>A: response
+    end
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="gw-public-deps">
+    <h3>Gateway dependencies: public</h3>
+    <div class="endpoint">GM.Identity.Sample.Gateway.API package references</div>
+    <p>A standalone web host with no project references to the sample core — it depends only on packages and reaches the API over HTTP. GM.Gateway provides the YARP proxy; the Redis packages back rate limiting, caching, and locks; GM.Identity supplies opaque-token auth and actor forwarding.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart LR
+  GW["GM.Identity.Sample.Gateway.API"]
+  GWY["GM.Gateway (YARP proxy)"]
+  RL["GM.RateLimiting.Redis"]
+  CA["GM.Caching.Redis"]
+  DL["GM.DistributedLock.Redis"]
+  SR["StackExchange.Redis"]
+  ID["GM.Identity (auth, actor forwarding)"]
+  HC["GM.HealthChecks (+ Caching, DistributedLock)"]
+  OT["OpenTelemetry.* (traces, metrics)"]
+  SW["Swashbuckle SwaggerUI"]
+  GW --> GWY
+  GW --> RL
+  GW --> CA
+  GW --> DL
+  GW --> SR
+  GW --> ID
+  GW --> HC
+  GW --> OT
+  GW --> SW
+  GW -. proxies over HTTP .-> API["Identity API"]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="gw-admin-deps">
+    <h3>Gateway dependencies: admin</h3>
+    <div class="endpoint">GM.Identity.Sample.Admin.Gateway.API package references</div>
+    <p>The same package set as the public gateway — the difference is behavioral, not structural: this host wires GM.Identity's opaque-token authentication and a default authorization policy so <b>every</b> admin route is protected before it is proxied.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart LR
+  GW["GM.Identity.Sample.Admin.Gateway.API"]
+  GWY["GM.Gateway (YARP proxy)"]
+  RL["GM.RateLimiting.Redis"]
+  CA["GM.Caching.Redis"]
+  DL["GM.DistributedLock.Redis"]
+  SR["StackExchange.Redis"]
+  ID["GM.Identity (required auth + authorization)"]
+  HC["GM.HealthChecks (+ Caching, DistributedLock)"]
+  OT["OpenTelemetry.* (traces, metrics)"]
+  SW["Swashbuckle SwaggerUI"]
+  GW --> GWY
+  GW --> RL
+  GW --> CA
+  GW --> DL
+  GW --> SR
+  GW --> ID
+  GW --> HC
+  GW --> OT
+  GW --> SW
+  GW -. proxies over HTTP .-> API["Identity API"]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="proj-deps">
+    <h3>Project dependencies</h3>
+    <div class="endpoint">solution project references</div>
+    <p>The sample follows clean-architecture layering: arrows point from a project to the projects it references, and every path leads inward to <b>Domain</b>, which references no other sample project. API composes the outer layers; Infrastructure and Persistence sit between it and the core.</p>
+    <p class="fine">Two more hosts aren't shown here because they hold no project references to the core: the public and admin <b>gateways</b> are standalone reverse proxies (GM.Gateway + Redis) that reach the API over HTTP at runtime — see the edge and runtime diagrams.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart TD
+  API["Sample.API"]
+  INF["Sample.Infrastructure"]
+  PER["Sample.Persistence"]
+  APP["Sample.Application"]
+  DOM["Sample.Domain"]
+  COM["Sample.Common"]
+  TST["Sample.Tests"]
+  API --> INF
+  API --> PER
+  API --> APP
+  INF --> APP
+  INF --> PER
+  INF --> DOM
+  PER --> APP
+  PER --> DOM
+  APP --> COM
+  APP --> DOM
+  TST --> API
+  TST --> DOM
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="pkg-deps">
+    <h3>GM.* package families</h3>
+    <div class="endpoint">GM.Identity · GM.OTP · GM.Messaging · GM.EntityFramework</div>
+    <p>Each GM family ships a <b>Domain</b> and a <b>Persistence</b> package; the sample's own Domain and Persistence projects inherit their base entities and EF configurations from them. Within a family, Persistence depends on its Domain; across families, every Domain builds on <code>GM.EntityFramework.Domain</code> and every Persistence on <code>GM.EntityFramework.Persistence</code>.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart TD
+  SD["Sample.Domain"]
+  SP["Sample.Persistence"]
+  IDd["GM.Identity.Domain"]
+  OTd["GM.OTP.Domain"]
+  MSd["GM.Messaging.Domain"]
+  EFd["GM.EntityFramework.Domain"]
+  IDp["GM.Identity.Persistence"]
+  OTp["GM.OTP.Persistence"]
+  MSp["GM.Messaging.Persistence"]
+  EFp["GM.EntityFramework.Persistence"]
+  SD --> IDd
+  SD --> OTd
+  SD --> MSd
+  SD --> EFd
+  SP --> IDp
+  SP --> OTp
+  SP --> MSp
+  SP --> EFp
+  IDp --> IDd
+  OTp --> OTd
+  MSp --> MSd
+  IDd --> EFd
+  OTd --> EFd
+  MSd --> EFd
+  IDp --> EFp
+  OTp --> EFp
+  MSp --> EFp
+</pre>
+    </div>
+    <p>Beyond these, the sample pulls <code>GM.API</code> / <code>GM.API.Application</code> (API scaffolding), <code>GM.Identity</code> (token, PKCE, WebAuthn, password helpers), <code>GM.Mediator</code>, <code>GM.HttpClient</code>, <code>GM.OTP</code> (TOTP service), <code>GM.Messaging</code>, <code>GM.Scheduling</code>, <code>GM.Secrets</code>, <code>GM.Caching.Redis</code>, <code>GM.DistributedLock.Redis</code>, <code>GM.HealthChecks.*</code>, <code>GM.Exceptions</code>, and <code>GM.Testing</code>.</p>
+  </section>
+
+  <section class="flow" id="runtime-deps">
+    <h3>Runtime &amp; external systems</h3>
+    <div class="endpoint">deployed service dependencies</div>
+    <p>What the running service talks to. PostgreSQL is the system of record; Redis backs the session, RBAC, and scope caches plus distributed locks. Delivered codes go out through the outbox to a notifier; one-time-code verification calls an external OTP service, and social sign-in federates to the providers.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart LR
+  USERS["Users and client apps"] --> GWP["GM Identity Gateway (YARP)"]
+  ADMIN["Administrators"] --> GWA["Admin gateway (YARP)"]
+  GWP -->|rate limit + actor headers| API
+  GWA -->|auth + rate limit + actor headers| API
+  GWP --> REDIS
+  GWA --> REDIS
+  subgraph svc["Identity service"]
+    API["Identity API"]
+    JOBS["Background jobs (GM.Scheduling)"]
+  end
+  API --> PG[("PostgreSQL")]
+  API --> REDIS[("Redis — sessions, RBAC, scopes, rate limits, locks")]
+  JOBS --> REDIS
+  JOBS --> PG
+  API -->|GM.HttpClient| OTPAPI["External OTP service"]
+  API -->|outbox, GM.Messaging| NOTIFY["Notifier → email/SMS"]
+  API -->|OIDC| SOCIAL["Google, Facebook"]
+  API -->|OTLP| OTEL["Telemetry collector"]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="structurizr">
+    <h3>C4 model (Structurizr)</h3>
+    <div class="endpoint">gm-sample-ecosystem.dsl</div>
+    <p>The same architecture and flows are also modelled in <b>Structurizr DSL</b> (the C4 model), delivered as a <code>.dsl</code> file alongside this page. It renders in Structurizr Lite or structurizr.com — the Mermaid diagrams above stay the quick reference; the DSL is the single source you can regenerate every C4 view from.</p>
+    <p>The workspace contains: a <b>System Landscape</b>; a <b>System Context</b> and <b>Container</b> view for each of Identity, OTP, and Notifications (the Identity containers include both gateways); a <b>Component</b> view of the Identity API; a <b>Deployment</b> view (edge / app / data tiers) for the Production environment; and <b>dynamic views</b> for the flows, including an <code>EdgeRoutingPublic</code> and <code>EdgeRoutingAdmin</code> view for the two gateways (symmetric flows — the RBAC writes, the channels, CRUD/lifecycle — share one container-level view that names what it covers).</p>
+    <div class="figure" style="padding:14px 16px;">
+<pre style="margin:0;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;color:var(--fg);white-space:pre;overflow-x:auto;">identity = softwareSystem "GM Identity" {
+    gatewayPublic = container "GM Identity Gateway"     "..." "YARP + GM.Gateway"
+    gatewayAdmin  = container "Admin Gateway"           "..." "YARP + GM.Gateway"
+    identityApi   = container "Identity API"           "..." "ASP.NET Core"
+    identityJobs  = container "Background Jobs"         "..." "GM.Scheduling"
+    identityDb    = container "Identity Database"       "..." "PostgreSQL" "Database"
+    identityCache = container "Session / RBAC Cache"    "..." "Redis" "Cache"
+}
+
+clientApp     -> gatewayPublic "HTTPS (/connect, register, /me)"
+gatewayPublic -> identityApi   "Proxies (rate-limited, actor-forwarded)"
+
+identityApi -> bus       "Publishes integration events (outbox)"
+identityApi -> otpApi    "Verifies submitted codes" "HTTPS / JSON"
+bus         -> otpInbox  "Delivers Identity events"
+bus         -> notifInbox "Delivers Identity &amp; OTP events"
+
+dynamic * "Ecosystem" "Identity publishes, OTP issues codes, Notifications delivers." {
+    clientApp   -> identityApi  "User action needing a code"
+    identityApi -> bus          "Publish event"
+    bus         -> otpInbox     "Deliver to OTP"
+    otpProducer -> bus          "Publish OtpGenerated"
+    bus         -> notifInbox   "Deliver to Notifications"
+    notifChannels -> providers  "Deliver to user"
+}</pre>
+    </div>
+    <p class="fine">Render locally: <code>docker run -it --rm -p 8080:8080 -v "$PWD":/usr/local/structurizr structurizr/lite</code> in the folder holding the <code>.dsl</code>, then open <code>localhost:8080</code>.</p>
+  </section>
+
+  <h2 class="group-head" id="g-otp">GM.OTP sample</h2>
+
+  <section class="flow" id="otp-generate">
+    <h3>Generate a code</h3>
+    <div class="endpoint">POST /otp/generate</div>
+    <p>Supersedes any active challenge for the subject, then stores a fresh one — only the code's <b>hash</b>, with an expiry and an attempt limit. The raw code is delivered out of band (it is not returned in the response).</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Caller as Caller (e.g. Identity)
+  participant API as OTP API
+  participant DB as Database
+  participant M as OTP manager
+  Caller->>API: POST /otp/generate (subject, destination, purpose)
+  API->>DB: supersede active challenges for subject
+  API->>M: generate code + hash
+  API->>DB: store OtpChallenge (hash, expiry, max attempts)
+  API-->>Caller: challenge issued
+  Note over API,DB: raw code delivered out of band, never stored
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="otp-verify">
+    <h3>Verify a code</h3>
+    <div class="endpoint">POST /otp/verify</div>
+    <p>The call the Identity provider makes to check a submitted code. The manager compares the hash in constant time and enforces the <b>attempt and expiry limits</b>; the challenge is updated either way.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Caller as Caller (e.g. Identity)
+  participant API as OTP API
+  participant DB as Database
+  participant M as OTP manager
+  Caller->>API: POST /otp/verify (subject, purpose, code)
+  API->>DB: load active challenge (not used, not invalidated)
+  Note over API: fail if none active
+  API->>M: verify code (hash, attempts, expiry)
+  API->>DB: mark used or count the failure
+  API-->>Caller: valid / invalid
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="otp-intake">
+    <h3>Event-driven issuance</h3>
+    <div class="endpoint">inbox worker &nbsp;·&nbsp; consumes Identity events</div>
+    <p>How codes get sent without the provider knowing about delivery. A worker reads the inbox for the provider's events, generates a challenge, and enqueues an <code>OtpGenerated</code> event carrying the code and destination for the Notifications service to deliver.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant ID as Identity service
+  participant BUS as Message bus / inbox
+  participant W as OTP inbox worker
+  participant H as GenerateOtp handler
+  participant DB as Database
+  participant NF as Notifications
+  ID->>BUS: UserConfirmationInitiated / TwoFactorChallengeIssued / OtpRequested
+  W->>BUS: read inbox (idempotent by event id)
+  W->>H: GenerateOtp (subject, destination, purpose)
+  H->>DB: store OtpChallenge (hashed)
+  H->>BUS: enqueue OtpGenerated (code + destination)
+  BUS-->>NF: delivered to Notifications
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="otp-deps">
+    <h3>Project dependencies</h3>
+    <div class="endpoint">GM.OTP.Samples solution</div>
+    <p>Same clean-architecture layering as the provider, with three hosts over the core: the API, a producer worker (publishes the outbox), and inbox/consumer workers. It builds on the <code>GM.OTP.*</code> and <code>GM.Messaging.*</code> package families.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart TD
+  API["Sample.API"]
+  INF["Sample.Infrastructure"]
+  PER["Sample.Persistence"]
+  APP["Sample.Application"]
+  DOM["Sample.Domain"]
+  COM["Sample.Common"]
+  PW["Producer.Worker"]
+  CW["Consumer.Worker"]
+  IW["Inbox Worker"]
+  API --> INF
+  API --> PER
+  API --> APP
+  INF --> APP
+  INF --> COM
+  PER --> APP
+  PER --> DOM
+  APP --> COM
+  APP --> DOM
+  PW --> INF
+  PW --> PER
+  CW --> INF
+  CW --> PER
+  CW --> DOM
+  IW --> INF
+  IW --> PER
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-notif">GM.Notifications sample</h2>
+
+  <section class="flow" id="notif-send">
+    <h3>Queue a notification</h3>
+    <div class="endpoint">POST /{channel}/batch</div>
+    <p>The API only <b>enqueues</b>: it stores one or more notification rows as <em>Pending</em> and returns their ids. Delivery is a separate step handled by the channel workers. Channels: email, SMS, push, Slack, WhatsApp.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Caller as Caller
+  participant API as Notifications API
+  participant DB as Database
+  Caller->>API: POST /{channel}/batch (messages)
+  API->>DB: store Notification rows [Pending]
+  API-->>Caller: notification ids
+  Note over API: email · SMS · push · Slack · WhatsApp
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="notif-deliver">
+    <h3>Channel delivery</h3>
+    <div class="endpoint">per-channel background worker</div>
+    <p>Each channel runs its own worker that polls for <em>Pending</em> rows, hands each to the channel's provider, and records the outcome — so a failing provider doesn't block the others.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant W as Channel worker
+  participant DB as Database
+  participant P as Provider (SMTP / SMS / push / Slack / WhatsApp)
+  loop poll interval
+    W->>DB: fetch pending notifications for this channel
+    loop each
+      W->>P: send message
+      alt sent
+        W->>DB: mark Sent
+      else error
+        W->>DB: mark Failed (retried later)
+      end
+    end
+  end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="notif-cancel">
+    <h3>Cancel a queued message</h3>
+    <div class="endpoint">DELETE /{channel}/{id}</div>
+    <p>Cancels a notification while it is still pending; once a worker has sent it, the call is a no-op.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant Caller as Caller
+  participant API as Notifications API
+  participant DB as Database
+  Caller->>API: DELETE /{channel}/{id}
+  API->>DB: cancel if still pending
+  API-->>Caller: 200 (no-op if already sent)
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="notif-intake">
+    <h3>Event-driven intake</h3>
+    <div class="endpoint">inbox worker &nbsp;·&nbsp; consumes Identity &amp; OTP events</div>
+    <p>How the provider's and OTP service's events become messages. A worker reads the inbox and turns each event into a queued notification on the right channel — for example <code>OtpGenerated</code> into an email or SMS carrying the code.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant SRC as Identity / OTP service
+  participant BUS as Message bus / inbox
+  participant W as Notifications inbox worker
+  participant H as Send-channel handler
+  participant DB as Database
+  SRC->>BUS: UserRegistered / UserConfirmed / OtpGenerated
+  W->>BUS: read inbox (idempotent by event id)
+  W->>H: Send on the chosen channel (recipient, content)
+  H->>DB: store Notification [Pending]
+  Note over DB: a channel worker then delivers it
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="notif-deps">
+    <h3>Project dependencies</h3>
+    <div class="endpoint">GM.Notifications.Samples solution</div>
+    <p>Core layering plus one host <b>per channel</b> (email, SMS, push, Slack, WhatsApp) and the inbox/consumer workers. Infrastructure pulls the <code>GM.Notifications.*</code> provider packages for each channel.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart TD
+  API["Sample.API"]
+  INF["Sample.Infrastructure"]
+  PER["Sample.Persistence"]
+  APP["Sample.Application"]
+  DOM["Sample.Domain"]
+  COM["Sample.Common"]
+  CH["Channel workers (Email, SMS, Push, Slack, WhatsApp)"]
+  IW["Inbox / Consumer workers"]
+  API --> INF
+  API --> PER
+  API --> APP
+  INF --> DOM
+  PER --> APP
+  PER --> DOM
+  APP --> COM
+  APP --> DOM
+  CH --> INF
+  CH --> PER
+  IW --> INF
+  IW --> PER
+  IW --> DOM
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-ecosystem">Ecosystem</h2>
+
+  <section class="flow" id="ecosystem">
+    <h3>Cross-service runtime</h3>
+    <div class="endpoint">Identity · OTP · Notifications</div>
+    <p>How the three services fit together. The provider publishes events and never sends anything itself; the OTP service turns code requests into an <code>OtpGenerated</code> event; the Notifications service consumes events and delivers over its channels. The one direct call is the provider verifying a submitted code against the OTP API.</p>
+    <div class="figure">
+<pre class="mmd">
+flowchart LR
+  IDAPI["Identity service"]
+  OTAPI["OTP service"]
+  NFAPI["Notifications service"]
+  BUS[("Message bus (outbox / inbox)")]
+  PROV["Email · SMS · Push · Slack · WhatsApp providers"]
+  IDAPI -->|UserConfirmationInitiated, TwoFactorChallengeIssued, OtpRequested| BUS
+  IDAPI -->|UserRegistered, UserConfirmed, UserDeleted| BUS
+  BUS --> OTAPI
+  BUS --> NFAPI
+  OTAPI -->|OtpGenerated| BUS
+  IDAPI -->|verify code over HTTP| OTAPI
+  NFAPI --> PROV
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-data">Data model</h2>
+
+  <section class="flow" id="erd-identity">
+    <h3>Identity schema</h3>
+    <div class="endpoint">PostgreSQL · schema application / compliance</div>
+    <p>The Identity service's tables and how they relate. Keys are GUIDs; join tables carry the business keys the caches and queries look up by. Every row is soft-deletable (IsActive / IsDeleted / IsHidden), omitted here for clarity.</p>
+    <div class="figure">
+<pre class="mmd">
+erDiagram
+  USER ||--o{ USER_ROLE : has
+  ROLE ||--o{ USER_ROLE : grants
+  ROLE ||--o{ ROLE_PERMISSION : grants
+  PERMISSION ||--o{ ROLE_PERMISSION : in
+  SCOPE ||--o{ SCOPE_OPERATION : groups
+  OPERATION ||--o{ SCOPE_OPERATION : in
+  CLIENT ||--o{ CLIENT_SCOPE : may_request
+  SCOPE ||--o{ CLIENT_SCOPE : granted_to
+  CLIENT ||--o{ CLIENT_REDIRECT_URI : registers
+  USER ||--o{ USER_TWO_FACTOR : enrols
+  TWO_FACTOR_TYPE ||--o{ USER_TWO_FACTOR : of
+  USER ||--o{ USER_SESSION : owns
+  CLIENT ||--o{ USER_SESSION : for
+  SSO_SESSION ||--o{ USER_SESSION : spawns
+  USER ||--o{ SSO_SESSION : authenticates
+  CLIENT ||--o{ CLIENT_SESSION : owns
+  CLIENT ||--o{ AUTH_CODE : issued_for
+  USER ||--o{ AUTH_CODE : for
+  CLIENT ||--o{ DEVICE_CODE : issued_for
+  USER ||--o{ USER_CLIENT_CONSENT : grants
+  CLIENT ||--o{ USER_CLIENT_CONSENT : for
+  USER ||--o{ USER_PASSKEY : registers
+  USER ||--o{ PASSKEY_CHALLENGE : for
+  USER ||--o{ USER_TOTP_DEVICE : enrols
+  USER ||--o{ USER_CONSENT : accepts
+  CONSENT_DOCUMENT ||--o{ USER_CONSENT : accepted_as
+  USER {
+    guid Id PK
+    string UserName
+    string Email
+    string PasswordHash
+    bool IsBlocked
+    datetime LockoutEnd
+  }
+  ROLE {
+    guid Id PK
+    string Name
+  }
+  PERMISSION {
+    guid Id PK
+    string Name
+  }
+  ROLE_PERMISSION {
+    guid Id PK
+    guid RoleId FK
+    guid PermissionId FK
+  }
+  USER_ROLE {
+    guid Id PK
+    guid UserId FK
+    guid RoleId FK
+  }
+  SCOPE {
+    guid Id PK
+    string Name
+  }
+  OPERATION {
+    guid Id PK
+    string Name
+  }
+  SCOPE_OPERATION {
+    guid Id PK
+    guid ScopeId FK
+    guid OperationId FK
+  }
+  CLIENT {
+    guid Id PK
+    string Name
+    string SecretHash
+  }
+  CLIENT_SCOPE {
+    guid Id PK
+    guid ClientId FK
+    guid ScopeId FK
+  }
+  CLIENT_REDIRECT_URI {
+    guid Id PK
+    guid ClientId FK
+    string Uri
+  }
+  TWO_FACTOR_TYPE {
+    int Id PK
+    string Name
+  }
+  USER_TWO_FACTOR {
+    guid Id PK
+    guid UserId FK
+    int TwoFactorAuthTypeId FK
+  }
+  USER_SESSION {
+    guid Id PK
+    guid UserId FK
+    guid ClientId FK
+    string TokenHash
+    guid SsoSessionId FK
+  }
+  CLIENT_SESSION {
+    guid Id PK
+    guid ClientId FK
+    string TokenHash
+  }
+  SSO_SESSION {
+    guid Id PK
+    guid UserId FK
+    string TokenHash
+    datetime ExpiresAt
+    datetime RevokedAt
+  }
+  AUTH_CODE {
+    guid Id PK
+    guid ClientId FK
+    guid UserId FK
+    string CodeHash
+    string CodeChallenge
+    guid SsoSessionId FK
+  }
+  DEVICE_CODE {
+    guid Id PK
+    guid ClientId FK
+    string DeviceCodeHash
+    string UserCode
+    int Status
+    guid UserId FK
+  }
+  USER_CLIENT_CONSENT {
+    guid Id PK
+    guid UserId FK
+    guid ClientId FK
+    string Scopes
+  }
+  USER_PASSKEY {
+    guid Id PK
+    guid UserId FK
+    string CredentialId
+    blob PublicKeySpki
+    long SignCount
+  }
+  PASSKEY_CHALLENGE {
+    guid Id PK
+    guid UserId FK
+    string Challenge
+    datetime ExpiresAt
+  }
+  USER_TOTP_DEVICE {
+    guid Id PK
+    guid UserId FK
+    string SecretBase32
+    bool IsConfirmed
+  }
+  CONSENT_DOCUMENT {
+    guid Id PK
+    string ConsentType
+    string Version
+    bool IsCurrent
+  }
+  USER_CONSENT {
+    guid Id PK
+    guid UserId FK
+    string ConsentType
+    string DocumentVersion
+  }
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="erd-services">
+    <h3>OTP &amp; Notifications schema</h3>
+    <div class="endpoint">separate databases · linked only by events</div>
+    <p>The sibling services keep their own stores — there are no cross-service foreign keys; they're joined only by the integration events on the bus. Each also has the outbox/inbox tables that carry those events.</p>
+    <div class="figure">
+<pre class="mmd">
+erDiagram
+  OTP_CHALLENGE {
+    guid Id PK
+    string Subject
+    string Destination
+    string CodeHash
+    string Purpose
+    int FailedAttempts
+    int MaxAttempts
+    bool IsUsed
+    bool IsInvalidated
+    datetime ExpiresAtUtc
+  }
+  NOTIFICATION {
+    guid Id PK
+    string Channel
+    string Recipient
+    int Status
+    int RetryCount
+    int MaxRetries
+    datetime SentAtUtc
+    guid UserId
+  }
+  OUTBOX_MESSAGE {
+    guid Id PK
+    string Type
+    string Payload
+    string CorrelationId
+    datetime ProcessedAt
+  }
+  INBOX_MESSAGE {
+    guid Id PK
+    string EventId
+    string Type
+    datetime ProcessedAt
+  }
+</pre>
+    </div>
+    <p class="fine">Notification is one table per channel in the real schema (email, SMS, push, Slack, WhatsApp), each with the same status shape shown here.</p>
+  </section>
+
+  <h2 class="group-head" id="g-state">State machines</h2>
+
+  <section class="flow" id="sm-devicecode">
+    <h3>Device code</h3>
+    <div class="endpoint">DeviceCodeStatus</div>
+    <p>A device-authorization request moves out of <b>Pending</b> only by the user's choice, and is consumed when the device finally exchanges it.</p>
+    <div class="figure">
+<pre class="mmd">
+stateDiagram-v2
+  [*] --> Pending : issued
+  Pending --> Approved : Approve(userId)
+  Pending --> Denied : Deny()
+  Approved --> [*] : consumed at token exchange
+  Pending --> Expired : past ExpiresAt
+  Approved --> Expired : past ExpiresAt
+  Denied --> [*]
+  Expired --> [*]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="sm-otp">
+    <h3>OTP challenge</h3>
+    <div class="endpoint">IsUsed · IsInvalidated · expiry</div>
+    <p>A delivered code is active until it is used, superseded or attempt-exhausted (invalidated), or expires. Verification is single-use.</p>
+    <div class="figure">
+<pre class="mmd">
+stateDiagram-v2
+  [*] --> Active : generated
+  Active --> Used : correct code
+  Active --> Invalidated : max attempts or superseded
+  Active --> Expired : past ExpiresAtUtc
+  Used --> [*]
+  Invalidated --> [*]
+  Expired --> [*]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="sm-notification">
+    <h3>Notification</h3>
+    <div class="endpoint">NotificationStatus</div>
+    <p>Queued as <b>Pending</b>, delivered by the channel worker. A failure retries until the retry budget is spent; a pending message can be cancelled.</p>
+    <div class="figure">
+<pre class="mmd">
+stateDiagram-v2
+  [*] --> Pending : queued
+  Pending --> Sent : delivered by worker
+  Pending --> Failed : provider error
+  Failed --> Pending : retry (under MaxRetries)
+  Failed --> [*] : retries exhausted
+  Pending --> Cancelled : cancelled while pending
+  Sent --> [*]
+  Cancelled --> [*]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="sm-session">
+    <h3>Session</h3>
+    <div class="endpoint">UserSession · ClientSession · SsoSession</div>
+    <p>Every session type shares the same shape: active until revoked (logout, refresh rotation, or admin) or expired. Revocation is what the cache eviction jobs act on.</p>
+    <div class="figure">
+<pre class="mmd">
+stateDiagram-v2
+  [*] --> Active : issued
+  Active --> Revoked : logout / rotation / admin
+  Active --> Expired : past expiry
+  Revoked --> [*]
+  Expired --> [*]
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="sm-softdelete">
+    <h3>Entity visibility</h3>
+    <div class="endpoint">SoftDeletableEntity</div>
+    <p>The soft-state lifecycle every aggregate inherits. The three flags are independent — this shows the primary transitions each method drives; an admin can restore from any of them.</p>
+    <div class="figure">
+<pre class="mmd">
+stateDiagram-v2
+  [*] --> Active : created
+  Active --> Inactive : Deactivate()
+  Inactive --> Active : Activate()
+  Active --> Hidden : Hide()
+  Hidden --> Active : Unhide()
+  Active --> Deleted : SoftRemove()
+  Deleted --> Active : RestoreAll()
+</pre>
+    </div>
+  </section>
+
+  <h2 class="group-head" id="g-domain">Domain model</h2>
+
+  <section class="flow" id="class-domain">
+    <h3>Aggregate inheritance</h3>
+    <div class="endpoint">GM.* base entities ↔ sample aggregates</div>
+    <p>The inheritance the sample is built on: every GM.* base entity extends <code>SoftDeletableEntity</code> and owns the shape and behaviour (raising domain events); each sample type fixes it as the application's aggregate by subclassing the base and implementing <code>IAggregateRoot</code>. <code>TotpEnrolment</code> comes from GM.OTP; the rest from GM.Identity.</p>
+    <div class="figure">
+<pre class="mmd">
+classDiagram
+  class SoftDeletableEntity {
+    <<abstract>>
+    +Guid Id
+    +bool IsActive
+    +bool IsDeleted
+    +bool IsHidden
+    +Activate()
+    +Deactivate()
+    +Hide()
+    +Unhide()
+    +SoftRemove()
+    +RestoreAll()
+  }
+  class IAggregateRoot {
+    <<interface>>
+  }
+  class GMUser {
+    +string UserName
+    +string PasswordHash
+    +UpdatePassword()
+    +Block()
+    +Unlock()
+  }
+  class TotpEnrolment {
+    +string SecretBase32
+    +bool IsConfirmed
+    +Confirm()
+  }
+  SoftDeletableEntity <|-- GMUser
+  SoftDeletableEntity <|-- GMConsentDocument
+  SoftDeletableEntity <|-- GMUserConsent
+  SoftDeletableEntity <|-- GMUserPasskey
+  SoftDeletableEntity <|-- GMPasskeyChallenge
+  SoftDeletableEntity <|-- GMAuthorizationCode
+  SoftDeletableEntity <|-- GMClientRedirectUri
+  SoftDeletableEntity <|-- GMDeviceCode
+  SoftDeletableEntity <|-- GMSsoSession
+  SoftDeletableEntity <|-- GMUserClientConsent
+  SoftDeletableEntity <|-- TotpEnrolment
+  GMUser <|-- User
+  GMConsentDocument <|-- ConsentDocument
+  GMUserConsent <|-- UserConsent
+  GMUserPasskey <|-- UserPasskey
+  GMPasskeyChallenge <|-- PasskeyChallenge
+  GMAuthorizationCode <|-- AuthorizationCode
+  GMClientRedirectUri <|-- ClientRedirectUri
+  GMDeviceCode <|-- DeviceCode
+  GMSsoSession <|-- SsoSession
+  GMUserClientConsent <|-- UserClientConsent
+  TotpEnrolment <|-- UserTotpDevice
+  IAggregateRoot <|.. User
+  IAggregateRoot <|.. ConsentDocument
+  IAggregateRoot <|.. UserConsent
+  IAggregateRoot <|.. UserPasskey
+  IAggregateRoot <|.. PasskeyChallenge
+  IAggregateRoot <|.. AuthorizationCode
+  IAggregateRoot <|.. ClientRedirectUri
+  IAggregateRoot <|.. DeviceCode
+  IAggregateRoot <|.. SsoSession
+  IAggregateRoot <|.. UserClientConsent
+  IAggregateRoot <|.. UserTotpDevice
+</pre>
+    </div>
+  </section>
+
+  <footer>
+    Opaque tokens are stored and matched only as hashes (<code>TokenGenerator.Hash</code>); the session cache is a Redis projection keyed by the access-token hash. Delivered one-time codes travel through outbox integration events to a notifier; TOTP and WebAuthn proofs are verified in-process. RBAC changes raise domain events that project into the Redis RBAC and scope caches after the save — directly or via a background job — with a reconciliation job repairing drift on a schedule. Diagrams reflect the handlers under <code>Accounts</code>, <code>Users</code>, <code>Roles</code>, <code>Permissions</code>, <code>Scopes</code>, and <code>Clients</code> commands, plus the projection jobs under <code>Infrastructure/Authorization</code>. The OTP and Notifications sections reflect <code>GM.OTP.Samples</code> (generate/verify handlers and the inbox worker) and <code>GM.Notifications.Samples</code> (per-channel send handlers and the channel + inbox workers).
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+  (function () {
+    var root = document.documentElement;
+    function current() {
+      var set = root.getAttribute('data-theme');
+      if (set) return set;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    // Restore saved theme before first render so diagrams match the page.
+    try {
+      var saved = localStorage.getItem('idflows-theme');
+      if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+    } catch (e) {}
+
+    // Render each diagram ourselves so we control the mermaid theme in both light and dark.
+    var blocks = Array.prototype.slice.call(document.querySelectorAll('pre.mmd'));
+    var sources = blocks.map(function (b) { return b.textContent; });
+    var outs = blocks.map(function (b) {
+      var o = b.nextElementSibling;
+      if (!o || !o.classList.contains('mmd-out')) {
+        o = document.createElement('div');
+        o.className = 'mmd-out';
+        b.parentNode.insertBefore(o, b.nextSibling);
+      }
+      return o;
+    });
+
+    var seq = 0;
+    function renderDiagrams() {
+      if (!window.mermaid) return;
+      seq++;
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: current() === 'dark' ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+        sequence: { useMaxWidth: true, mirrorActors: false },
+        flowchart: { useMaxWidth: true, htmlLabels: true }
+      });
+      blocks.forEach(function (b, i) {
+        var id = 'mmd-' + i + '-' + seq;
+        var out = outs[i];
+        try {
+          var res = mermaid.render(id, sources[i]);
+          if (res && typeof res.then === 'function') {
+            res.then(function (r) { out.className = 'mmd-out'; out.innerHTML = r.svg; })
+               .catch(function () { out.className = 'mmd-out err'; out.textContent = 'Diagram failed to render.'; });
+          } else if (res && res.svg) {
+            out.className = 'mmd-out'; out.innerHTML = res.svg;
+          }
+        } catch (e) {
+          out.className = 'mmd-out err'; out.textContent = 'Diagram failed to render.';
+        }
+      });
+    }
+
+    if (window.mermaid) renderDiagrams();
+    else window.addEventListener('load', renderDiagrams);
+
+    var btn = document.getElementById('themeBtn');
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('idflows-theme', next); } catch (e) {}
+      renderDiagrams();
+    });
+  })();
+</script>
+
+</body></html>

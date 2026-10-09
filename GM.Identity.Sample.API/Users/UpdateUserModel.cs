@@ -16,6 +16,9 @@ public class UpdateUserModel
     /// <summary>The phone number.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "PhoneNumber")]
     public string? PhoneNumber { get; set; }
+
+    /// <summary>Optional personal details, stored 1:1 with the user.</summary>
+    public UpdateUserPersonalInfoModel? PersonalInfo { get; set; }
 }
 
 public class UpdateUserModelValidator : AbstractValidator<UpdateUserModel>

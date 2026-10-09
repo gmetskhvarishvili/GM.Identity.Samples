@@ -3,6 +3,7 @@ using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,9 @@ public class UpdateUserCommand : IRequest
     public string? Username { get; set; }
     public string? Email { get; set; }
     public string? PhoneNumber { get; set; }
+
+    /// <summary>Optional personal details, stored 1:1 with the user.</summary>
+    public UpdateUserPersonalInfoCommand? PersonalInfo { get; set; }
 }
 
 public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
@@ -31,14 +35,15 @@ public class UpdateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
 {
     public async Task Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
-        // the root aggregate
+        // Load tracked (asNoTracking: false) and include the 1:1 personal info, so a change to it — or a first
+        // one — is persisted by change tracking without a manual Update() reattach.
         var entity = await unitOfWork.UserRepository
+            .Query(false, null)
+            .Include(x => x.PersonalInfo)
             .FirstOrDefaultAsync(x => x.Id == request.Id
                                       && x.IsActive
                                       && !x.IsDeleted
                                       && !x.IsHidden,
-                true,
-                null,
                 cancellationToken);
 
         if (entity == null)
@@ -74,8 +79,14 @@ public class UpdateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
         if (phoneChanged)
             entity.ResetPhoneNumberConfirmation();
 
-        // Persist the aggregate
-        unitOfWork.UserRepository.Update(entity);
+        if (request.PersonalInfo is not null)
+            entity.SetPersonalInfo(
+                request.PersonalInfo.FirstName,
+                request.PersonalInfo.LastName,
+                request.PersonalInfo.PersonalNumber,
+                request.PersonalInfo.BirthDate);
+
+        // Entity is tracked; change tracking persists the user and its owned personal-info row.
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

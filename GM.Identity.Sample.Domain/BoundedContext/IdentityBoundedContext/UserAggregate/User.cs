@@ -14,6 +14,8 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorA
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
 using GM.Identity.Domain.Identity.UserAggregate.Entities;
 
+using System;
+
 namespace GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 
 public class User : GMUser
@@ -40,4 +42,16 @@ public class User : GMUser
         string username,
         string? email,
         string? phoneNumber) => new(username, email, phoneNumber);
+
+    /// <summary>Optional personal details, held 1:1 and owned by the user aggregate.</summary>
+    public UserPersonalInfo? PersonalInfo { get; private set; }
+
+    /// <summary>Sets or updates the user's personal details (creates the 1:1 row on first use).</summary>
+    public void SetPersonalInfo(string? firstName, string? lastName, string? personalNumber, DateTime? birthDate)
+    {
+        if (PersonalInfo is null)
+            PersonalInfo = UserPersonalInfo.Create(Id, firstName, lastName, personalNumber, birthDate);
+        else
+            PersonalInfo.Update(firstName, lastName, personalNumber, birthDate);
+    }
 }

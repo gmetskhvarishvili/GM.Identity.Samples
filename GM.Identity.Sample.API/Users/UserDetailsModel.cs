@@ -17,4 +17,7 @@ public class UserDetailsModel : AuditableModel
     /// <summary>The username.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "UserName")]
     public string? Username { get; set; }
+
+    /// <summary>Optional personal details, stored 1:1 with the user.</summary>
+    public UserPersonalInfoModel? PersonalInfo { get; set; }
 }

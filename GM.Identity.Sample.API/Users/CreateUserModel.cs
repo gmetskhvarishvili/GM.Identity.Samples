@@ -32,6 +32,9 @@ public class CreateUserModel
     /// <summary>Consent documents the user accepts at registration.</summary>
     [Display(ResourceType = typeof(StringResource), Name = "Consents")]
     public IEnumerable<CreateUserConsentModel>? Consents { get; set; }
+
+    /// <summary>Optional personal details, stored 1:1 with the user.</summary>
+    public CreateUserPersonalInfoModel? PersonalInfo { get; set; }
 }
 
 public class CreateUserModelValidator : AbstractValidator<CreateUserModel>

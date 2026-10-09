@@ -1483,6 +1483,24 @@
         <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.Consents">
             <summary>Consent documents the user accepts at registration.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.PersonalInfo">
+            <summary>Optional personal details, stored 1:1 with the user.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.CreateUserPersonalInfoModel">
+            <summary>Personal details supplied when creating a user; stored 1:1 with the user.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserPersonalInfoModel.FirstName">
+            <summary>Given name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserPersonalInfoModel.LastName">
+            <summary>Family name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserPersonalInfoModel.PersonalNumber">
+            <summary>A national / personal identification number.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserPersonalInfoModel.BirthDate">
+            <summary>Date of birth.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateUserRoleModel">
             <summary>Create user role model.</summary>
         </member>
@@ -1600,11 +1618,29 @@
         <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.PhoneNumber">
             <summary>The phone number.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.PersonalInfo">
+            <summary>Optional personal details, stored 1:1 with the user.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UpdateUserPasswordModel">
             <summary>Update user password model.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Users.UpdateUserPasswordModel.Password">
             <summary>The password.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UpdateUserPersonalInfoModel">
+            <summary>Personal details supplied when updating a user; stored 1:1 with the user.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserPersonalInfoModel.FirstName">
+            <summary>Given name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserPersonalInfoModel.LastName">
+            <summary>Family name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserPersonalInfoModel.PersonalNumber">
+            <summary>A national / personal identification number.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserPersonalInfoModel.BirthDate">
+            <summary>Date of birth.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UserDetailsModel">
             <summary>User details model.</summary>
@@ -1618,6 +1654,9 @@
         <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Username">
             <summary>The username.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.PersonalInfo">
+            <summary>Optional personal details, stored 1:1 with the user.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UserModel">
             <summary>User model.</summary>
         </member>
@@ -1629,6 +1668,24 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Users.UserModel.Username">
             <summary>The username.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserModel.PersonalInfo">
+            <summary>Optional personal details, stored 1:1 with the user.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.UserPersonalInfoModel">
+            <summary>A user's optional personal details, carried 1:1 with the user.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserPersonalInfoModel.FirstName">
+            <summary>Given name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserPersonalInfoModel.LastName">
+            <summary>Family name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserPersonalInfoModel.PersonalNumber">
+            <summary>A national / personal identification number.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserPersonalInfoModel.BirthDate">
+            <summary>Date of birth.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UsersController">
             <summary>

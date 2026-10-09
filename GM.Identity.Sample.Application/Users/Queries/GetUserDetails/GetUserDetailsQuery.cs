@@ -2,10 +2,13 @@
 using GM.Exceptions;
 using GM.API.Application.Models;
 using GM.EntityFramework.Domain.Specifications;
+using GM.Identity.Sample.Application.Users;
 using GM.Identity.Sample.Common.Resources;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,12 +33,12 @@ public class GetUserDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
     {
         // the root aggregate
         var entity = await unitOfWork.UserRepository
+            .Query(true, null)
+            .Include(x => x.PersonalInfo)
             .FirstOrDefaultAsync(x => x.Id == request.Id
                                       && (request.Visibility.HasFlag(VisibilityScope.IncludeInactive) || x.IsActive)
                                       && (request.Visibility.HasFlag(VisibilityScope.IncludeDeleted) || !x.IsDeleted)
                                       && (request.Visibility.HasFlag(VisibilityScope.IncludeHidden) || !x.IsHidden),
-                true,
-                null,
                 cancellationToken);
 
         if (entity == null)
@@ -57,4 +60,5 @@ public class UserDetailsDto : AuditableDto
     public Guid Id { get; set; }
     public string? Email { get; set; }
     public string? Username { get; set; }
+    public UserPersonalInfoDto? PersonalInfo { get; set; }
 }

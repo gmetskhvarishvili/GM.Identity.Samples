@@ -37,6 +37,9 @@ public class CreateUserCommand : IRequest<Guid>
 
     /// <summary>Consent documents the user accepts at registration; each is recorded as an audit row.</summary>
     public IEnumerable<RecordUserConsentCommand>? Consents { get; set; }
+
+    /// <summary>Optional personal details, stored 1:1 with the user.</summary>
+    public CreateUserPersonalInfoCommand? PersonalInfo { get; set; }
 }
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
@@ -84,6 +87,14 @@ public class CreateUserCommandHandler(
             .Hash(request.Password!);
 
         entity.UpdatePassword(hash, salt);
+
+        // Optional 1:1 personal details, owned by the user aggregate (persisted with it).
+        if (request.PersonalInfo is not null)
+            entity.SetPersonalInfo(
+                request.PersonalInfo.FirstName,
+                request.PersonalInfo.LastName,
+                request.PersonalInfo.PersonalNumber,
+                request.PersonalInfo.BirthDate);
 
         // Add child items if any
         if (request.UserRoles?.Any() == true)

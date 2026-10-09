@@ -11,6 +11,9 @@ public class UserSpecification : BaseSpecification<User>
     {
         AddVisibilityFilter(visibility);
 
+        // Eager-load the owned 1:1 personal info so list projections can include it.
+        AddInclude(s => s.PersonalInfo!);
+
         if (id.HasValue && id.Value != Guid.Empty)
             AddCriteria(s => s.Id == id);
 

@@ -52,4 +52,5 @@ public class UserDto : AuditableDto
     public Guid Id { get; set; }
     public string? Email { get; set; }
     public string? Username { get; set; }
+    public UserPersonalInfoDto? PersonalInfo { get; set; }
 }

@@ -1,0 +1,44 @@
+# Everything goes through a gateway. Both the public and admin gateways now route /api/demo/* to this
+# service (cluster "service-api"), validating the token and forwarding the actor headers.
+@gateway = https://localhost:7225
+# Admin gateway alternative: https://localhost:7226
+@serviceDirect = https://localhost:7300
+
+### 1) Get an access token (through the gateway's /connect route). Copy access_token into @token below.
+POST {{gateway}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&username=admin&password=Admin123!&client_id=11111111-1111-1111-1111-111111111111&client_secret=secret
+
+### Paste the access_token from the response:
+@token = PASTE_ACCESS_TOKEN_HERE
+
+### 2) Public — no token required (anonymous route at the edge).
+GET {{gateway}}/api/demo/public
+
+### 3) Token only — any valid token (401 at the gateway without one).
+GET {{gateway}}/api/demo/token
+Authorization: Bearer {{token}}
+
+### 4) Who am I — the actor the gateway forwarded (X-User-Id / X-Client-Id).
+GET {{gateway}}/api/demo/whoami
+Authorization: Bearer {{token}}
+
+### 5) Permission (user/RBAC dimension) — needs the 'demo.read' permission.
+#    To make it pass: on the provider, create permission 'demo.read', grant it to a role,
+#    and assign that role to your user. 403 until then.
+GET {{gateway}}/api/demo/permission
+Authorization: Bearer {{token}}
+
+### 6) Scope (client dimension) — needs a scope covering 'manage:identity'.
+#    The seeded client (identity.manage) passes out of the box.
+GET {{gateway}}/api/demo/scope
+Authorization: Bearer {{token}}
+
+### 7) Both dimensions together.
+GET {{gateway}}/api/demo/permission-and-scope
+Authorization: Bearer {{token}}
+
+### (Optional) Same call straight to the service, bypassing the gateway.
+GET {{serviceDirect}}/api/demo/whoami
+Authorization: Bearer {{token}}

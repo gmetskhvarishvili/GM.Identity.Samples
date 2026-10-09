@@ -298,6 +298,42 @@
         <member name="P:GM.Identity.Sample.API.Accounts.RevokeTokenModel.ClientSecret">
             <summary>The client secret.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Authorization.AuthorizationController">
+            <summary>
+            Authorization-decision endpoints for resource servers. A resource server (e.g. the Service API) delegates
+            its permission and scope checks here over HTTP instead of reading the provider's projections directly —
+            this API is the source of truth for permissions and scopes. The lookups resolve the name to its id and
+            check the RBAC / scope projection.
+            </summary>
+            <remarks>
+            These endpoints disclose whether a given user/client is granted something, so in production restrict them
+            (internal network, mTLS, or a service credential). They are anonymous here to keep the sample simple.
+            </remarks>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Authorization.AuthorizationController.#ctor(GM.Identity.Authorization.IPermissionCache,GM.Identity.Authorization.IScopeCache)">
+            <summary>
+            Authorization-decision endpoints for resource servers. A resource server (e.g. the Service API) delegates
+            its permission and scope checks here over HTTP instead of reading the provider's projections directly —
+            this API is the source of truth for permissions and scopes. The lookups resolve the name to its id and
+            check the RBAC / scope projection.
+            </summary>
+            <remarks>
+            These endpoints disclose whether a given user/client is granted something, so in production restrict them
+            (internal network, mTLS, or a service credential). They are anonymous here to keep the sample simple.
+            </remarks>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Authorization.AuthorizationController.CheckPermission(System.Guid,System.String,System.Threading.CancellationToken)">
+            <summary>Whether the user holds the named permission (user / RBAC dimension).</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Authorization.AuthorizationController.CheckScope(System.Guid,System.String,System.Threading.CancellationToken)">
+            <summary>Whether the client is granted a scope covering the named operation (client dimension).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Authorization.AuthorizationDecision">
+            <summary>The outcome of an authorization check.</summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Authorization.AuthorizationDecision.#ctor(System.Boolean)">
+            <summary>The outcome of an authorization check.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientDetailsModel">
             <summary>Client details model.</summary>
         </member>

@@ -22,6 +22,7 @@
     <Project Path="GM.Identity.Sample.Infrastructure/GM.Identity.Sample.Infrastructure.csproj" />
     <Project Path="GM.Identity.Sample.Persistence/GM.Identity.Sample.Persistence.csproj" />
     <Project Path="GM.Identity.Sample.Producer.Worker/GM.Identity.Sample.Producer.Worker.csproj" />
+    <Project Path="GM.Identity.Sample.Service.API/GM.Identity.Sample.Service.API.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GM.Identity.Sample.Tests/GM.Identity.Sample.Tests.csproj" />

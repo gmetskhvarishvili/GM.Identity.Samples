@@ -27,22 +27,19 @@ public class GetPermissionsListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<PermissionDto>> Handle(GetPermissionsListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new PermissionSpecification(request.Id, request.Name, request.Description,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.PermissionRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.PermissionRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
         var spec = new PermissionSpecification(request.Id, request.Name, request.Description,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+            dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.PermissionRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<PermissionDto>
-        {
-            Items = entities.Adapt<List<PermissionDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Adapt<List<PermissionDto>>(), totalCount);
     }
 }
 

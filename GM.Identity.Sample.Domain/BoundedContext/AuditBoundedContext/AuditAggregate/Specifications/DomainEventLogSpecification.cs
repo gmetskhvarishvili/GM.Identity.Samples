@@ -47,7 +47,8 @@ public class DomainEventLogSpecification : BaseSpecification<DomainEventLog>
         if (createdTo.HasValue)
             AddCriteria(x => x.CreatedAt <= createdTo.Value);
 
-        ApplyPaging(paging);
-        OrderBy = "OccurredOn desc";
+        // Always newest-first. Through ApplyListQuery so paging by LastKeyValue continues after the given
+        // event in this order (ties broken by Id) instead of the order being overwritten afterwards.
+        ApplyListQuery(new AuditDateRange(), paging, new OrderingOptions { OrderBy = "OccurredOn desc" });
     }
 }

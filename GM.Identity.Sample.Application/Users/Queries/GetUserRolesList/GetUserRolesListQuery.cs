@@ -34,20 +34,17 @@ public class GetUserRolesListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<RoleDto>> Handle(GetUserRolesListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new UserRoleSpecification(request.UserId,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.UserRoleRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.UserRoleRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
-        var spec = new UserRoleSpecification(request.UserId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+        var spec = new UserRoleSpecification(request.UserId, dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.UserRoleRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<RoleDto>
-        {
-            Items = entities.Select(x=>x.Role).Adapt<List<RoleDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Select(x=>x.Role).Adapt<List<RoleDto>>(), totalCount);
     }
 }

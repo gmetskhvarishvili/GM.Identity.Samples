@@ -36,6 +36,7 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<UserSessionDto>> Handle(GetUserSessionsListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new UserSessionSpecification(
             request.Id,
@@ -44,7 +45,9 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.IsRevoked,
             request.IsExpired,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.UserSessionRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.UserSessionRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
         var spec = new UserSessionSpecification(
             request.Id,
@@ -52,16 +55,10 @@ public class GetUserSessionsListQueryHandler(IUnitOfWork unitOfWork)
             request.ClientId,
             request.IsRevoked,
             request.IsExpired,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+            dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.UserSessionRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<UserSessionDto>
-        {
-            Items = entities.Adapt<List<UserSessionDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Adapt<List<UserSessionDto>>(), totalCount);
     }
 }
 

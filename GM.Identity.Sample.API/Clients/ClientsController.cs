@@ -279,7 +279,8 @@ public class ClientsController : BaseController
         var query = request.Adapt<GetClientsListQuery>();
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<ClientModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
     
@@ -304,7 +305,8 @@ public class ClientsController : BaseController
         query.ClientId = id;
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<ScopeModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
     
@@ -329,7 +331,8 @@ public class ClientsController : BaseController
         query.ClientId = id;
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<ClientSessionModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
 

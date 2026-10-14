@@ -32,22 +32,19 @@ public class GetConsentDocumentsListQueryHandler(IUnitOfWork unitOfWork)
         GetConsentDocumentsListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new ConsentDocumentSpecification(request.Id, request.ConsentType, request.IsMandatory,
             request.IsCurrent, dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.ConsentDocumentRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.ConsentDocumentRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
         var spec = new ConsentDocumentSpecification(request.Id, request.ConsentType, request.IsMandatory,
-            request.IsCurrent, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+            request.IsCurrent, dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ConsentDocumentRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<ConsentDocumentDto>
-        {
-            Items = entities.Adapt<List<ConsentDocumentDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Adapt<List<ConsentDocumentDto>>(), totalCount);
     }
 }
 

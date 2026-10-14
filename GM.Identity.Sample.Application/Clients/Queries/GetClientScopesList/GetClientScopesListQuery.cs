@@ -33,20 +33,17 @@ public class GetClientScopesListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<ScopeDto>> Handle(GetClientScopesListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new ClientScopeSpecification(request.ClientId,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.ClientScopeRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.ClientScopeRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
-        var spec = new ClientScopeSpecification(request.ClientId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+        var spec = new ClientScopeSpecification(request.ClientId, dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ClientScopeRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<ScopeDto>
-        {
-            Items = entities.Select(x=>x.Scope).Adapt<List<ScopeDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Select(x=>x.Scope).Adapt<List<ScopeDto>>(), totalCount);
     }
 }

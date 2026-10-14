@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="GM.EntityFramework.Domain" Version="1.4.0"/>
+        <PackageReference Include="GM.EntityFramework.Domain" Version="1.5.0"/>
         <PackageReference Include="GM.Identity.Domain" Version="2.1.0" />
         <PackageReference Include="GM.OTP.Domain" Version="1.2.0" />
         <PackageReference Include="GM.Messaging.Domain" Version="1.2.1" />

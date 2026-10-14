@@ -28,20 +28,17 @@ public class GetScopeOperationsListQueryHandler(IUnitOfWork unitOfWork)
         CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new ScopeOperationSpecification(request.ScopeId,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.ScopeOperationRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.ScopeOperationRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
-        var spec = new ScopeOperationSpecification(request.ScopeId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+        var spec = new ScopeOperationSpecification(request.ScopeId, dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ScopeOperationRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<OperationDto>
-        {
-            Items = entities.Select(x=>x.Operation).Adapt<List<OperationDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Select(x=>x.Operation).Adapt<List<OperationDto>>(), totalCount);
     }
 }

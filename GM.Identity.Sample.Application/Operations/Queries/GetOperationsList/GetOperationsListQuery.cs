@@ -28,22 +28,19 @@ public class GetOperationsListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<OperationDto>> Handle(GetOperationsListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new OperationSpecification(request.Id, request.Name, request.Description,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.OperationRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.OperationRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
         var spec = new OperationSpecification(request.Id, request.Name, request.Description,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+            dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.OperationRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<OperationDto>
-        {
-            Items = entities.Adapt<List<OperationDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Adapt<List<OperationDto>>(), totalCount);
     }
 }
 

@@ -28,22 +28,19 @@ public class GetUsersListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<UserDto>> Handle(GetUsersListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new UserSpecification(request.Id, request.Email, request.Username,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.UserRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.UserRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
         var spec = new UserSpecification(request.Id, request.Email, request.Username,
-            dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+            dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.UserRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<UserDto>
-        {
-            Items = entities.Adapt<List<UserDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Adapt<List<UserDto>>(), totalCount);
     }
 }
 

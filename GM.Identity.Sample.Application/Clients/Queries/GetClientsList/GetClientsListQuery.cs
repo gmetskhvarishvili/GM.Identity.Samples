@@ -26,21 +26,18 @@ public class GetClientsListQueryHandler(IUnitOfWork unitOfWork)
     public async Task<PagedListDto<ClientDto>> Handle(GetClientsListQuery request, CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new ClientSpecification(request.Id, request.Name,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.ClientRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.ClientRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
-        var spec = new ClientSpecification(request.Id, request.Name, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+        var spec = new ClientSpecification(request.Id, request.Name, dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.ClientRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<ClientDto>
-        {
-            Items = entities.Adapt<List<ClientDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Adapt<List<ClientDto>>(), totalCount);
     }
 }
 

@@ -105,7 +105,8 @@ public class ConsentDocumentsController : BaseController
         var query = request.Adapt<GetConsentDocumentsListQuery>();
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<ConsentDocumentModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
 

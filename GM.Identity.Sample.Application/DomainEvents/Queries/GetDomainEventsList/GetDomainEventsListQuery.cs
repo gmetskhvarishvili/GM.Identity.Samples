@@ -38,27 +38,24 @@ public class GetDomainEventsListQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<PagedListDto<DomainEventDto>> Handle(GetDomainEventsListQuery request, CancellationToken cancellationToken)
     {
+        var paging = request.ToPagingOptions();
         var countSpec = new DomainEventLogSpecification(
             request.UserId, request.ClientId, request.SessionId, request.TenantId,
             request.IpAddress, request.ChannelId, request.EventType,
             request.OccurredFrom, request.OccurredTo, request.CreatedFrom, request.CreatedTo,
             PagingOptions.None);
-        var totalCount = await unitOfWork.DomainEventLogRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.DomainEventLogRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
         var spec = new DomainEventLogSpecification(
             request.UserId, request.ClientId, request.SessionId, request.TenantId,
             request.IpAddress, request.ChannelId, request.EventType,
             request.OccurredFrom, request.OccurredTo, request.CreatedFrom, request.CreatedTo,
-            request.ToPagingOptions());
+            paging);
         var items = await unitOfWork.DomainEventLogRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<DomainEventDto>
-        {
-            Items = items.Adapt<List<DomainEventDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(items, items.Adapt<List<DomainEventDto>>(), totalCount);
     }
 }
 

@@ -28,20 +28,17 @@ public class GetRolePermissionsListQueryHandler(IUnitOfWork unitOfWork)
         CancellationToken cancellationToken)
     {
         var dateRange = request.ToAuditDateRange();
+        var paging = request.ToPagingOptions();
 
         var countSpec = new RolePermissionSpecification(request.RoleId,
             dateRange, PagingOptions.None, OrderingOptions.None, request.Visibility);
-        var totalCount = await unitOfWork.RolePermissionRepository.CountAsync(countSpec, cancellationToken);
+        long? totalCount = paging.IncludeTotalCount
+            ? await unitOfWork.RolePermissionRepository.CountAsync(countSpec, cancellationToken)
+            : null;
 
-        var spec = new RolePermissionSpecification(request.RoleId, dateRange, request.ToPagingOptions(), request.ToOrderingOptions(), request.Visibility);
+        var spec = new RolePermissionSpecification(request.RoleId, dateRange, paging, request.ToOrderingOptions(), request.Visibility);
         var entities = await unitOfWork.RolePermissionRepository.ListAsync(spec, cancellationToken);
 
-        return new PagedListDto<PermissionDto>
-        {
-            Items = entities.Select(x=>x.Permission).Adapt<List<PermissionDto>>(),
-            CurrentPage = request.CurrentPage,
-            PageSize = request.PageSize,
-            TotalCount = totalCount,
-        };
+        return request.ToPagedListDto(entities, entities.Select(x=>x.Permission).Adapt<List<PermissionDto>>(), totalCount);
     }
 }

@@ -535,7 +535,8 @@ public class UsersController : BaseController
         var query = request.Adapt<GetUsersListQuery>();
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<UserModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
 
@@ -560,7 +561,8 @@ public class UsersController : BaseController
         query.UserId = id;
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<RoleModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
     
@@ -585,7 +587,8 @@ public class UsersController : BaseController
         query.UserId = id;
         var response = await Mediator.Send(query, cancellationToken);
         var result = response.Items.Adapt<IEnumerable<UserSessionModel>>();
-        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages);
+        AddPaginationHeader(response.TotalCount, response.PageSize, response.CurrentPage, response.TotalPages,
+            response.LastKeyProperty, response.LastKeyValue, response.HasMore);
         return Ok(result);
     }
 

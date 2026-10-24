@@ -1,0 +1,54 @@
+meta {
+  name: Add User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "username": "{{userName}}",
+    "email": "{{userName}}@test.local",
+    "phoneNumber": "+995555000000",
+    "password": "Bruno#2026pass",
+    "userRoles": [
+      { "roleId": "{{roleId}}" }
+    ],
+    "twoFactorAuthTypeIds": [],
+    "consents": [],
+    "personalInfo": {
+      "firstName": "Bruno",
+      "lastName": "Tester",
+      "personalNumber": "01001000001",
+      "birthDate": "1990-01-01T00:00:00Z"
+    }
+  }
+}
+
+script:pre-request {
+  // A fresh name per run, so the unique-name rule never trips.
+  bru.setEnvVar("userName", `bruno-user-${Date.now()}`);
+}
+
+script:post-response {
+  bru.setEnvVar("userId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns the new id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

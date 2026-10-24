@@ -1,0 +1,41 @@
+meta {
+  name: Add Permission
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Permissions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "permission 1",
+    "description": "Created by the Bruno collection"
+  }
+}
+
+script:pre-request {
+  // A fresh name per run, so the unique-name rule never trips and runs do not collide.
+  bru.setEnvVar("permissionName", `bruno-test-${Date.now()}`);
+}
+
+script:post-response {
+  bru.setEnvVar("permissionId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("returns the new permission id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

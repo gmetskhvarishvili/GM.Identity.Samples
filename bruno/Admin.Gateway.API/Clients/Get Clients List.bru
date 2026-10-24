@@ -1,0 +1,49 @@
+meta {
+  name: Get Clients List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{adminGateway}}/api/v1/Clients?currentPage=1&pageSize={{pageSize}}&orderBy=CreatedAt desc&visibility=All
+  body: none
+  auth: bearer
+}
+
+params:query {
+  currentPage: 1
+  pageSize: {{pageSize}}
+  orderBy: CreatedAt desc
+  visibility: All
+  ~lastKeyProperty: Id
+  ~lastKeyValue: {{lastKeyValue}}
+  ~includeTotalCount: false
+  ~createdAtFrom: 01/01/2026 00:00:00
+  ~createdAtTo: 31/12/2026 23:59:59
+  ~updatedAtFrom: 01/01/2026 00:00:00
+  ~updatedAtTo: 31/12/2026 23:59:59
+  ~id: {{clientId}}
+  ~name: sample-client
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("returns a page of rows", function () {
+    const items = res.getBody();
+    expect(items).to.be.an("array");
+    expect(items.length).to.be.at.most(Number(bru.getEnvVar("pageSize")));
+    if (items.length) expect(items[0]).to.include.keys("id", "name");
+  });
+  
+  test("sends the X-Pagination header", function () {
+    const page = JSON.parse(res.getHeader("x-pagination"));
+    expect(page.currentPage).to.equal(1);
+  });
+}

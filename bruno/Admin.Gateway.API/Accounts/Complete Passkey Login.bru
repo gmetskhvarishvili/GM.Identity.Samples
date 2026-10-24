@@ -1,0 +1,32 @@
+meta {
+  name: Complete Passkey Login
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{adminGateway}}/connect/passkey/complete
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userName": "{{username}}",
+    "clientId": "{{clientId}}",
+    "credentialId": "bruno-credential-id",
+    "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+    "clientDataJson": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+    "signature": "MEUCIQ"
+  }
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("issues an access token", function () {
+    expect(res.getBody().accessToken).to.be.a("string").and.not.empty;
+  });
+}

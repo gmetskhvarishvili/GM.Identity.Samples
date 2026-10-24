@@ -1,0 +1,38 @@
+meta {
+  name: Add Consent Document Version
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{adminGateway}}/api/v1/ConsentDocuments/{{consentType}}/Versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Terms of Service",
+    "content": "Version 2, added by the Bruno collection.",
+    "version": "2.0",
+    "isMandatory": false
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("consentDocumentVersionId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns the new id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Deactivate Client
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{adminGateway}}/api/v1/Clients/{{createdClientId}}/Deactivate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

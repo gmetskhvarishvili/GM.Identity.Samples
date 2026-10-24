@@ -1,0 +1,21 @@
+meta {
+  name: Permission And Scope
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{gateway}}/api/demo/permission-and-scope
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

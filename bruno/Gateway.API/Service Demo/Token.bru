@@ -1,0 +1,21 @@
+meta {
+  name: Token
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{gateway}}/api/demo/token
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

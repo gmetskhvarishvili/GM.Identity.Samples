@@ -1,0 +1,48 @@
+meta {
+  name: Add Consent Document
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{adminGateway}}/api/v1/ConsentDocuments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "consentType": "{{consentType}}",
+    "title": "Terms of Service",
+    "content": "Created by the Bruno collection.",
+    "version": "1.0",
+    "isMandatory": false
+  }
+}
+
+vars:pre-request {
+  consentType: test
+}
+
+script:pre-request {
+  // A fresh consent type per run, so the unique-type rule never trips.
+  bru.setEnvVar("consentType", `bruno-terms-${Date.now()}`);
+}
+
+script:post-response {
+  bru.setEnvVar("consentDocumentId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("returns the new id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

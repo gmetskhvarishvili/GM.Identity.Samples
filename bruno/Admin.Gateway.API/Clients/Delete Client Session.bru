@@ -1,0 +1,21 @@
+meta {
+  name: Delete Client Session
+  type: http
+  seq: 16
+}
+
+delete {
+  url: {{adminGateway}}/api/v1/Clients/{{createdClientId}}/Sessions/{{clientSessionId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

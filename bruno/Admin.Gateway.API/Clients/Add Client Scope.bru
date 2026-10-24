@@ -1,0 +1,27 @@
+meta {
+  name: Add Client Scope
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Clients/{{createdClientId}}/Scopes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "scopeId": "{{scopeId}}"
+  }
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

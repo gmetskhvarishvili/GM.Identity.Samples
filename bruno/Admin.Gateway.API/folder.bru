@@ -1,0 +1,17 @@
+meta {
+  name: Admin.Gateway.API
+  seq: 1
+}
+
+docs {
+  Admin gateway ({{adminGateway}}) — the full Identity API. Run Accounts/Login first.
+
+  Each area is one request per endpoint: List, Add (saves the new id), Details, Update, then the
+  lifecycle actions and any sub-resources. Some requests use ids saved by another folder's Add request:
+  - Scopes use operationId (Operations), Clients use scopeId (Scopes)
+  - Roles use permissionId (Permissions), Users use roleId (Roles) and consentType (Consent Documents)
+  - Add Client saves createdClientId — clientId stays the seeded client that Login signs in with.
+
+  Needs data the run can't make: Delete Client/User Session (an existing session), Confirm User Totp
+  (a code from the authenticator app), Confirm User and Recover User Password (the OTP service).
+}

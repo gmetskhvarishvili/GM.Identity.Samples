@@ -1,0 +1,32 @@
+meta {
+  name: External Token
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{gateway}}/connect/external/{{externalProvider}}/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "code": "provider-authorization-code",
+    "state": "provider-state",
+    "redirectUri": "{{redirectUri}}",
+    "clientId": "{{clientId}}",
+    "clientSecret": "{{clientSecret}}"
+  }
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("issues an access token", function () {
+    const body = res.getBody();
+    expect(body.accessToken ?? body.access_token).to.be.a("string").and.not.empty;
+  });
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Get Permission Details
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{adminGateway}}/api/v1/Permissions/{{permissionId}}?visibility=All
+  body: none
+  auth: bearer
+}
+
+params:query {
+  visibility: All
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  permissionId: 34017f95-7c6c-49bb-a240-9a883774d411
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("returns the created permission", function () {
+    const body = res.getBody();
+    expect(body.id).to.equal(bru.getEnvVar("permissionId"));
+    expect(body.name).to.equal(bru.getEnvVar("permissionName"));
+    expect(body.isActive).to.equal(true);
+  });
+}

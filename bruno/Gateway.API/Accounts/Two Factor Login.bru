@@ -1,0 +1,38 @@
+meta {
+  name: Two Factor Login
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{gateway}}/connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: two_factor
+  username: {{username}}
+  password: {{password}}
+  code: 123456
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+}
+
+script:post-response {
+  const body = res.getBody() || {};
+  bru.setEnvVar("accessToken", body.accessToken ?? body.access_token);
+  bru.setEnvVar("refreshToken", body.refreshToken ?? body.refresh_token);
+  if (body.idToken) bru.setEnvVar("idToken", body.idToken);
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("issues an access token", function () {
+    const body = res.getBody();
+    expect(body.accessToken ?? body.access_token).to.be.a("string").and.not.empty;
+  });
+}

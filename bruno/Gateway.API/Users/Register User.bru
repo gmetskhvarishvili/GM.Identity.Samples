@@ -1,0 +1,39 @@
+meta {
+  name: Register User
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{gateway}}/api/v1/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{registerUserName}}",
+    "email": "{{registerUserName}}@test.local",
+    "password": "{{registerPassword}}"
+  }
+}
+
+script:pre-request {
+  // A fresh user per run, so the unique-username rule never trips.
+  bru.setEnvVar("registerUserName", `bruno-user-${Date.now()}`);
+  bru.setEnvVar("registerPassword", "Bruno#2026pass");
+}
+
+script:post-response {
+  bru.setEnvVar("registeredUserId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns the new user id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

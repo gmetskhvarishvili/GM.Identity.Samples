@@ -1,0 +1,36 @@
+meta {
+  name: Update Client
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{adminGateway}}/api/v1/Clients/{{createdClientId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "{{clientName}}-updated",
+    "redirectUris": [ "{{redirectUri}}", "https://localhost:5001/callback-2" ],
+    "backchannelLogoutUri": "https://localhost:5001/logout/backchannel",
+    "frontchannelLogoutUri": "",
+    "requireConsent": true
+  }
+}
+
+docs {
+  Every field except name is optional: omit one to keep it. "redirectUris" replaces the whole list (an empty
+  list clears it); an empty logout URI clears it. The secret is changed with Rotate Client Secret.
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

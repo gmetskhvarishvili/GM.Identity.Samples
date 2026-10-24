@@ -1,0 +1,27 @@
+meta {
+  name: Confirm User Init
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Users/{{userId}}/Confirm/Init
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "confirmationType": 0
+  }
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Update Role
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{adminGateway}}/api/v1/Roles/{{roleId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "{{roleName}}-updated"
+  }
+}
+
+vars:pre-request {
+  roleId: 92b8e240-dc3a-44d8-be17-fc96f270a4a2
+  roleName: role 1
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

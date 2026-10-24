@@ -1,0 +1,21 @@
+meta {
+  name: Hide Scope
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Scopes/{{scopeId}}/Hide
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

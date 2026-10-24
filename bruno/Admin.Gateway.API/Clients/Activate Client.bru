@@ -1,0 +1,21 @@
+meta {
+  name: Activate Client
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{adminGateway}}/api/v1/Clients/{{createdClientId}}/Activate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

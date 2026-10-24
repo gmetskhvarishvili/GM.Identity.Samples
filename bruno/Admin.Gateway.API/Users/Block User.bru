@@ -1,0 +1,21 @@
+meta {
+  name: Block User
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{adminGateway}}/api/v1/Users/{{userId}}/Block
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

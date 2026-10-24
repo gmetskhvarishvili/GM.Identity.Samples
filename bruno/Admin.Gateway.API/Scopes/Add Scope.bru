@@ -1,0 +1,47 @@
+meta {
+  name: Add Scope
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Scopes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "{{scopeName}}",
+    "scopeOperations": [
+      { "operationId": "{{operationId}}" }
+    ]
+  }
+}
+
+vars:pre-request {
+  scopeName: scope 1
+}
+
+script:pre-request {
+  // A fresh name per run, so the unique-name rule never trips.
+  bru.setEnvVar("scopeName", `bruno.scope-${Date.now()}`);
+}
+
+script:post-response {
+  bru.setEnvVar("scopeId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("returns the new id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

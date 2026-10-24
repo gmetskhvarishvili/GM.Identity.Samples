@@ -1,0 +1,40 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{gateway}}/connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: password
+  username: {{username}}
+  password: {{password}}
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+}
+
+script:post-response {
+  const body = res.getBody() || {};
+  // Saved for every later request; the Me calls send it as the bearer token.
+  bru.setEnvVar("accessToken", body.accessToken ?? body.access_token);
+  bru.setEnvVar("refreshToken", body.refreshToken ?? body.refresh_token);
+  // End Session sends it as id_token_hint.
+  if (body.idToken) bru.setEnvVar("idToken", body.idToken);
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("issues an access token without a 2FA challenge", function () {
+    const body = res.getBody();
+    expect(body.twoFactorRequired ?? false).to.equal(false);
+    expect(body.accessToken ?? body.access_token).to.be.a("string").and.not.empty;
+  });
+}

@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "GM.Identity.Samples",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

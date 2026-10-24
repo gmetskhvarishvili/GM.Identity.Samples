@@ -1,0 +1,52 @@
+meta {
+  name: Add Client
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Clients
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "{{clientName}}",
+    "secret": "secret1",
+    "clientScopes": [
+      { "scopeId": "{{scopeId}}" }
+    ],
+    "redirectUris": [ "{{redirectUri}}" ],
+    "backchannelLogoutUri": "https://localhost:5001/logout/backchannel",
+    "frontchannelLogoutUri": "https://localhost:5001/logout/frontchannel",
+    "requireConsent": false
+  }
+}
+
+vars:pre-request {
+  clientName: client 1
+}
+
+script:pre-request {
+  // A fresh name per run, so the unique-name rule never trips.
+  bru.setEnvVar("clientName", `bruno-client-${Date.now()}`);
+}
+
+script:post-response {
+  bru.setEnvVar("createdClientId", res.getBody());
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("returns the new id", function () {
+    expect(res.getBody()).to.match(/^[0-9a-f-]{36}$/i);
+  });
+}

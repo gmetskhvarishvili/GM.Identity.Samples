@@ -1,0 +1,41 @@
+meta {
+  name: Authorize
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{adminGateway}}/connect/authorize
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  client_id: {{codeClientId}}
+  redirect_uri: {{redirectUri}}
+  scope: openid profile
+  state: bruno-state
+  code_challenge: {{codeChallenge}}
+  code_challenge_method: S256
+  username: {{username}}
+  password: {{password}}
+  ~prompt: login
+  nonce: bruno-nonce
+  ~consent: true
+}
+
+script:post-response {
+  bru.setEnvVar("authorizationCode", (res.getBody() || {}).code);
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns a code and echoes the state", function () {
+    const body = res.getBody();
+    expect(body.code).to.be.a("string").and.not.empty;
+    expect(body.state).to.equal("bruno-state");
+  });
+}

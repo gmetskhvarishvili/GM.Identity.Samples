@@ -1,0 +1,29 @@
+meta {
+  name: Get User Info
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{adminGateway}}/connect/userinfo
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  bru.setEnvVar("userId", (res.getBody() || {}).sub);
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns the signed-in user's claims", function () {
+    expect(res.getBody()).to.have.property("sub");
+  });
+}

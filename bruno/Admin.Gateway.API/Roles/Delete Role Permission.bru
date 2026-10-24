@@ -1,0 +1,26 @@
+meta {
+  name: Delete Role Permission
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{adminGateway}}/api/v1/Roles/{{roleId}}/Permissions/{{permissionId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  permissionId: 34017f95-7c6c-49bb-a240-9a883774d411
+  roleId: 92b8e240-dc3a-44d8-be17-fc96f270a4a2
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: External Connect
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{gateway}}/connect/external/{{externalProvider}}?redirectUri={{redirectUri}}
+  body: none
+  auth: none
+}
+
+params:query {
+  redirectUri: {{redirectUri}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns the provider's sign-in URL", function () {
+    expect(res.getBody()).to.not.be.empty;
+  });
+}

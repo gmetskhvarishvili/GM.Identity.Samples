@@ -1,0 +1,19 @@
+headers {
+  Accept-Language: {{acceptLanguage}}
+  X-Channel-Id: {{channelId}}
+  X-Correlation-Id: {{$guid}}
+  Idempotency-Key: {{$guid}}
+}
+
+docs {
+  Settings (both gateway addresses, login, page size, language, channel) live in the Local environment — select it before running.
+  Change the gateway address or login there only.
+
+  Every request sends Accept-Language, X-Channel-Id, and a fresh X-Correlation-Id and Idempotency-Key.
+  The API ignores the key on /connect/* (login and token calls), so token responses are never stored.
+
+  Run Accounts/Login first — it saves accessToken for the other requests.
+
+  Values the scripts save (tokens, ids from Add requests) go into the Local environment as unsaved, in-memory
+  values: you can see and edit them there, and a request's own Vars (pinned ids) override them.
+}

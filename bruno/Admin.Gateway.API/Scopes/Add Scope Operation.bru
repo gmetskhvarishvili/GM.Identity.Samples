@@ -1,0 +1,27 @@
+meta {
+  name: Add Scope Operation
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{adminGateway}}/api/v1/Scopes/{{scopeId}}/Operations
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "operationId": "{{operationId}}"
+  }
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

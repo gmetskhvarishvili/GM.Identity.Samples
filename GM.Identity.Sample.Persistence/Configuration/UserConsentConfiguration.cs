@@ -4,5 +4,9 @@ using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.UserCons
 namespace GM.Identity.Sample.Persistence.Configuration;
 
 // The user-consent mapping lives in the GM.Identity base config; this fixes it to the sample's
-// aggregate and its "compliance" schema table.
-public class UserConsentConfiguration() : GMUserConsentConfiguration<UserConsent>("compliance", "user_consents");
+// aggregate (named by IdentityTableNames, without GM.Identity's gm_ prefix).
+public class UserConsentConfiguration : GMUserConsentConfiguration<UserConsent>
+{
+    protected override string Schema => IdentityTableNames.Schemas.Compliance;
+    protected override string Table => IdentityTableNames.UserConsents;
+}

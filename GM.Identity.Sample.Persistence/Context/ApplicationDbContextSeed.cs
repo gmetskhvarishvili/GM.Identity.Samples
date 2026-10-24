@@ -26,8 +26,8 @@ namespace GM.Identity.Sample.Persistence.Context;
 public class ApplicationDbContextSeed
 {
     private const string AdminRoleName = "Administrator";
-    private const string AdminUserName = "admin";
     private const string AdminEmail = "admin@local";
+    private const string AdminUserName = AdminEmail; // username and email are the same for now
 
     private const string DefaultClientName = "sample-client";
 
@@ -108,7 +108,7 @@ public class ApplicationDbContextSeed
 
             // 4) Admin user holding the Administrator role.
             var adminUser = await context.Set<User>()
-                .FirstOrDefaultAsync(u => u.UserName == AdminUserName && !u.IsDeleted, cancellationToken);
+                .FirstOrDefaultAsync(u => (u.UserName == AdminUserName || u.Email == AdminEmail) && !u.IsDeleted, cancellationToken);
             if (adminUser is null)
             {
                 adminUser = User.Create(AdminUserName, AdminEmail, null);

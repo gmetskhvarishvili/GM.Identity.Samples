@@ -43,9 +43,11 @@ public sealed class EndSessionByIdTokenHintTests : IAsyncLifetime
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             var user = User.Create(_userName, $"{_userName}@test.local", null);
+            var (passwordHash, passwordSalt) = PasswordHasher.Hash("Test123!"); // password_hash is required
+            user.UpdatePassword(passwordHash, passwordSalt);
             await context.Set<User>().AddAsync(user);
 
-            var clientId = Guid.NewGuid();
+            var clientId = Guid.Parse("11111111-1111-1111-1111-111111111111"); // the seeded client — user_sessions.client_id is a foreign key
             var sso = SsoSession.Create(
                 user.Id, TokenGenerator.Hash(TokenGenerator.Generate()), DateTime.UtcNow, DateTime.UtcNow.AddHours(8));
             await context.Set<SsoSession>().AddAsync(sso);

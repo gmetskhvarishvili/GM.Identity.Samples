@@ -330,7 +330,7 @@
           <li><a href="#block">Block or unlock a user</a></li>
           <li><a href="#revoke-sessions">Revoke a user's sessions</a></li>
           <li><a href="#crud">Create, update &amp; delete</a></li>
-          <li><a href="#client">Register client &amp; rotate secret</a></li>
+          <li><a href="#client">Register client &amp; change secret</a></li>
           <li><a href="#client-scope">Grant &amp; revoke client scopes</a></li>
           <li><a href="#client-sessions">Revoke client sessions</a></li>
           <li><a href="#delete-user">Delete a user</a></li>
@@ -1309,9 +1309,9 @@ sequenceDiagram
   </section>
 
   <section class="flow" id="client">
-    <h3>Register client &amp; rotate secret</h3>
-    <div class="endpoint">POST /Clients &nbsp;·&nbsp; rotate-secret</div>
-    <p>A client secret is generated server-side, <b>hashed and salted</b>, and only the hash is stored — the plaintext is returned once. Rotation replaces the stored hash with a fresh secret.</p>
+    <h3>Register client &amp; change secret</h3>
+    <div class="endpoint">POST /Clients &nbsp;·&nbsp; PUT /Clients/{id}</div>
+    <p>A client secret is <b>hashed and salted</b>, and only the hash is stored. Updating the client with a new secret replaces the stored hash and revokes the client's active sessions; an update without a secret leaves it unchanged.</p>
     <div class="figure">
 <pre class="mmd">
 sequenceDiagram
@@ -1327,12 +1327,13 @@ sequenceDiagram
   API-->>GW: forward
   GW-->>Admin: client_id + secret (shown once)
   Note over Admin,API: later
-  Admin->>GW: rotate client secret
+  Admin->>GW: update client (new secret)
   GW->>API: proxy
-  API->>API: generate new secret, hash + salt
+  API->>API: hash + salt new secret
   API->>DB: replace stored hash
+  API->>DB: revoke client sessions
   API-->>GW: forward
-  GW-->>Admin: new secret (shown once)
+  GW-->>Admin: 200 OK
 </pre>
     </div>
   </section>

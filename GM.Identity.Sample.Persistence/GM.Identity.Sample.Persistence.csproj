@@ -8,10 +8,11 @@
 
 
     <ItemGroup>
+        <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
         <PackageReference Include="GM.Caching.Redis" Version="1.0.1" />
         <PackageReference Include="GM.DistributedLock.Redis" Version="1.0.2" />
-        <PackageReference Include="GM.EntityFramework.Persistence" Version="1.5.0" />
-        <PackageReference Include="GM.Identity.Persistence" Version="2.1.0" />
+        <PackageReference Include="GM.EntityFramework.Persistence" Version="2.0.0" />
+        <PackageReference Include="GM.Identity.Persistence" Version="3.0.0" />
         <PackageReference Include="GM.Messaging.Persistence" Version="1.2.1" />
         <PackageReference Include="GM.OTP.Persistence" Version="1.2.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11">
@@ -35,7 +36,7 @@
 
     <ItemGroup>
       <!-- PasswordHasher, used to seed the admin user's password. -->
-      <PackageReference Include="GM.Identity" Version="2.0.0" />
+      <PackageReference Include="GM.Identity" Version="3.0.0" />
     </ItemGroup>
 
 </Project>

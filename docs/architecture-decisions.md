@@ -108,7 +108,7 @@ Status legend: **Accepted** — in effect in the sample.
 
 **Context.** The platform serves multiple tenants, but a caller at `/connect` has not yet proven a tenant — authentication must find the user across tenants, while everything afterward must be tenant-scoped.
 
-**Decision.** Entities carry a nullable `TenantId`. A global EF query filter scopes reads to the current actor's tenant, and writes are stamped with it. Authentication deliberately bypasses the filter (it is cross-tenant); the tenant the caller then acts under is asserted per request.
+**Decision.** Entities carry a nullable `TenantId`. A global EF query filter scopes reads to the current actor's tenant, and writes are stamped with it. Authentication deliberately bypasses the filter (it is cross-tenant); the tenant the caller then acts under is pinned to the session at login and enforced by the gateway — only a global (`null`-tenant) user may choose a tenant per request via `X-Tenant-Id`.
 
 **Consequences.** Tenant isolation is enforced centrally rather than in each query, and sign-in works before a tenant is known. The cost is the sharp edge of a global filter (you must opt out intentionally for cross-tenant operations). Full details in [tenancy.md](tenancy.md).
 

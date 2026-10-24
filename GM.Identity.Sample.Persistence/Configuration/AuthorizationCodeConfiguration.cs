@@ -4,5 +4,9 @@ using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.Autho
 namespace GM.Identity.Sample.Persistence.Configuration;
 
 // The authorization-code mapping lives in the GM.Identity base config; this fixes it to the sample's aggregate
-// and table (default schema).
-public class AuthorizationCodeConfiguration() : GMAuthorizationCodeConfiguration<AuthorizationCode>(null, "authorization_codes");
+// (named by IdentityTableNames, without GM.Identity's gm_ prefix).
+public class AuthorizationCodeConfiguration : GMAuthorizationCodeConfiguration<AuthorizationCode>
+{
+    protected override string Schema => IdentityTableNames.Schemas.Authorization;
+    protected override string Table => IdentityTableNames.AuthorizationCodes;
+}

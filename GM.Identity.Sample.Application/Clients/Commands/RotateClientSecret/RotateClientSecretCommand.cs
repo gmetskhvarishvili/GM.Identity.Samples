@@ -1,6 +1,5 @@
 using FluentValidation;
 using GM.Exceptions;
-using GM.Identity.Authorization;
 using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -12,24 +11,28 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Clients.Commands.RotateClientSecret;
 
 /// <summary>
-/// Rotates a client's secret: generates a fresh secret, stores only its hash, and revokes the client's active
-/// sessions so tokens minted under the old secret stop working immediately. Returns the new plaintext secret
-/// exactly once — it is never recoverable afterwards.
+/// Rotates a client's secret to the one supplied: stores only its hash, and revokes the client's active sessions so
+/// tokens minted under the old secret stop working immediately.
 /// </summary>
-public class RotateClientSecretCommand : IRequest<string>
+public class RotateClientSecretCommand : IRequest
 {
     public Guid ClientId { get; set; }
+    public string? Secret { get; set; }
 }
 
 public class RotateClientSecretCommandValidator : AbstractValidator<RotateClientSecretCommand>
 {
-    public RotateClientSecretCommandValidator() => RuleFor(x => x.ClientId).NotNull().NotEmpty();
+    public RotateClientSecretCommandValidator()
+    {
+        RuleFor(x => x.ClientId).NotNull().NotEmpty();
+        RuleFor(x => x.Secret).NotNull().NotEmpty();
+    }
 }
 
 public class RotateClientSecretCommandHandler(
-    IUnitOfWork unitOfWork) : IRequestHandler<RotateClientSecretCommand, string>
+    IUnitOfWork unitOfWork) : IRequestHandler<RotateClientSecretCommand>
 {
-    public async Task<string> Handle(RotateClientSecretCommand request, CancellationToken cancellationToken)
+    public async Task Handle(RotateClientSecretCommand request, CancellationToken cancellationToken)
     {
         var client = await unitOfWork.ClientRepository
             .FirstOrDefaultAsync(x => x.Id == request.ClientId && !x.IsDeleted, true, null, cancellationToken);
@@ -37,8 +40,7 @@ public class RotateClientSecretCommandHandler(
         if (client == null)
             throw new NotFoundException(StringResource.Client, StringResource.Id, request.ClientId);
 
-        var newSecret = TokenGenerator.Generate();
-        var (hash, salt) = PasswordHasher.Hash(newSecret);
+        var (hash, salt) = PasswordHasher.Hash(request.Secret!);
         client.UpdateSecret(hash, salt);
 
         unitOfWork.ClientRepository.Update(client);
@@ -47,7 +49,5 @@ public class RotateClientSecretCommandHandler(
         // The old secret is void — kill any sessions it still backs (each revocation raises a domain event that
         // drives cache eviction after commit).
         await unitOfWork.RevokeAllClientSessionsAsync(client.Id, cancellationToken);
-
-        return newSecret;
     }
 }

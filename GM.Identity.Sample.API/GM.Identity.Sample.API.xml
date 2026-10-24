@@ -343,6 +343,18 @@
         <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.Name">
             <summary>The name.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.RedirectUris">
+            <summary>The exact URIs the authorization endpoint may redirect to.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.BackchannelLogoutUri">
+            <summary>The client's OIDC back-channel logout endpoint, if any.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.FrontchannelLogoutUri">
+            <summary>The client's OIDC front-channel logout endpoint, if any.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.ClientDetailsModel.RequireConsent">
+            <summary>Whether the authorization endpoint must obtain the user's consent for this client.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.ClientModel">
             <summary>Client model.</summary>
         </member>
@@ -397,14 +409,15 @@
             <param name="cancellationToken"></param>
             <returns>Result</returns>
         </member>
-        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.RotateClientSecret(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:GM.Identity.Sample.API.Clients.ClientsController.RotateClientSecret(System.Guid,GM.Identity.Sample.API.Clients.RotateClientSecretModel,System.Threading.CancellationToken)">
             <summary>
-            Rotate a client's secret. Returns the new plaintext secret exactly once and revokes the client's active
-            sessions, so tokens minted under the old secret stop working immediately.
+            Rotate a client's secret to the one supplied. Revokes the client's active sessions, so tokens minted under the
+            old secret stop working immediately.
             </summary>
             <param name="id">Client Id whose secret to rotate</param>
+            <param name="request">The new secret</param>
             <param name="cancellationToken"></param>
-            <returns>The new client secret (shown only once)</returns>
+            <returns>Result</returns>
         </member>
         <member name="M:GM.Identity.Sample.API.Clients.ClientsController.DeactivateClient(System.Guid,System.Threading.CancellationToken)">
             <summary>Deactivate a client — it can no longer authenticate, and its active sessions are revoked.</summary>
@@ -527,6 +540,18 @@
         <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.ClientScopes">
             <summary>The client scopes.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.RedirectUris">
+            <summary>The exact URIs the authorization endpoint may redirect to (required for the authorization-code flow).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.BackchannelLogoutUri">
+            <summary>The client's OIDC back-channel logout endpoint, if any.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.FrontchannelLogoutUri">
+            <summary>The client's OIDC front-channel logout endpoint, if any.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.CreateClientModel.RequireConsent">
+            <summary>Whether the authorization endpoint must obtain the user's consent for this client.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.CreateClientScopeModel">
             <summary>Create client scope model.</summary>
         </member>
@@ -575,14 +600,29 @@
         <member name="P:GM.Identity.Sample.API.Clients.RegisterClientModel.RequireConsent">
             <summary>The require consent.</summary>
         </member>
+        <member name="T:GM.Identity.Sample.API.Clients.RotateClientSecretModel">
+            <summary>Rotate client secret model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.RotateClientSecretModel.Secret">
+            <summary>The new secret.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Clients.UpdateClientModel">
             <summary>Update client model.</summary>
         </member>
-        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.Secret">
-            <summary>The secret.</summary>
-        </member>
         <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.Name">
             <summary>The name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.RedirectUris">
+            <summary>The client's redirect URIs. Omit to keep them; a list replaces them (an empty list clears them).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.BackchannelLogoutUri">
+            <summary>The client's OIDC back-channel logout endpoint. Omit to keep it; send empty to clear it.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.FrontchannelLogoutUri">
+            <summary>The client's OIDC front-channel logout endpoint. Omit to keep it; send empty to clear it.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Clients.UpdateClientModel.RequireConsent">
+            <summary>Whether the authorization endpoint must obtain the user's consent for this client. Omit to keep it.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.ConsentDocuments.AddConsentDocumentVersionModel">
             <summary>Publish a new version of an existing consent document type. The new version becomes current.</summary>
@@ -734,6 +774,28 @@
         <member name="M:GM.Identity.Sample.API.ConsentDocuments.GetConsentDocumentsListModelValidator.#ctor">
             <inheritdoc />
         </member>
+        <member name="T:GM.Identity.Sample.API.CurrentActor.EstablishableCurrentActor">
+            <summary>
+            The current actor from GM.API's <see cref="T:GM.API.HttpContextCurrentActor"/> (gateway-forwarded headers), plus
+            what a handler established during the request via <see cref="T:GM.Identity.Sample.Application.Common.IActorEstablisher"/>. Header values always
+            win; an established user/client/session only fills a field the request left empty — so a login or sign-up
+            (anonymous at the edge) is audited as the user who signed in, while an authenticated caller stays the actor.
+            The tenant is never established: it drives the query filter and must not change mid-request. A singleton
+            over <see cref="T:Microsoft.AspNetCore.Http.IHttpContextAccessor"/> like the actor it wraps, keeping per-request state in
+            <see cref="P:Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.CurrentActor.EstablishableCurrentActor.#ctor(GM.API.HttpContextCurrentActor,Microsoft.AspNetCore.Http.IHttpContextAccessor)">
+            <summary>
+            The current actor from GM.API's <see cref="T:GM.API.HttpContextCurrentActor"/> (gateway-forwarded headers), plus
+            what a handler established during the request via <see cref="T:GM.Identity.Sample.Application.Common.IActorEstablisher"/>. Header values always
+            win; an established user/client/session only fills a field the request left empty — so a login or sign-up
+            (anonymous at the edge) is audited as the user who signed in, while an authenticated caller stays the actor.
+            The tenant is never established: it drives the query filter and must not change mid-request. A singleton
+            over <see cref="T:Microsoft.AspNetCore.Http.IHttpContextAccessor"/> like the actor it wraps, keeping per-request state in
+            <see cref="P:Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+            </summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.DomainEvents.DomainEventModel">
             <summary>A domain-event (audit-trail) record returned to admins, including the actor/request metadata.</summary>
         </member>
@@ -786,6 +848,24 @@
         </member>
         <member name="P:GM.Identity.Sample.API.DomainEvents.GetDomainEventsModel.CreatedTo">
             <summary>Inclusive upper bound of when the row was written (UTC).</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Idempotency.TokenSafeIdempotencyKeyProvider">
+            <summary>
+            The <c>Idempotency-Key</c> header provider, minus the OAuth/OIDC endpoints. The idempotency middleware
+            stores a successful response for 24h so a retry can replay it — for <c>/connect/*</c> that response is
+            a fresh access/refresh/id token, and storing it would put live credentials in the cache in clear text
+            (only token hashes are ever persisted). Returning no key there makes those requests ordinary, so a
+            client may send the header on every call without leaking tokens; everywhere else it behaves as usual.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Idempotency.TokenSafeIdempotencyKeyProvider.#ctor(Microsoft.Extensions.Options.IOptions{GM.Idempotency.Http.IdempotencyHttpOptions})">
+            <summary>
+            The <c>Idempotency-Key</c> header provider, minus the OAuth/OIDC endpoints. The idempotency middleware
+            stores a successful response for 24h so a retry can replay it — for <c>/connect/*</c> that response is
+            a fresh access/refresh/id token, and storing it would put live credentials in the cache in clear text
+            (only token hashes are ever persisted). Returning no key there makes those requests ordinary, so a
+            client may send the header on every call without leaking tokens; everywhere else it behaves as usual.
+            </summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Operations.CreateOperationModel">
             <summary>Create operation model.</summary>

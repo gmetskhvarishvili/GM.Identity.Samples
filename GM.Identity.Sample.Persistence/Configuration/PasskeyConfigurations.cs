@@ -3,8 +3,16 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.PasskeyAgg
 
 namespace GM.Identity.Sample.Persistence.Configuration;
 
-// Both passkey mappings live in GM.Identity base configs; these fix them to the sample's aggregates and tables
-// (default schema). Null schema keeps them in the model's default schema as before.
-public class UserPasskeyConfiguration() : GMUserPasskeyConfiguration<UserPasskey>(null, "user_passkeys");
+// Both passkey mappings live in GM.Identity base configs; these fix them to the sample's aggregates
+// (named by IdentityTableNames, without GM.Identity's gm_ prefix).
+public class UserPasskeyConfiguration : GMUserPasskeyConfiguration<UserPasskey>
+{
+    protected override string Schema => IdentityTableNames.Schemas.Identity;
+    protected override string Table => IdentityTableNames.UserPasskeys;
+}
 
-public class PasskeyChallengeConfiguration() : GMPasskeyChallengeConfiguration<PasskeyChallenge>(null, "passkey_challenges");
+public class PasskeyChallengeConfiguration : GMPasskeyChallengeConfiguration<PasskeyChallenge>
+{
+    protected override string Schema => IdentityTableNames.Schemas.Identity;
+    protected override string Table => IdentityTableNames.PasskeyChallenges;
+}

@@ -16,6 +16,14 @@ using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Http;
+using GM.Idempotency;
+using GM.Identity.Sample.API.Idempotency;
+using GM.API;
+using GM.EntityFramework.Domain.Common;
+using GM.Identity.Sample.API.CurrentActor;
+using GM.Identity.Sample.Application.Common;
 
 var builder = ProgramExtension.CreateGMBuilder(args);
 
@@ -25,6 +33,17 @@ builder.Services.ConfigureGMServices(
     "SwaggerDocOptions");
 
 builder.Services.AddGMIdentity();
+
+// Never store /connect (token) responses for idempotent replay — see TokenSafeIdempotencyKeyProvider.
+builder.Services.Replace(
+    ServiceDescriptor.Singleton<IIdempotencyKeyProvider<HttpContext>, TokenSafeIdempotencyKeyProvider>());
+
+// Let sign-in handlers name the caller of an anonymous request — see EstablishableCurrentActor.
+builder.Services.AddSingleton<HttpContextCurrentActor>();
+builder.Services.AddSingleton<EstablishableCurrentActor>();
+builder.Services.Replace(
+    ServiceDescriptor.Singleton<ICurrentActor>(sp => sp.GetRequiredService<EstablishableCurrentActor>()));
+builder.Services.AddSingleton<IActorEstablisher>(sp => sp.GetRequiredService<EstablishableCurrentActor>());
 
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);

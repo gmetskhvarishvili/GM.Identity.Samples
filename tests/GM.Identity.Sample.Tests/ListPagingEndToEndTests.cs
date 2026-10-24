@@ -99,6 +99,19 @@ public sealed class ListPagingEndToEndTests : IAsyncLifetime
         Assert.Equal($"{_prefix}-a", byName.LastKeyValue);
     }
 
+    [Fact]
+    public async Task Roles_list_filters_by_name_ignoring_case()
+    {
+        if (!_infraReady) return; // integration test: no-op when Postgres isn't reachable
+
+        foreach (var (suffix, i) in Suffixes.Select((s, i) => (s, i)))
+            _roleIds[i] = await Send(new CreateRoleCommand { Name = $"{_prefix}-{suffix}" });
+
+        // The roles are named in lower case; an upper-case filter still finds them.
+        var page = await Send(new GetRolesListQuery { Name = _prefix.ToUpperInvariant(), OrderBy = "Name asc" });
+        Assert.Equal(Suffixes.Select(s => $"{_prefix}-{s}"), page.Items.Select(r => r.Name));
+    }
+
     private async Task<TResult> Send<TResult>(IRequest<TResult> request)
     {
         using var scope = _factory.Services.CreateScope();

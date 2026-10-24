@@ -116,6 +116,8 @@ public sealed class TenantIsolationEndToEndTests : IAsyncLifetime
     private static async Task<Guid> CreateUserAsync(ApplicationDbContext context, string userName, Guid tenantId)
     {
         var user = User.Create(userName, $"{userName}@test.local", null);
+        var (passwordHash, passwordSalt) = PasswordHasher.Hash("Test123!"); // password_hash is required
+        user.UpdatePassword(passwordHash, passwordSalt);
         user.AssignTenant(tenantId);
         await context.Set<User>().AddAsync(user);
         await context.SaveChangesAsync();

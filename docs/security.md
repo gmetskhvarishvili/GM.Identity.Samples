@@ -59,8 +59,9 @@ Takeaway: no reversible secret is stored. Tokens and codes are opaque random val
 ## Data protection & auditing
 
 - **Soft delete.** Every aggregate is soft-deletable (`IsActive` / `IsDeleted` / `IsHidden`); destructive reads require an explicit `VisibilityScope` opt-in. Nothing is hard-deleted by the normal flows.
-- **Audit log.** Domain events are persisted with actor context (user, client, session, tenant, IP, channel, correlation id) and are queryable as an action history.
-- **Tenant isolation.** Reads are scoped to the current actor's tenant by a global query filter; see [tenancy.md](tenancy.md).
+- **Audit log.** Domain events are persisted with actor context (user, client, session, tenant, IP, channel, correlation id) and are queryable as an action history. The actor comes from the gateway-forwarded headers; for requests that are anonymous at the edge — login (every grant), passkey/external login, device approval, `/connect/authorize` and self sign-up — the handler establishes the user, client and session it just authenticated or created (`IActorEstablisher`), so those events name who signed in instead of nobody. An authenticated caller always stays the actor.
+- **Tenant isolation.** Reads are scoped to the current actor's tenant by a global query filter. That tenant is pinned to the session at login and enforced at the gateway: a tenant-bound token asserting another tenant via `X-Tenant-Id` gets 403, and only global users may choose a tenant; see [tenancy.md](tenancy.md).
+- **Idempotent replay never stores tokens.** A POST/PUT/PATCH carrying `Idempotency-Key` has its successful response cached for 24h so a retry replays it. The API ignores the key on `/connect/*` (`TokenSafeIdempotencyKeyProvider`), so a token response — live access/refresh/id tokens — is never written to the cache, and clients may safely send the header on every call.
 
 ## Production checklist — what is intentionally out of scope
 

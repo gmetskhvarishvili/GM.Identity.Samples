@@ -61,7 +61,8 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 }
 
 public class CreateUserCommandHandler(
-    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, Guid>
+    IUnitOfWork unitOfWork,
+    IActorEstablisher actorEstablisher) : IRequestHandler<CreateUserCommand, Guid>
 {
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
@@ -168,6 +169,8 @@ public class CreateUserCommandHandler(
 
         await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.From(entity.Id, evt), cancellationToken);
 
+        // Self sign-up is anonymous — attribute it to the new user. An admin creating a user stays the actor.
+        actorEstablisher.Establish(entity.Id, null, null);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return entity.Id;

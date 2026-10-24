@@ -1,6 +1,7 @@
 ﻿using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Scheduling;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 using System;
@@ -28,17 +29,30 @@ public sealed class SessionCacheReconciliationJob(
         // Desired state = live sessions from the DB, keyed by token hash (which is also the Redis key).
         var desired = new Dictionary<string, SessionInfo>();
 
+        // Each session is pinned to its owner's tenant. Users and clients are tenant-owned and this system job
+        // has no tenant context, so read them across all tenants.
+        var userTenants = await unitOfWork.UserRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(x => x.Id, x => x.TenantId, cancellationToken);
+        var clientTenants = await unitOfWork.ClientRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(x => x.Id, x => x.TenantId, cancellationToken);
+
         var userSessions = (await unitOfWork.UserSessionRepository.GetAllAsync(true, null, cancellationToken))
             .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden && !x.IsRevoked && x.ExpiresAt > now)
             .ToList();
         foreach (var s in userSessions)
-            desired[s.TokenHash] = new SessionInfo(s.UserId, s.Id, s.ClientId, s.ExpiresAt);
+            desired[s.TokenHash] = new SessionInfo(s.UserId, s.Id, s.ClientId, s.ExpiresAt,
+                s.UserId is { } userId ? userTenants.GetValueOrDefault(userId) : null);
 
         var clientSessions = (await unitOfWork.ClientSessionRepository.GetAllAsync(true, null, cancellationToken))
             .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden && !x.IsRevoked && x.ExpiresAt > now)
             .ToList();
         foreach (var s in clientSessions)
-            desired[s.TokenHash] = new SessionInfo(null, s.Id, s.ClientId, s.ExpiresAt);
+            desired[s.TokenHash] = new SessionInfo(null, s.Id, s.ClientId, s.ExpiresAt,
+                clientTenants.GetValueOrDefault(s.ClientId));
 
         foreach (var (tokenHash, info) in desired)
             await sessionCache.SetAsync(tokenHash, info, cancellationToken);

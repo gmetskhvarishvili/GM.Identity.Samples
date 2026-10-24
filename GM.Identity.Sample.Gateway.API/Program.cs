@@ -83,6 +83,16 @@ builder.Services.AddAuthentication(OpaqueTokenAuthenticationHandler.SchemeName)
 builder.Services.AddAuthorization();
 
 // ---------------------------------------------------------------------------------------------
+// CORS: browser front ends on another origin (Cors:AllowedOrigins) may call the gateway. Tokens travel
+// in the Authorization header, not cookies, so credentials stay disallowed.
+// ---------------------------------------------------------------------------------------------
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .WithOrigins(allowedOrigins)
+    .AllowAnyHeader()
+    .AllowAnyMethod()));
+
+// ---------------------------------------------------------------------------------------------
 // Health: liveness self-check + Redis cache and distributed-lock readiness.
 // ---------------------------------------------------------------------------------------------
 builder.Services.AddGMHealthChecks()
@@ -125,6 +135,10 @@ app.Use(async (context, next) =>
 });
 
 app.UseRouting();
+
+// Before authentication: a preflight (OPTIONS) carries no token and must be answered here, not rejected
+// by a route's authorization policy.
+app.UseCors();
 
 // Swagger UI at the root URL (no /swagger prefix), rendering the Identity API's OpenAPI document
 // proxied through the gateway (see the "identity-docs" route). Served anonymously, before auth;

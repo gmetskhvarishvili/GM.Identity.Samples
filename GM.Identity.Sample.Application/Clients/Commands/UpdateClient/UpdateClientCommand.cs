@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using GM.Exceptions;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +14,6 @@ namespace GM.Identity.Sample.Application.Clients.Commands.UpdateClient;
 public class UpdateClientCommand : IRequest
 {
     public Guid Id { get; set; }
-    public string? Secret { get; set; }
     public string? Name { get; set; }
 
     /// <summary>The client's OIDC back-channel logout endpoint. Pass empty to clear it; null leaves it unchanged.</summary>
@@ -23,6 +24,11 @@ public class UpdateClientCommand : IRequest
 
     /// <summary>Whether the authorization endpoint must obtain the user's consent for this client. Null leaves it unchanged.</summary>
     public bool? RequireConsent { get; set; }
+
+    /// <summary>
+    /// The client's redirect URIs. Null leaves them unchanged; a list replaces them (an empty list clears them).
+    /// </summary>
+    public IEnumerable<string>? RedirectUris { get; set; }
 }
 
 public class UpdateClientCommandValidator : AbstractValidator<UpdateClientCommand>
@@ -30,8 +36,16 @@ public class UpdateClientCommandValidator : AbstractValidator<UpdateClientComman
     public UpdateClientCommandValidator()
     {
         RuleFor(x => x.Id).NotNull().NotEmpty();
-        RuleFor(x => x.Secret).NotNull().NotEmpty();
         RuleFor(x => x.Name).NotNull().NotEmpty();
+        RuleForEach(x => x.RedirectUris)
+            .Must(u => string.IsNullOrWhiteSpace(u) || ClientRedirectUris.IsAbsoluteUri(u.Trim()))
+            .WithMessage("Each redirect URI must be an absolute URI.");
+        RuleFor(x => x.BackchannelLogoutUri)
+            .Must(ClientRedirectUris.IsAbsoluteUri).When(x => !string.IsNullOrEmpty(x.BackchannelLogoutUri))
+            .WithMessage("The back-channel logout URI must be an absolute URI.");
+        RuleFor(x => x.FrontchannelLogoutUri)
+            .Must(ClientRedirectUris.IsAbsoluteUri).When(x => !string.IsNullOrEmpty(x.FrontchannelLogoutUri))
+            .WithMessage("The front-channel logout URI must be an absolute URI.");
     }
 }
 
@@ -70,6 +84,9 @@ public class UpdateClientCommandHandler(IUnitOfWork unitOfWork) : IRequestHandle
 
         if (request.RequireConsent is { } requireConsent)
             entity.SetRequireConsent(requireConsent);
+
+        if (request.RedirectUris is not null)
+            await unitOfWork.ReplaceClientRedirectUrisAsync(entity.Id, request.RedirectUris, cancellationToken);
 
         // Persist the aggregate
         unitOfWork.ClientRepository.Update(entity);

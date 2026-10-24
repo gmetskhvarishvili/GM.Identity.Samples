@@ -71,7 +71,8 @@ public class AuthorizeCommandHandler(
     IOTPService otpService,
     ITotpCodeService totpService,
     IIdTokenGenerator idTokenGenerator,
-    IAuthOptions options) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
+    IAuthOptions options,
+    IActorEstablisher actorEstablisher) : IRequestHandler<AuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(AuthorizeCommand request, CancellationToken cancellationToken)
     {
@@ -94,7 +95,7 @@ public class AuthorizeCommandHandler(
 
         return request.GrantType switch
         {
-            "ClientCredentials" => await IssueClientTokenAsync(client.Id, now, settings, cancellationToken),
+            "ClientCredentials" => await IssueClientTokenAsync(client.Id, client.TenantId, now, settings, cancellationToken),
             "refresh_token" => await RefreshAsync(request, client.Id, now, settings, cancellationToken),
             "two_factor" => await TwoFactorGrantAsync(request, client.Id, now, settings, cancellationToken),
             "authorization_code" => await AuthorizationCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
@@ -172,8 +173,8 @@ public class AuthorizeCommandHandler(
         AuthorizeCommand request, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         // Authentication is a cross-tenant operation: the caller has no proven tenant yet at /connect, so
-        // resolve the user by credentials across all tenants (bypass the tenant query filter). The tenant
-        // the caller then acts under is asserted per request via the X-Tenant-Id header.
+        // resolve the user by credentials across all tenants (bypass the tenant query filter). The session
+        // then carries the user's own tenant, which the gateway enforces on every later request.
         var user = await unitOfWork.UserRepository
             .Query(true, null)
             .IgnoreQueryFilters()
@@ -394,11 +395,16 @@ public class AuthorizeCommandHandler(
         var session = UserSession.Create(
             userId, clientId, provider, accessHash, refreshExpiry, TokenGenerator.Hash(refreshToken), ssoSessionId);
 
+        // The caller is anonymous at /connect — attribute this request's events to the user who just signed in.
+        actorEstablisher.Establish(userId, clientId, session.Id);
         await unitOfWork.UserSessionRepository.AddAsync(session, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        // The session is pinned to the user's own tenant (null for a global user) — the gateway trusts this,
+        // not a caller-asserted X-Tenant-Id.
+        var tenantId = userId is { } owner ? await GetUserTenantAsync(owner, cancellationToken) : null;
         await sessionCache.SetAsync(
-            accessHash, new SessionInfo(userId, session.Id, clientId, accessExpiry), cancellationToken);
+            accessHash, new SessionInfo(userId, session.Id, clientId, accessExpiry, tenantId), cancellationToken);
 
         if (userId is { } uid)
             await EnforceConcurrentSessionCapAsync(uid, settings, now, cancellationToken);
@@ -469,8 +475,17 @@ public class AuthorizeCommandHandler(
             await sessionCache.RemoveAsync(session.TokenHash, cancellationToken);
     }
 
+    // Cross-tenant like credential lookup: the request has no proven tenant yet, so bypass the tenant filter.
+    private Task<Guid?> GetUserTenantAsync(Guid userId, CancellationToken cancellationToken) =>
+        unitOfWork.UserRepository
+            .Query(true, null)
+            .IgnoreQueryFilters()
+            .Where(x => x.Id == userId)
+            .Select(x => x.TenantId)
+            .FirstOrDefaultAsync(cancellationToken);
+
     private async Task<AuthorizeResponseDto> IssueClientTokenAsync(
-        Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
+        Guid clientId, Guid? tenantId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
         // Client-credentials tokens carry no refresh token — the client simply re-authenticates.
         var token = TokenGenerator.Generate();
@@ -478,10 +493,11 @@ public class AuthorizeCommandHandler(
         var tokenHash = TokenGenerator.Hash(token);
 
         var session = ClientSession.Create(clientId, tokenHash, expiry);
+        actorEstablisher.Establish(null, clientId, session.Id);
         await unitOfWork.ClientSessionRepository.AddAsync(session, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await sessionCache.SetAsync(tokenHash, new SessionInfo(null, session.Id, clientId, expiry), cancellationToken);
+        await sessionCache.SetAsync(tokenHash, new SessionInfo(null, session.Id, clientId, expiry, tenantId), cancellationToken);
         return new AuthorizeResponseDto(token, expiry, "bearer");
     }
 

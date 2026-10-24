@@ -150,10 +150,10 @@ Provider credentials belong in a secret store, not `appsettings` (see [configura
 
 ## Register a relying-party client
 
-A client is created server-side with a hashed secret returned once.
+A client's secret is stored only as a salted hash.
 
-1. **Register the client** — `POST /Clients` (`RegisterClient`) returns the `client_id` and the plaintext secret **once**; only the hash is stored. Rotate later with `RotateClientSecret`.
-2. **Register redirect URIs** — add each `ClientRedirectUri`; the authorization flow only redirects to a verbatim match.
+1. **Register the client** — either an admin calls `POST /Clients` (`AddClient`) with a chosen `secret` and gets the client id back, or the client self-registers via `POST /connect/register` (`RegisterClient`, RFC 7591), which generates the secret and returns it with the `client_id` **once**. Change the secret later with `UpdateClient` (`PUT /Clients/{id}` with a new `secret`), which also revokes the client's active sessions.
+2. **Register redirect URIs** — pass `redirectUris` (absolute URIs) on create, or replace the set later with `PUT /Clients/{id}` (`redirectUris`; an empty list clears it); the authorization flow only redirects to a verbatim match. The same create/update calls set `backchannelLogoutUri`, `frontchannelLogoutUri` and `requireConsent`, as dynamic registration (`/connect/register`) does.
 3. **Grant scopes** — add `ClientScope` rows for the scopes the client may request (`POST /Clients/{id}/Scopes`); these project into the scope cache.
 4. **Integrate** — the client runs authorization-code + PKCE through the **GM Identity Gateway**: `POST /connect/authorize` → `POST /connect/token`, then validates tokens via `/connect/introspect` and reads claims from `/connect/userinfo`. See the authorization-code and token-validation flows in the **GM Sample Flows** diagrams.
 

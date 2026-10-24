@@ -63,7 +63,7 @@ public static class DependencyInjection
                 {
                     o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     o.CommandTimeout(60);
-                });
+                }).UseSnakeCaseNamingConvention();
 
             // Tenant-owned aggregates (IHasTenant) carry a global query filter but their required
             // dependents don't; that pairing is intentional here, so silence EF's advisory warning.

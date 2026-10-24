@@ -1,6 +1,7 @@
 using FluentValidation;
 using GM.Exceptions;
 using GM.Identity;
+using GM.Identity.Sample.Application.Common;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Domain.Authorization.DeviceCodeAggregate.Entities;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
@@ -39,7 +40,7 @@ public class ApproveDeviceCommandValidator : AbstractValidator<ApproveDeviceComm
     }
 }
 
-public class ApproveDeviceCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ApproveDeviceCommand>
+public class ApproveDeviceCommandHandler(IUnitOfWork unitOfWork, IActorEstablisher actorEstablisher) : IRequestHandler<ApproveDeviceCommand>
 {
     public async Task Handle(ApproveDeviceCommand request, CancellationToken cancellationToken)
     {
@@ -70,6 +71,7 @@ public class ApproveDeviceCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
         else
             deviceCode.Deny();
 
+        actorEstablisher.Establish(user.Id, deviceCode.ClientId, null);
         unitOfWork.DeviceCodeRepository.Update(deviceCode);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

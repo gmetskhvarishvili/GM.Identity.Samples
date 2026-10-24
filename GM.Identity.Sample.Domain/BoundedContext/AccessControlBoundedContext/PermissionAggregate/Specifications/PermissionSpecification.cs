@@ -1,6 +1,9 @@
 ﻿using GM.EntityFramework.Domain.Specifications;
 using System;
 
+// Filters run in SQL: EF translates ToLower() to lower(), but not the culture or StringComparison overloads.
+#pragma warning disable CA1304, CA1311, CA1862
+
 namespace GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Specifications;
 
 public class PermissionSpecification : BaseSpecification<Permission>
@@ -18,12 +21,12 @@ public class PermissionSpecification : BaseSpecification<Permission>
 
         if (!string.IsNullOrWhiteSpace(name))
         {
-            AddCriteria(s => s.Name.Contains(name));
+            AddCriteria(s => s.Name.ToLower().Contains(name.ToLower()));
         }
 
         if (!string.IsNullOrWhiteSpace(description))
         {
-            AddCriteria(s => s.Description.Contains(description));
+            AddCriteria(s => s.Description.ToLower().Contains(description.ToLower()));
         }
 
         ApplyListQuery(dateRange, paging, ordering);

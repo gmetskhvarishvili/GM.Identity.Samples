@@ -49,6 +49,7 @@ public sealed class TwoFactorLoginEndToEndTests : IAsyncLifetime
             await context.Set<User>().AddAsync(user);
 
             var type = TwoFactorAuthType.Create($"tfa-{Guid.NewGuid():N}", "Test authenticator");
+            type.Id = Random.Shared.Next(1_000_000, int.MaxValue); // ids are assigned, not store-generated (0 is the seeded "None")
             await context.Set<TwoFactorAuthType>().AddAsync(type);
             await context.SaveChangesAsync();
             _userId = user.Id;

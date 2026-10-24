@@ -19,4 +19,8 @@ namespace GM.Identity.Sample.Persistence.Configuration;
 public class UserSessionConfiguration: GMUserSessionConfiguration
 <Client, ClientSession, ClientScope, Scope, ScopeOperation, Operation,
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
-    UserRole, Role, RolePermission, Permission>;
+    UserRole, Role, RolePermission, Permission>
+{
+    protected override string Schema => IdentityTableNames.Schemas.Authorization;
+    protected override string Table => IdentityTableNames.UserSessions;
+}

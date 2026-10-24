@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GM.Identity.Sample.Persistence.Configuration;
 
-// Column mapping comes from the GM.Identity base config; this fixes it to the sample's aggregate and table
-// (default schema) and wires the 1:1 ownership relationship to User (which creates the unique FK index).
+// Column mapping comes from the GM.Identity base config; this fixes it to the sample's aggregate
+// (named by IdentityTableNames, without GM.Identity's gm_ prefix) and wires the 1:1 ownership relationship to User (which creates the unique FK index).
 public class UserPersonalInfoConfiguration : GMUserPersonalInfoConfiguration<UserPersonalInfo>
 {
-    public UserPersonalInfoConfiguration() : base(null, "user_personal_info") { }
+    protected override string Schema => IdentityTableNames.Schemas.Identity;
+    protected override string Table => IdentityTableNames.UserPersonalInfo;
 
     public override void Configure(EntityTypeBuilder<UserPersonalInfo> builder)
     {

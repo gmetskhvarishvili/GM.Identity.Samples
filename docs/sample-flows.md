@@ -85,7 +85,7 @@ the user's TOTP app or WebAuthn device
 6. [Block or unlock a user](#block)
 7. [Revoke a user's sessions](#revoke-sessions)
 8. [Create, update & delete](#crud)
-9. [Register client & rotate secret](#client)
+9. [Register client & change secret](#client)
 10. [Grant & revoke client scopes](#client-scope)
 11. [Revoke client sessions](#client-sessions)
 12. [Delete a user](#delete-user)
@@ -1014,11 +1014,11 @@ sequenceDiagram
   GW-->>Admin: 200
 ```
 
-### Register client & rotate secret
+### Register client & change secret
 
-POST /Clients · rotate-secret
+POST /Clients · PUT /Clients/{id}
 
-A client secret is generated server-side, **hashed and salted**, and only the hash is stored — the plaintext is returned once. Rotation replaces the stored hash with a fresh secret.
+A client secret is **hashed and salted**, and only the hash is stored. Updating the client with a new secret replaces the stored hash and revokes the client's active sessions; an update without a secret leaves it unchanged.
 
 ```
 sequenceDiagram
@@ -1034,12 +1034,13 @@ sequenceDiagram
   API-->>GW: forward
   GW-->>Admin: client_id + secret (shown once)
   Note over Admin,API: later
-  Admin->>GW: rotate client secret
+  Admin->>GW: update client (new secret)
   GW->>API: proxy
-  API->>API: generate new secret, hash + salt
+  API->>API: hash + salt new secret
   API->>DB: replace stored hash
+  API->>DB: revoke client sessions
   API-->>GW: forward
-  GW-->>Admin: new secret (shown once)
+  GW-->>Admin: 200 OK
 ```
 
 ### Grant & revoke client scopes

@@ -1,6 +1,9 @@
 using GM.EntityFramework.Domain.Specifications;
 using System;
 
+// Filters run in SQL: EF translates ToLower() to lower(), but not the culture or StringComparison overloads.
+#pragma warning disable CA1304, CA1311, CA1862
+
 namespace GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate.Specifications;
 
 public class ConsentDocumentSpecification : BaseSpecification<ConsentDocument>
@@ -15,7 +18,7 @@ public class ConsentDocumentSpecification : BaseSpecification<ConsentDocument>
             AddCriteria(d => d.Id == id);
 
         if (!string.IsNullOrWhiteSpace(consentType))
-            AddCriteria(d => d.ConsentType.Contains(consentType));
+            AddCriteria(d => d.ConsentType.ToLower().Contains(consentType.ToLower()));
 
         if (isMandatory.HasValue)
             AddCriteria(d => d.IsMandatory == isMandatory);

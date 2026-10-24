@@ -1,5 +1,8 @@
 ﻿using System.Globalization;
 using GM.API.Application.Models;
+using GM.Identity.Sample.Application.Users.Queries.GetUserDetails;
+using GM.Identity.Sample.Application.Users.Queries.GetUsersList;
+using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using Mapster;
 using System;
 
@@ -21,5 +24,12 @@ public class MappingRegister : IRegister
             .MapWith(src => src.HasValue
                 ? src.Value.ToString(AuditableDto.DateTimeFormat, CultureInfo.InvariantCulture)
                 : null);
+
+        // The entity says UserName, the DTOs say Username; Mapster matches names case-sensitively, so without
+        // these the username was silently left null in every user response.
+        config.NewConfig<User, UserDto>()
+            .Map(dest => dest.Username, src => src.UserName);
+        config.NewConfig<User, UserDetailsDto>()
+            .Map(dest => dest.Username, src => src.UserName);
     }
 }

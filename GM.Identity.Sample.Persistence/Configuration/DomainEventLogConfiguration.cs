@@ -14,6 +14,11 @@ public class DomainEventLogConfiguration : IEntityTypeConfiguration<DomainEventL
     public void Configure(EntityTypeBuilder<DomainEventLog> builder)
     {
         builder.HasNoKey();
-        builder.ToView("DomainEvents", "domainEvents");
+        // Explicitly table-less: otherwise the snake_case naming convention leaves it with the model's default
+        // schema but no table name, which EF's snapshot generator writes as ToTable(null, "application") — and the
+        // snapshot then throws on load (Migrate / has-pending-model-changes: "Value cannot be null (Parameter 'name')").
+        builder.ToTable((string?)null);
+        // The same table the log is written to (see StoredDomainEventStoreConfiguration).
+        builder.ToView(StoredDomainEventStoreConfiguration.TableName, StoredDomainEventStoreConfiguration.SchemaName);
     }
 }

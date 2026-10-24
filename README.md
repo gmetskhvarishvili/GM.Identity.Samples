@@ -78,11 +78,13 @@ sequenceDiagram
   both scopes.
 - **Multi-tenancy** is enforced by a global EF query filter on every tenant-owned aggregate (users, roles,
   permissions, clients, scopes, operations) keyed on the ambient `ICurrentActor.TenantId`, so a caller only
-  ever sees its own tenant's rows (writes are stamped automatically). The tenant is **header-resolved**:
-  the caller asserts it via `X-Tenant-Id`, which the gateway normalizes into a trusted `tenant_id` claim
-  (stripping the raw client copy) and forwards. Authentication is cross-tenant (login and the RBAC/scope
-  reconcile jobs bypass the filter); a `null` tenant is a global/cross-tenant row (the seeded admin). The
-  RBAC and scope Redis projections are id-keyed and therefore tenant-agnostic.
+  ever sees its own tenant's rows (writes are stamped automatically). The tenant is **token-resolved**: login
+  pins the Redis session to the user's (or client's) own tenant, and the gateway turns that into the trusted
+  `tenant_id` claim it forwards as `X-Tenant-Id` (stripping any client copy). A tenant-bound caller never
+  sends `X-Tenant-Id` — sending a different tenant gets **403**; only a global user (`null` tenant, like the
+  seeded admin) may pick a tenant with `X-Tenant-Id` (hidden from the gateways' Swagger). Authentication is cross-tenant (login
+  and the reconcile jobs bypass the filter). The RBAC and scope Redis projections are id-keyed and therefore
+  tenant-agnostic, which is why the tenant must come from the token rather than the caller.
 - **Two-factor step-up** — a user enrolled in any two-factor method (enrolled the same child-collection way
   roles are, at user creation) cannot complete a password grant: the response is a challenge
   (`twoFactorRequired: true` naming the enrolled methods) and a one-time code is dispatched (via the outbox,
@@ -118,7 +120,7 @@ Deeper reference material lives in [`docs/`](docs):
 - **[Sample flows & dependency diagrams](docs/sample-flows.md)** — every request path (password/2FA, OAuth/OIDC, passkeys, account lifecycle, sessions, RBAC admin, audit) as sequence diagrams, plus project/package/runtime dependency graphs, ER models, state machines, and a C4 (Structurizr) model across the Identity, OTP, and Notifications samples. A rendered [`sample-flows.html`](docs/sample-flows.html) is included.
 - **[Security model & threat notes](docs/security.md)** — trust boundaries, how every credential/token is stored and verified, hardening (lockout, rate limiting, PKCE), and a production checklist of what is intentionally sample-grade.
 - **[Architecture decision records](docs/architecture-decisions.md)** — the *why* behind the core patterns: clean architecture, GM.\* base-entity inheritance, event-driven cache projection, opaque hashed tokens, outbox/inbox + separate services, the two gateways, soft-delete, and multi-tenancy.
-- **[Multi-tenancy & scope isolation](docs/tenancy.md)** — the `TenantId` model, cross-tenant authentication, per-request tenant assertion, and how visibility and scope hardening interact with it.
+- **[Multi-tenancy & scope isolation](docs/tenancy.md)** — the `TenantId` model, cross-tenant authentication, the token-pinned tenant, and how visibility and scope hardening interact with it.
 - **[Configuration reference](docs/configuration.md)** — every setting the Identity API, gateways, OTP, and Notifications services read, with defaults and override rules.
 - **[Integration event catalog](docs/events.md)** — every event crossing a service boundary: payload, publisher, consumer, and the outbox/inbox delivery semantics.
 - **[Extending the sample](docs/extending.md)** — how-to recipes: promote an entity onto a GM.\* base, add an RBAC endpoint, an OAuth grant, a 2FA method, a notification channel, or register a client.
@@ -180,7 +182,7 @@ config nesting, e.g. `Seed__AdminPassword="<strong-password>"`).
 ```bash
 # password grant → { access_token, expiresAt, refreshToken, refreshTokenExpiresAt }
 curl -k -X POST https://localhost:7225/connect/token \
-  -d grant_type=password -d username=admin -d password=Admin123! \
+  -d grant_type=password -d username=admin@local -d password=Admin123! \
   -d client_id=11111111-1111-1111-1111-111111111111 -d client_secret=secret
 
 curl -k https://localhost:7225/api/v1/Permissions -H 'Authorization: Bearer <access_token>'
@@ -192,13 +194,21 @@ curl -k -X POST https://localhost:7225/connect/token \
   -d client_id=11111111-1111-1111-1111-111111111111 -d client_secret=secret
 ```
 
+A [Bruno](https://www.usebruno.com/) collection in [`bruno/`](bruno) runs the same flow against the admin
+gateway: open the folder in Bruno, select the `Local` environment (gateway address and login live in
+`bruno/environments/Local.bru`) and run the collection — `Login` stores the
+access token, then the `Clients` requests list clients, page by last key, fetch one client's details, and
+check that a call without a token gets 401. The `Permissions` folder walks every permissions endpoint on a
+throwaway permission (create, read, update, deactivate/activate, hide/unhide, delete, restore) and deletes it
+again at the end.
+
 If the user is enrolled in a 2FA method, the password grant returns `{ twoFactorRequired: true,
 twoFactorAuthTypeIds: [...] }` instead of tokens (and dispatches a one-time code). Complete the login with
 the code:
 
 ```bash
 curl -k -X POST https://localhost:7225/connect/token \
-  -d grant_type=two_factor -d username=admin -d password=Admin123! -d code=<one-time-code> \
+  -d grant_type=two_factor -d username=admin@local -d password=Admin123! -d code=<one-time-code> \
   -d client_id=11111111-1111-1111-1111-111111111111 -d client_secret=secret
 ```
 

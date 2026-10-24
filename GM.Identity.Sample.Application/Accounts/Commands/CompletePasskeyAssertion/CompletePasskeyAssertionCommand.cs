@@ -49,7 +49,8 @@ public class CompletePasskeyAssertionCommandValidator : AbstractValidator<Comple
 public class CompletePasskeyAssertionCommandHandler(
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IAuthOptions options) : IRequestHandler<CompletePasskeyAssertionCommand, PasskeyTokenDto>
+    IAuthOptions options,
+    IActorEstablisher actorEstablisher) : IRequestHandler<CompletePasskeyAssertionCommand, PasskeyTokenDto>
 {
     public async Task<PasskeyTokenDto> Handle(CompletePasskeyAssertionCommand request, CancellationToken cancellationToken)
     {
@@ -113,11 +114,12 @@ public class CompletePasskeyAssertionCommandHandler(
 
         var session = UserSession.Create(
             user.Id, request.ClientId, "passkey", accessHash, refreshExpiry, TokenGenerator.Hash(refreshToken));
+        actorEstablisher.Establish(user.Id, request.ClientId, session.Id);
         await unitOfWork.UserSessionRepository.AddAsync(session, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await sessionCache.SetAsync(
-            accessHash, new SessionInfo(user.Id, session.Id, request.ClientId, accessExpiry), cancellationToken);
+            accessHash, new SessionInfo(user.Id, session.Id, request.ClientId, accessExpiry, user.TenantId), cancellationToken);
 
         return new PasskeyTokenDto(accessToken, accessExpiry, "bearer", refreshToken, refreshExpiry);
     }

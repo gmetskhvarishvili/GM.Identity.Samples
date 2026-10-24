@@ -51,6 +51,8 @@ public sealed class BackchannelLogoutEndToEndTests : IAsyncLifetime
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             var user = User.Create(_userName, $"{_userName}@test.local", null);
+            var (passwordHash, passwordSalt) = PasswordHasher.Hash("Test123!"); // password_hash is required
+            user.UpdatePassword(passwordHash, passwordSalt);
             await context.Set<User>().AddAsync(user);
 
             // A dedicated client that participates in back-channel logout.

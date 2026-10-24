@@ -80,7 +80,8 @@ public class AuthorizeCodeCommandValidator : AbstractValidator<AuthorizeCodeComm
 
 public class AuthorizeCodeCommandHandler(
     IUnitOfWork unitOfWork,
-    IAuthOptions options) : IRequestHandler<AuthorizeCodeCommand, AuthorizeCodeResponseDto>
+    IAuthOptions options,
+    IActorEstablisher actorEstablisher) : IRequestHandler<AuthorizeCodeCommand, AuthorizeCodeResponseDto>
 {
     // Authorization codes are short-lived by design (RFC 6749 §4.1.2 recommends <= 10 minutes; we use 1).
     private static readonly TimeSpan CodeLifetime = TimeSpan.FromMinutes(1);
@@ -151,6 +152,7 @@ public class AuthorizeCodeCommandHandler(
             request.Scope, request.CodeChallenge, request.CodeChallengeMethod,
             now.Add(CodeLifetime), ssoSession.Id, request.Nonce);
 
+        actorEstablisher.Establish(userId, request.ClientId, null);
         await unitOfWork.AuthorizationCodeRepository.AddAsync(authCode, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

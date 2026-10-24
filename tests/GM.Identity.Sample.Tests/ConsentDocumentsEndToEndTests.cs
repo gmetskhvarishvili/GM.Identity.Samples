@@ -1,3 +1,4 @@
+using GM.Exceptions;
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.AddConsentDocumentVersion;
 using GM.Identity.Sample.Application.ConsentDocuments.Commands.CreateConsentDocument;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
@@ -39,6 +40,8 @@ public sealed class ConsentDocumentsEndToEndTests : IAsyncLifetime
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 var user = User.Create(_userName, $"{_userName}@test.local", null);
+                var (hash, salt) = PasswordHasher.Hash("Consent123!"); // password_hash is required
+                user.UpdatePassword(hash, salt);
                 await context.Set<User>().AddAsync(user);
                 await context.SaveChangesAsync();
                 _userId = user.Id;
@@ -116,6 +119,48 @@ public sealed class ConsentDocumentsEndToEndTests : IAsyncLifetime
         // Accepting the new version clears it again.
         await AcceptAsync("v2");
         Assert.DoesNotContain(await PendingAsync(), p => p.ConsentType == _consentType);
+    }
+
+    [Fact]
+    public async Task Creating_a_new_version_of_an_existing_type_supersedes_the_current_one()
+    {
+        if (!_infraReady) return;
+
+        await CreateAsync("v2");
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var versions = await context.Set<ConsentDocument>().IgnoreQueryFilters()
+                .Where(x => x.ConsentType == _consentType).ToListAsync();
+            Assert.False(versions.Single(x => x.Version == "v1").IsCurrent);
+            Assert.True(versions.Single(x => x.Version == "v2").IsCurrent);
+        }
+
+        var pending = Assert.Single(await PendingAsync(), p => p.ConsentType == _consentType);
+        Assert.Equal("v2", pending.Version);
+    }
+
+    [Fact]
+    public async Task Creating_an_existing_version_again_is_rejected()
+    {
+        if (!_infraReady) return;
+
+        await Assert.ThrowsAsync<AlreadyExistsException>(() => CreateAsync("v1"));
+    }
+
+    private async Task CreateAsync(string version)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        await mediator.Send(new CreateConsentDocumentCommand
+        {
+            ConsentType = _consentType,
+            Title = "Terms of Service",
+            Content = $"body {version}",
+            Version = version,
+            IsMandatory = true,
+        });
     }
 
     private async Task AcceptAsync(string version)

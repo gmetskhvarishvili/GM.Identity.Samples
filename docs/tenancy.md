@@ -24,9 +24,24 @@ var user = await unitOfWork.UserRepository
     .FirstOrDefaultAsync(x => x.UserName == request.UserName && ...);
 ```
 
-Once authenticated, the tenant the caller acts under is **asserted per request** (via the request's tenant context, e.g. an `X-Tenant-Id` header surfaced through `ICurrentActor`). Every request after sign-in is therefore tenant-scoped again by the global filter.
+Once authenticated, every request is tenant-scoped again by the global filter — under the tenant described next.
 
 > This is the one place the global filter is deliberately turned off. Treat `IgnoreQueryFilters()` as a red flag everywhere else — it is correct for authentication and a few admin cross-tenant operations, and a bug almost anywhere else.
+
+## Which tenant a request acts under
+
+The tenant comes from the **token**, not the caller. Login pins the Redis session to its owner's tenant (`SessionInfo.TenantId`: the user's `TenantId`, or the client's for a client-credentials token); the session reconciler keeps it when it rebuilds the store. The gateway's `OpaqueTokenAuthenticationHandler` (GM.Identity) then decides the trusted `tenant_id` claim, which actor forwarding sends to the API as `X-Tenant-Id` after stripping any client copy:
+
+| Session | Caller sends `X-Tenant-Id` | Acts under |
+| --- | --- | --- |
+| Tenant-bound (`TenantId = A`) | nothing, or `A` | tenant `A` |
+| Tenant-bound (`TenantId = A`) | `B` | **403** — rejected at the gateway |
+| Global (`TenantId = null`, e.g. the seeded admin) | `B` | tenant `B` |
+| Global | nothing | global (only `null`-tenant rows) |
+
+So a normal front end never sends `X-Tenant-Id`, and both gateways' Swagger hide it; only an admin front end signed in as a global user sends it, to switch into a tenant. This matters because the RBAC and scope projections in Redis are id-keyed and tenant-agnostic: if the caller could choose the tenant, a permission held in one tenant would read another tenant's rows.
+
+> Sessions cached before this rule existed carry no tenant and act as global until they expire (15 minutes for access tokens) or the next reconcile run (every 10 minutes) rewrites them with their tenant.
 
 ## Visibility is orthogonal to tenancy
 

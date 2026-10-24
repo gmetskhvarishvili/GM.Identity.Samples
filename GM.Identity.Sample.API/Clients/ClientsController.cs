@@ -144,23 +144,25 @@ public class ClientsController : BaseController
     }
 
     /// <summary>
-    /// Rotate a client's secret. Returns the new plaintext secret exactly once and revokes the client's active
-    /// sessions, so tokens minted under the old secret stop working immediately.
+    /// Rotate a client's secret to the one supplied. Revokes the client's active sessions, so tokens minted under the
+    /// old secret stop working immediately.
     /// </summary>
     /// <param name="id">Client Id whose secret to rotate</param>
+    /// <param name="request">The new secret</param>
     /// <param name="cancellationToken"></param>
-    /// <returns>The new client secret (shown only once)</returns>
+    /// <returns>Result</returns>
     [HasPermission(nameof(RotateClientSecret))]
     [RequiresScope(ScopeOperations.ManageIdentity)]
     [HttpPost("{id}/Secret/Rotate", Name = nameof(RotateClientSecret))]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RotateClientSecret(
         [FromRoute] Guid id,
+        [FromBody] RotateClientSecretModel request,
         CancellationToken cancellationToken)
     {
-        var secret = await Mediator.Send(new RotateClientSecretCommand { ClientId = id }, cancellationToken);
-        return Ok(secret);
+        await Mediator.Send(new RotateClientSecretCommand { ClientId = id, Secret = request.Secret }, cancellationToken);
+        return Ok();
     }
 
     /// <summary>Deactivate a client — it can no longer authenticate, and its active sessions are revoked.</summary>

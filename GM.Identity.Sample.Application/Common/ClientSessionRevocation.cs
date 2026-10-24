@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Application.Common;
 
 /// <summary>
-/// Revokes all of a client's active sessions, so a security-relevant change — rotating the secret or
+/// Revokes all of a client's active sessions, so a security-relevant change — changing the secret or
 /// deactivating the client — takes effect immediately instead of leaving the client's existing access tokens
 /// valid until they expire. Each revocation raises <c>GMClientSessionRevokedDomainEvent</c>, which after commit
 /// drives the background job that evicts the session from the cache.

@@ -6,7 +6,10 @@ using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,6 +50,12 @@ public class GetClientDetailsQueryHandler(IUnitOfWork unitOfWork) : IRequestHand
         }
 
         var result = entity.Adapt<ClientDetailsDto>();
+        result.RedirectUris = await unitOfWork.ClientRedirectUriRepository
+            .Query(true, null)
+            .Where(x => x.ClientId == entity.Id && x.IsActive && !x.IsDeleted && !x.IsHidden)
+            .OrderBy(x => x.Uri)
+            .Select(x => x.Uri)
+            .ToListAsync(cancellationToken);
 
         return result;
     }
@@ -56,4 +65,8 @@ public class ClientDetailsDto : AuditableDto
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }
+    public string? BackchannelLogoutUri { get; set; }
+    public string? FrontchannelLogoutUri { get; set; }
+    public bool RequireConsent { get; set; }
+    public IReadOnlyList<string> RedirectUris { get; set; } = [];
 }

@@ -19,4 +19,8 @@ namespace GM.Identity.Sample.Persistence.Configuration;
 public class TwoFactorAuthTypeConfiguration: GMTwoFactorAuthTypeConfiguration
 <Client, ClientSession, ClientScope, Scope, ScopeOperation, Operation,
     User, UserSession, TwoFactorAuthType, UserTwoFactorAuthType,
-    UserRole, Role, RolePermission, Permission>;
+    UserRole, Role, RolePermission, Permission>
+{
+    protected override string Schema => IdentityTableNames.Schemas.Identity;
+    protected override string Table => IdentityTableNames.TwoFactorAuthTypes;
+}

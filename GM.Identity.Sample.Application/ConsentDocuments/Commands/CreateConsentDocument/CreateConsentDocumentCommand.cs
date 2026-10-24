@@ -35,18 +35,31 @@ public class CreateConsentDocumentCommandHandler(IUnitOfWork unitOfWork)
 {
     public async Task<Guid> Handle(CreateConsentDocumentCommand request, CancellationToken cancellationToken)
     {
-        // Reject creating a document type that already exists — publish a new version instead (AddVersion).
+        // A document is identified by type + version: the same version of a type can't be published twice
+        // (current or superseded), but a new version of an existing type is fine.
         if (await unitOfWork.ConsentDocumentRepository.ExistsAsync(
                 x => x.ConsentType == request.ConsentType
-                     && x.IsActive
-                     && !x.IsDeleted
-                     && !x.IsHidden,
+                     && x.Version == request.Version
+                     && !x.IsDeleted,
                 cancellationToken))
         {
             throw new AlreadyExistsException(
                 StringResource.ConsentDocument,
-                StringResource.ConsentType,
-                request.ConsentType!);
+                StringResource.Version,
+                request.Version!);
+        }
+
+        // Publishing a new version of an existing type supersedes the current one, so exactly one version of
+        // each type is current (the same as AddConsentDocumentVersion).
+        var current = await unitOfWork.ConsentDocumentRepository
+            .FirstOrDefaultAsync(x => x.ConsentType == request.ConsentType
+                                      && x.IsCurrent
+                                      && x.IsActive && !x.IsDeleted && !x.IsHidden,
+                true, null, cancellationToken);
+        if (current != null)
+        {
+            current.Supersede();
+            unitOfWork.ConsentDocumentRepository.Update(current);
         }
 
         var entity = ConsentDocument.Create(

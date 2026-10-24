@@ -1,4 +1,4 @@
-using GM.EntityFramework.Persistence.Events;
+using GM.EntityFramework.Domain.Events;
 using GM.Identity.Sample.Application.Users.Commands.RecordUserConsent;
 using GM.Identity.Sample.Application.Users.Queries.GetUserConsents;
 using GM.Identity.Sample.Domain.BoundedContext.ComplianceBoundedContext.ConsentDocumentAggregate;

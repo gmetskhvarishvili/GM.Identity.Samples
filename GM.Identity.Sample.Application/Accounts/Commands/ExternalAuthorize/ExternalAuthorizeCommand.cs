@@ -49,7 +49,8 @@ public class ExternalAuthorizeCommandHandler(
     IOAuthService oAuthService,
     IUnitOfWork unitOfWork,
     ISessionCache sessionCache,
-    IAuthOptions options)
+    IAuthOptions options,
+    IActorEstablisher actorEstablisher)
     : IRequestHandler<ExternalAuthorizeCommand, AuthorizeResponseDto>
 {
     public async Task<AuthorizeResponseDto> Handle(ExternalAuthorizeCommand request, CancellationToken cancellationToken)
@@ -148,13 +149,14 @@ public class ExternalAuthorizeCommandHandler(
             refreshExpiry,
             TokenGenerator.Hash(refreshToken));
 
+        actorEstablisher.Establish(user.Id, client.Id, session.Id);
         await unitOfWork.UserSessionRepository.AddAsync(session, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Publish the access session to Redis (keyed by the access token hash) for gateway-side validation.
         await sessionCache.SetAsync(
             accessHash,
-            new SessionInfo(user.Id, session.Id, client.Id, accessExpiry),
+            new SessionInfo(user.Id, session.Id, client.Id, accessExpiry, user.TenantId),
             cancellationToken);
 
         return new AuthorizeResponseDto(accessToken, accessExpiry, "bearer", refreshToken, refreshExpiry);

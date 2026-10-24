@@ -57,6 +57,9 @@ public static class GatewayOpenApiDoc
             foreach (var rewrite in section.GetSection("Rewrites").Get<List<RewriteRule>>() ?? [])
                 ApplyRewrite(originalPaths, resultPaths, rewrite);
 
+            // The gateway sets these itself (from the token or the incoming connection), so callers never send them.
+            HideHeaders(resultPaths, section.GetSection("HiddenHeaders").Get<string[]>() ?? []);
+
             root["paths"] = resultPaths;
 
             if (!section.GetValue<bool>("IncludeAll"))
@@ -136,6 +139,29 @@ public static class GatewayOpenApiDoc
         }
 
         return null;
+    }
+
+    // Removes the named header parameters from every operation, so Swagger does not offer headers the
+    // gateway injects (and strips from the client request) anyway.
+    private static void HideHeaders(JsonObject paths, string[] headers)
+    {
+        if (headers.Length == 0) return;
+
+        foreach (var (_, operations) in paths)
+        {
+            if (operations is not JsonObject ops) continue;
+            foreach (var (_, operation) in ops)
+            {
+                // Path-level "parameters" is an array, not an operation — skip it.
+                if (operation is not JsonObject op || op["parameters"] is not JsonArray parameters) continue;
+
+                for (var i = parameters.Count - 1; i >= 0; i--)
+                    if (parameters[i]?["in"]?.GetValue<string>() is "header" &&
+                        parameters[i]?["name"]?.GetValue<string>() is { } name &&
+                        headers.Contains(name, StringComparer.OrdinalIgnoreCase))
+                        parameters.RemoveAt(i);
+            }
+        }
     }
 
     // Drops root-level tag groups that no kept operation references, so Swagger shows no empty groups.

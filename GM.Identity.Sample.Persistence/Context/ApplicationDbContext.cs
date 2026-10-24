@@ -4,6 +4,7 @@ using GM.EntityFramework.Persistence;
 using GM.EntityFramework.Persistence.Extensions;
 using GM.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace GM.Identity.Sample.Persistence.Context;
 
-public class ApplicationDbContext : GenericDbContext
+public class ApplicationDbContext : GenericDbContext, ITenantContext
 {
     public const string DefaultSchema = "application";
 
@@ -28,6 +29,9 @@ public class ApplicationDbContext : GenericDbContext
         _dispatcher = dispatcher;
     }
 
+    /// <summary>The tenant this unit of work acts under (from the gateway-forwarded X-Tenant-Id).</summary>
+    public Guid? CurrentTenantId => _currentActor.TenantId;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -38,8 +42,9 @@ public class ApplicationDbContext : GenericDbContext
         // per request from the gateway-forwarded X-Tenant-Id header via ICurrentActor. The mechanism lives
         // in GM.EntityFramework.Persistence; the sample's tenant-owned roots (users, roles, permissions,
         // clients, scopes, operations) just implement IHasTenant. Join aggregates stay global — they're
-        // id-referenced and the reconcile jobs read the roots with IgnoreQueryFilters().
-        modelBuilder.ApplyTenantQueryFilters(_currentActor);
+        // id-referenced and the reconcile jobs read the roots with IgnoreQueryFilters(). The filter reads the
+        // tenant through this context (CurrentTenantId) so EF re-evaluates it per query.
+        modelBuilder.ApplyTenantQueryFilters(this);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)

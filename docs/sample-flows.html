@@ -330,7 +330,7 @@
           <li><a href="#block">Block or unlock a user</a></li>
           <li><a href="#revoke-sessions">Revoke a user's sessions</a></li>
           <li><a href="#crud">Create, update &amp; delete</a></li>
-          <li><a href="#client">Register client &amp; change secret</a></li>
+          <li><a href="#client">Create client &amp; rotate secret</a></li>
           <li><a href="#client-scope">Grant &amp; revoke client scopes</a></li>
           <li><a href="#client-sessions">Revoke client sessions</a></li>
           <li><a href="#delete-user">Delete a user</a></li>
@@ -1309,9 +1309,9 @@ sequenceDiagram
   </section>
 
   <section class="flow" id="client">
-    <h3>Register client &amp; change secret</h3>
-    <div class="endpoint">POST /Clients &nbsp;·&nbsp; PUT /Clients/{id}</div>
-    <p>A client secret is <b>hashed and salted</b>, and only the hash is stored. Updating the client with a new secret replaces the stored hash and revokes the client's active sessions; an update without a secret leaves it unchanged.</p>
+    <h3>Create client &amp; rotate secret</h3>
+    <div class="endpoint">POST /Clients &nbsp;·&nbsp; POST /Clients/{id}/Secret/Rotate</div>
+    <p>The admin chooses the client secret. It is <b>hashed and salted</b>, and only the hash is stored, so the API can't return it later. Rotating replaces the stored hash with a new admin-chosen secret and revokes the client's active sessions; Update Client never touches the secret.</p>
     <div class="figure">
 <pre class="mmd">
 sequenceDiagram
@@ -1320,14 +1320,14 @@ sequenceDiagram
   participant API as Identity API
   participant GW as Admin Gateway
   participant DB as Database
-  Admin->>GW: register client (+ redirect URIs)
+  Admin->>GW: create client (secret + redirect URIs)
   GW->>API: proxy
-  API->>API: generate secret, hash + salt
+  API->>API: hash + salt secret
   API->>DB: store Client (secret hash only) + redirect URIs
   API-->>GW: forward
-  GW-->>Admin: client_id + secret (shown once)
+  GW-->>Admin: client_id
   Note over Admin,API: later
-  Admin->>GW: update client (new secret)
+  Admin->>GW: rotate client secret (new secret)
   GW->>API: proxy
   API->>API: hash + salt new secret
   API->>DB: replace stored hash

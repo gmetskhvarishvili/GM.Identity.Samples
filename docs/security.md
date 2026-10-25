@@ -23,7 +23,7 @@ Internet ──▶ Gateway (YARP) ──▶ Identity API ──▶ PostgreSQL / 
 | Secret | At rest | Verified by |
 |---|---|---|
 | User password | `PasswordHash` + `PasswordSalt` (`PasswordHasher.Hash`) | `PasswordHasher.Verify` |
-| Client secret | `SecretHash` + `SecretSalt`; plaintext returned **once** at register/rotate | `PasswordHasher.Verify` |
+| Client secret | `SecretHash` + `SecretSalt`; chosen by the admin at create/rotate, never returned | `PasswordHasher.Verify` |
 | Access / refresh token | Stored only as `TokenGenerator.Hash(...)`; raw value never persisted | hash lookup |
 | SSO cookie | Stored as a hash on `SsoSession.TokenHash` | hash lookup |
 | Authorization code | Stored as `CodeHash`; bound to client, redirect URI, PKCE challenge, nonce | hash + PKCE |

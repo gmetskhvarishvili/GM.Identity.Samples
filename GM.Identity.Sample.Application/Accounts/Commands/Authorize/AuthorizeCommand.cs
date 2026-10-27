@@ -7,12 +7,11 @@ using GM.Identity.Oidc;
 using GM.Identity.Sample.Application.Infrastructure.Services.OTP;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate;
-using GM.Identity.Domain.Authorization.DeviceCodeAggregate.Entities;
-using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Application.Events.Users;
+using GM.Identity.Sample.Domain.Enums;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
 using GM.OTP.Domain.Abstractions;
@@ -50,9 +49,6 @@ public class AuthorizeCommand : IRequest<AuthorizeResponseDto>
 
     /// <summary>This OP's issuer (scheme+host), set by the controller; the <c>iss</c> of issued id_tokens.</summary>
     public string? Issuer { get; set; }
-
-    /// <summary>The device code, supplied with the device-authorization grant while polling the token endpoint.</summary>
-    public string? DeviceCode { get; set; }
 }
 
 public class AuthorizeCommandValidator : AbstractValidator<AuthorizeCommand>
@@ -77,18 +73,7 @@ public class AuthorizeCommandHandler(
     public async Task<AuthorizeResponseDto> Handle(AuthorizeCommand request, CancellationToken cancellationToken)
     {
         // Every grant authenticates the client first.
-        var client = await unitOfWork.ClientRepository
-            .Query(true, null)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(
-                x => x.Id == request.ClientId && x.IsActive && !x.IsDeleted && !x.IsHidden,
-                cancellationToken);
-
-        if (client == null)
-            throw new NotFoundException(StringResource.Client, StringResource.Id, request.ClientId);
-
-        if (!PasswordHasher.Verify(request.ClientSecret, client.SecretHash, client.SecretSalt))
-            throw new ValidationException(ExceptionsResource.InvalidCredentials);
+        var client = await unitOfWork.AuthenticateClientAsync(request.ClientId, request.ClientSecret, cancellationToken);
 
         var settings = options;
         var now = DateTime.UtcNow;
@@ -99,7 +84,6 @@ public class AuthorizeCommandHandler(
             "refresh_token" => await RefreshAsync(request, client.Id, now, settings, cancellationToken),
             "two_factor" => await TwoFactorGrantAsync(request, client.Id, now, settings, cancellationToken),
             "authorization_code" => await AuthorizationCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
-            "urn:ietf:params:oauth:grant-type:device_code" => await DeviceCodeGrantAsync(request, client.Id, now, settings, cancellationToken),
             _ => await PasswordGrantAsync(request, client.Id, now, settings, cancellationToken),
         };
     }
@@ -107,27 +91,26 @@ public class AuthorizeCommandHandler(
     private async Task<AuthorizeResponseDto> PasswordGrantAsync(
         AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
     {
-        var user = await AuthenticateUserAsync(request, now, settings, cancellationToken);
+        var user = await unitOfWork.AuthenticateUserAsync(request.UserName, request.Password, now, settings, cancellationToken);
 
-        // Two-factor step-up: if the user has any confirmed second factor — a contact OTP method or an
-        // authenticator-app (TOTP) device — the password alone does not mint a session. For contact methods we
-        // send the one-time code (via the outbox); TOTP needs no send (the app generates it). Return a
-        // challenge; the caller completes login with grant_type=two_factor + the code.
-        var twoFactorTypeIds = await GetEnrolledTwoFactorTypeIdsAsync(user.Id, cancellationToken);
+        // Two-factor step-up: if the user has any second factor — an enrolled method or a confirmed
+        // authenticator-app (TOTP) device — the password alone does not mint a session. Return a challenge naming
+        // the enrolled methods; the caller picks where the code goes (POST /connect/two-factor/send) and completes
+        // login with grant_type=two_factor + the code. With exactly one delivery method and no authenticator app
+        // there is nothing to choose, so the code is sent right away.
+        var twoFactorTypeIds = await unitOfWork.GetEnrolledTwoFactorTypeIdsAsync(user.Id, cancellationToken);
         var hasTotp = await GetConfirmedTotpSecretAsync(user.Id, cancellationToken) != null;
         if (twoFactorTypeIds.Count > 0 || hasTotp)
         {
-            var subject = TwoFactorSubject(user);
-            if (twoFactorTypeIds.Count > 0 && !string.IsNullOrWhiteSpace(subject))
+            var deliveryMethods = TwoFactorDelivery.DeliveryMethods(twoFactorTypeIds);
+            TwoFactorMethod? sentVia = null;
+            if (deliveryMethods.Count == 1 && !hasTotp)
             {
-                await unitOfWork.OutboxMessageRepository.AddAsync(
-                    OutboxMessage.From(user.Id,
-                        new TwoFactorChallengeIssuedIntegrationEvent(subject) { UserId = user.Id }),
-                    cancellationToken);
-                await unitOfWork.SaveChangesAsync(cancellationToken);
+                sentVia = deliveryMethods.Single();
+                await unitOfWork.QueueTwoFactorCodeAsync(user, sentVia.Value, cancellationToken);
             }
 
-            return AuthorizeResponseDto.TwoFactorChallenge(twoFactorTypeIds);
+            return AuthorizeResponseDto.TwoFactorChallenge(twoFactorTypeIds, hasTotp, (int?)sentVia);
         }
 
         return await IssueUserSessionAsync(
@@ -143,16 +126,16 @@ public class AuthorizeCommandHandler(
         if (string.IsNullOrWhiteSpace(request.Code))
             throw new ValidationException(ExceptionsResource.InvalidCredentials);
 
-        var user = await AuthenticateUserAsync(request, now, settings, cancellationToken);
+        var user = await unitOfWork.AuthenticateUserAsync(request.UserName, request.Password, now, settings, cancellationToken);
 
-        var twoFactorTypeIds = await GetEnrolledTwoFactorTypeIdsAsync(user.Id, cancellationToken);
+        var twoFactorTypeIds = await unitOfWork.GetEnrolledTwoFactorTypeIdsAsync(user.Id, cancellationToken);
         var totpSecret = await GetConfirmedTotpSecretAsync(user.Id, cancellationToken);
         if (twoFactorTypeIds.Count == 0 && totpSecret == null)
             throw new ValidationException("This account has no second factor configured.");
 
         // The submitted value can be an authenticator-app (TOTP) code or the one-time code sent to the user's
         // contact. Try each in turn; only if none matches is the second factor rejected.
-        var subject = TwoFactorSubject(user);
+        var subject = TwoFactorDelivery.TwoFactorSubject(user);
         var verified =
             (totpSecret != null && totpService.VerifyCode(totpSecret, request.Code, DateTime.UtcNow))
             || (twoFactorTypeIds.Count > 0 && !string.IsNullOrWhiteSpace(subject)
@@ -164,52 +147,6 @@ public class AuthorizeCommandHandler(
         return await IssueUserSessionAsync(
             user.Id, clientId, provider: null, now, settings,
             refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken, issuer: request.Issuer);
-    }
-
-    // Resolves and password-verifies the user (cross-tenant — authentication precedes any tenant context),
-    // applying the block/lockout checks and the failed-attempt counter. Shared by the password and
-    // two-factor grants.
-    private async Task<User> AuthenticateUserAsync(
-        AuthorizeCommand request, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
-    {
-        // Authentication is a cross-tenant operation: the caller has no proven tenant yet at /connect, so
-        // resolve the user by credentials across all tenants (bypass the tenant query filter). The session
-        // then carries the user's own tenant, which the gateway enforces on every later request.
-        var user = await unitOfWork.UserRepository
-            .Query(true, null)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(
-                x => x.UserName == request.UserName && x.IsActive && !x.IsDeleted && !x.IsHidden,
-                cancellationToken);
-
-        if (user == null)
-            throw new NotFoundException(StringResource.User, StringResource.UserName, request.UserName ?? string.Empty);
-
-        // Hardening: reject blocked or currently locked-out accounts before checking the password.
-        if (user.IsBlocked)
-            throw new ValidationException("This account is blocked.");
-        if (user.LockoutEnd is { } lockoutEnd && lockoutEnd > now)
-            throw new ValidationException("This account is temporarily locked due to failed sign-in attempts.");
-
-        if (!PasswordHasher.Verify(request.Password ?? string.Empty, user.PasswordHash, user.PasswordSalt))
-        {
-            // Count the failure and lock the account once the threshold is reached (ensure lockout is
-            // enabled first, since IncreaseAccessFailedCount only sets LockoutEnd when it is).
-            user.EnableLockOut();
-            var willLock = user.AccessFailedCount + 1 >= settings.MaxFailedAccessAttempts;
-            user.IncreaseAccessFailedCount(willLock, now.AddMinutes(settings.LockoutMinutes));
-            unitOfWork.UserRepository.Update(user);
-
-            // Alert the user when this failure actually trips the lockout (possible break-in attempt).
-            if (willLock)
-                await unitOfWork.QueueSecurityAlertAsync(
-                    user.Id, user.Email, user.PhoneNumber, SecurityAlertTypes.AccountLockedOut, cancellationToken);
-
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-            throw new ValidationException(ExceptionsResource.InvalidCredentials);
-        }
-
-        return user;
     }
 
     // Validates the submitted value as the one-time code issued to the user's contact. Returns false (rather
@@ -228,22 +165,6 @@ public class AuthorizeCommandHandler(
             return false; // Not a valid OTP.
         }
     }
-
-    // The payload the one-time code is issued/validated against — the email, falling back to the phone.
-    private static string? TwoFactorSubject(User user) =>
-        !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.PhoneNumber;
-
-    // The 2FA methods the user is currently enrolled in (active, non-deleted). Empty when the user has no
-    // second factor, in which case login proceeds straight to issuing a session. Enrolment activates a method
-    // immediately, so any active enrolment gates login.
-    private async Task<IReadOnlyCollection<int>> GetEnrolledTwoFactorTypeIdsAsync(
-        Guid userId, CancellationToken cancellationToken) =>
-        await unitOfWork.UserTwoFactorAuthTypeRepository
-            .Query(false, null)
-            .IgnoreQueryFilters()
-            .Where(x => x.UserId == userId && x.IsActive && !x.IsDeleted && !x.IsHidden)
-            .Select(x => x.TwoFactorAuthTypeId)
-            .ToListAsync(cancellationToken);
 
     // The user's confirmed authenticator-app (TOTP) secret, or null if they have none. A pending (unconfirmed)
     // device never gates login.
@@ -332,54 +253,6 @@ public class AuthorizeCommandHandler(
             authCode.UserId, clientId, provider: null, now, settings,
             refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken,
             ssoSessionId: authCode.SsoSessionId, issuer: request.Issuer, nonce: authCode.Nonce);
-    }
-
-    // Device Authorization Grant polling (RFC 8628 §3.4/§3.5): the browserless device exchanges its device_code
-    // for tokens once the user has approved. Returns the RFC error codes as validation failures while the device
-    // keeps polling — authorization_pending, slow_down (polled too fast), access_denied, expired_token.
-    private async Task<AuthorizeResponseDto> DeviceCodeGrantAsync(
-        AuthorizeCommand request, Guid clientId, DateTime now, IAuthOptions settings, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(request.DeviceCode))
-            throw new ValidationException(ExceptionsResource.InvalidCredentials);
-
-        var hash = TokenGenerator.Hash(request.DeviceCode);
-        var deviceCode = await unitOfWork.DeviceCodeRepository
-            .Query(true, null)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.DeviceCodeHash == hash, cancellationToken);
-
-        // Unknown or wrong-client device code → treat as expired (never leak which).
-        if (deviceCode == null || deviceCode.ClientId != clientId)
-            throw new ValidationException("expired_token");
-
-        if (deviceCode.IsExpired(now))
-        {
-            unitOfWork.DeviceCodeRepository.Remove(deviceCode);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-            throw new ValidationException("expired_token");
-        }
-
-        if (deviceCode.Status == DeviceCodeStatus.Denied)
-            throw new ValidationException("access_denied");
-
-        var tooFast = deviceCode.RegisterPollAndCheckTooFast(now);
-
-        if (deviceCode.Status == DeviceCodeStatus.Approved && deviceCode.UserId is { } userId)
-        {
-            // Single-use: spend the device code before issuing the session.
-            unitOfWork.DeviceCodeRepository.Remove(deviceCode);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
-            return await IssueUserSessionAsync(
-                userId, clientId, provider: "device", now, settings,
-                refreshExpiry: now.AddDays(settings.RefreshTokenDays), cancellationToken, issuer: request.Issuer);
-        }
-
-        // Still pending — persist the poll timestamp and tell the device to keep (or slow) polling.
-        unitOfWork.DeviceCodeRepository.Update(deviceCode);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        throw new ValidationException(tooFast ? "slow_down" : "authorization_pending");
     }
 
     private async Task<AuthorizeResponseDto> IssueUserSessionAsync(
@@ -519,13 +392,18 @@ public record AuthorizeResponseDto(
     DateTime? RefreshTokenExpiresAt = null,
     bool TwoFactorRequired = false,
     IReadOnlyCollection<int>? TwoFactorAuthTypeIds = null,
-    string? IdToken = null)
+    string? IdToken = null,
+    bool TwoFactorAuthenticatorApp = false,
+    int? TwoFactorCodeSentVia = null)
 {
     /// <summary>
-    /// A response that stops short of issuing tokens because the user must complete a second factor. Names
-    /// the enrolled 2FA method ids so the caller knows which challenge to present.
+    /// A response that stops short of issuing tokens because the user must complete a second factor. Names the
+    /// enrolled 2FA method ids (the user picks Email/SMS/WhatsApp among them), whether an authenticator app can
+    /// supply the code, and the method a code was already sent over when there was only one to choose.
     /// </summary>
-    public static AuthorizeResponseDto TwoFactorChallenge(IReadOnlyCollection<int> twoFactorAuthTypeIds) =>
+    public static AuthorizeResponseDto TwoFactorChallenge(
+        IReadOnlyCollection<int> twoFactorAuthTypeIds, bool authenticatorApp, int? codeSentVia) =>
         new(AccessToken: null, ExpiresAt: null, TokenType: "bearer",
-            TwoFactorRequired: true, TwoFactorAuthTypeIds: twoFactorAuthTypeIds);
+            TwoFactorRequired: true, TwoFactorAuthTypeIds: twoFactorAuthTypeIds,
+            TwoFactorAuthenticatorApp: authenticatorApp, TwoFactorCodeSentVia: codeSentVia);
 }

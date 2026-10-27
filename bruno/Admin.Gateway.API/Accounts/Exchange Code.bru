@@ -1,7 +1,7 @@
 meta {
   name: Exchange Code
   type: http
-  seq: 9
+  seq: 15
 }
 
 post {
@@ -23,7 +23,7 @@ tests {
   test("returns 200", function () {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("issues an access token", function () {
     const body = res.getBody();
     expect(body.accessToken ?? body.access_token).to.be.a("string").and.not.empty;

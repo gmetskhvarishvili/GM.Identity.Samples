@@ -1,7 +1,7 @@
 meta {
   name: Google Connect
   type: http
-  seq: 15
+  seq: 6
 }
 
 get {
@@ -18,7 +18,7 @@ tests {
   test("returns 200", function () {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("returns the provider's sign-in URL", function () {
     expect(res.getBody()).to.not.be.empty;
   });

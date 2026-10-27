@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GM.Identity.Domain.Identity.UserAggregate.Entities;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -19,6 +20,9 @@ public class UpdateUserCommand : IRequest
 
     /// <summary>Optional personal details, stored 1:1 with the user.</summary>
     public UpdateUserPersonalInfoCommand? PersonalInfo { get; set; }
+
+    /// <summary>Storage key of the user's profile image. Null leaves it unchanged; empty clears it.</summary>
+    public string? ProfileImageKey { get; set; }
 }
 
 public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
@@ -28,6 +32,7 @@ public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
         RuleFor(x => x.Id).NotNull().NotEmpty();
         RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
         RuleFor(x => x.Username).NotNull().NotEmpty();
+        RuleFor(x => x.ProfileImageKey).MaximumLength(GMUserLimits.ProfileImageKeyMaxLength);
     }
 }
 
@@ -85,6 +90,9 @@ public class UpdateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<
                 request.PersonalInfo.LastName,
                 request.PersonalInfo.PersonalNumber,
                 request.PersonalInfo.BirthDate);
+
+        if (request.ProfileImageKey is not null)
+            entity.SetProfileImageKey(request.ProfileImageKey);
 
         // Entity is tracked; change tracking persists the user and its owned personal-info row.
         await unitOfWork.SaveChangesAsync(cancellationToken);

@@ -124,7 +124,7 @@ Resilience is configured declaratively (`GM.HttpClient`).
 
 `RateLimitPartition` (e.g. `Ip,Endpoint`) sets what the counter is keyed on.
 
-**Route differences:** the public gateway leaves `/connect/*` and registration anonymous and marks `/me` / `/me/sessions` with `AuthorizationPolicy: default`; the admin gateway sets `AuthorizationPolicy: default` on **all** RBAC/admin routes. (In dev the cluster allows any server cert via `HttpClient:DangerousAcceptAnyServerCertificate` — remove in production.)
+**Route differences:** the public gateway leaves `/connect/*` and registration anonymous and marks `/me`, `/me/sessions` and `/me/permissions` with `AuthorizationPolicy: default`; the admin gateway sets `AuthorizationPolicy: default` on **all** RBAC/admin routes and the same `/me` routes. Neither gateway exposes `/connect/authz/*` (the internal decision service for resource servers). (In dev the cluster allows any server cert via `HttpClient:DangerousAcceptAnyServerCertificate` — remove in production.)
 
 ---
 

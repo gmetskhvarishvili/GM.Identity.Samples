@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Authentication;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using System.Threading.Tasks;
+using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +48,27 @@ builder.Services.AddGMGateway(
         configureHttp: options => options.DefaultPartition = RateLimitPartition.Ip)
     // Inject the caller's identity from the validated token into trusted X-* headers the backend reads
     // (client-supplied copies are stripped first so they cannot be spoofed).
-    .AddGMActorForwarding();
+    .AddGMActorForwarding()
+    // "Current user" routes: forward /me, /me/sessions and /me/permissions to the backend's Me endpoints.
+    // The backend resolves the caller from the gateway-injected X-User-Id header (not the path), so a
+    // caller can only ever read their own info/sessions/permissions — and these need no admin permission.
+    .AddTransforms(context =>
+    {
+        var backendPath = context.Route.RouteId switch
+        {
+            "me" => "/api/v1.0/me",
+            "me-sessions" => "/api/v1.0/me/Sessions",
+            "me-permissions" => "/api/v1.0/me/Permissions",
+            _ => null,
+        };
+        if (backendPath is null) return;
+
+        context.AddRequestTransform(transformContext =>
+        {
+            transformContext.Path = backendPath;
+            return ValueTask.CompletedTask;
+        });
+    });
 
 // ---------------------------------------------------------------------------------------------
 // Edge authentication: wire your own scheme here. It must populate HttpContext.User and set a default
@@ -150,6 +172,12 @@ app.MapGatewayOpenApiDoc();
 
 // /health/live, /health/ready, /health/startup.
 app.MapGMHealthChecks();
+
+// /connect/authz/* is the Identity API's internal decision service for resource servers (they call the API
+// directly, passing the user/client id). It must not be reachable through the gateway, where anyone could ask
+// about any user; front ends read their own permissions from /me/permissions. A literal path beats the
+// /connect/{**catch-all} proxy route, so this answers first.
+app.Map("/connect/authz/{**rest}", () => Results.NotFound());
 
 // Reverse proxy pipeline: per-route rate limiting enforced at the edge before forwarding.
 app.MapGMGateway();

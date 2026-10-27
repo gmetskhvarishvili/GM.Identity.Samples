@@ -1,7 +1,7 @@
 meta {
   name: Login
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -31,7 +31,7 @@ tests {
   test("returns 200", function () {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("issues an access token without a 2FA challenge", function () {
     const body = res.getBody();
     expect(body.twoFactorRequired ?? false).to.equal(false);

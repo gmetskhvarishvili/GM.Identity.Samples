@@ -1,0 +1,32 @@
+meta {
+  name: Send Two Factor Code
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{gateway}}/connect/two-factor/send
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  username: {{username}}
+  password: {{password}}
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+  two_factor_auth_type_id: 1
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}
+
+docs {
+  Run after Login answers with twoFactorRequired. Pick one of the methods in its twoFactorAuthTypeIds:
+  1 = Email, 2 = SMS, 3 = WhatsApp. The code is sent there; finish with Two Factor Login.
+  Login already sent the code when twoFactorCodeSentVia is set (the user has only one method).
+  Sending again replaces the previous code.
+}

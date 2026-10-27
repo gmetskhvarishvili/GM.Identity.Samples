@@ -23,7 +23,7 @@ Every event is a `sealed record … : IntegrationEvent`. The base envelope carri
 | Event | Payload | Published by | Consumed by |
 |---|---|---|---|
 | `UserConfirmationInitiatedIntegrationEvent` | `Subject`, `ConfirmationType` | `ConfirmUserInit` (confirm-init) | OTP service → `GenerateOtp` |
-| `TwoFactorChallengeIssuedIntegrationEvent` | `Subject` | password grant when a contact 2FA method is enrolled | OTP service → `GenerateOtp` |
+| `TwoFactorChallengeIssuedIntegrationEvent` | `Subject`, `Destination`, `Channel` | `POST /connect/two-factor/send` (the user's chosen method), or the password grant when the user has a single delivery method | OTP service → `GenerateOtp` |
 | `OtpRequestedIntegrationEvent` | `Subject`, `Destination`, `Purpose`, `Channel` | any service needing a code (the `Producer.Worker` sample demonstrates it) | OTP service → `GenerateOtp` |
 
 ### OTP → Notifications service (delivers the code)

@@ -1,4 +1,5 @@
 using FluentValidation;
+using GM.Identity.Domain.Identity.UserAggregate.Entities;
 using GM.EntityFramework.Domain.Common;
 using GM.Exceptions;
 using GM.Identity.Sample.Application.Common;
@@ -40,6 +41,9 @@ public class CreateUserCommand : IRequest<Guid>
 
     /// <summary>Optional personal details, stored 1:1 with the user.</summary>
     public CreateUserPersonalInfoCommand? PersonalInfo { get; set; }
+
+    /// <summary>Optional storage key of the user's profile image.</summary>
+    public string? ProfileImageKey { get; set; }
 }
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
@@ -51,6 +55,7 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
         RuleFor(x => x.Username).NotNull().NotEmpty();
         RuleFor(x => x.Password).StrongPassword(passwordPolicy);
         RuleFor(x => x.Password).NotBreached(breachedPasswordChecker);
+        RuleFor(x => x.ProfileImageKey).MaximumLength(GMUserLimits.ProfileImageKeyMaxLength);
 
         RuleForEach(x => x.Consents).ChildRules(consent =>
         {
@@ -96,6 +101,8 @@ public class CreateUserCommandHandler(
                 request.PersonalInfo.LastName,
                 request.PersonalInfo.PersonalNumber,
                 request.PersonalInfo.BirthDate);
+
+        entity.SetProfileImageKey(request.ProfileImageKey);
 
         // Add child items if any
         if (request.UserRoles?.Any() == true)

@@ -1,7 +1,7 @@
 meta {
   name: Get User Info
   type: http
-  seq: 5
+  seq: 17
 }
 
 get {
@@ -22,7 +22,7 @@ tests {
   test("returns 200", function () {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("returns the signed-in user's claims", function () {
     expect(res.getBody()).to.have.property("sub");
   });

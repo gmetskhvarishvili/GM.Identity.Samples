@@ -272,6 +272,7 @@
         <strong>Password &amp; 2FA</strong>
         <ol>
           <li><a href="#password">Password sign-in</a></li>
+          <li><a href="#twofactor-send">Choose where the code goes</a></li>
           <li><a href="#twofactor">Two-factor completion</a></li>
           <li><a href="#totp">Authenticator (TOTP) enrolment</a></li>
         </ol>
@@ -282,7 +283,6 @@
           <li><a href="#authcode">Authorization code + PKCE</a></li>
           <li><a href="#silent">Silent SSO authorization</a></li>
           <li><a href="#refresh">Refresh token</a></li>
-          <li><a href="#device">Device authorization grant</a></li>
           <li><a href="#clientcreds">Client credentials</a></li>
           <li><a href="#discovery">Discovery &amp; keys</a></li>
         </ol>
@@ -392,7 +392,6 @@
       <div class="toc-group">
         <strong>State machines</strong>
         <ol>
-          <li><a href="#sm-devicecode">Device code</a></li>
           <li><a href="#sm-otp">OTP challenge</a></li>
           <li><a href="#sm-notification">Notification</a></li>
           <li><a href="#sm-session">Session</a></li>
@@ -413,7 +412,7 @@
   <section class="flow" id="password">
     <h3>Password sign-in</h3>
     <div class="endpoint">POST /connect/token &nbsp;·&nbsp; grant_type=password</div>
-    <p>Authenticates the client, then the user. If the account has <b>any confirmed second factor</b>, the password alone returns a challenge instead of tokens; otherwise a session is issued. Failed attempts count toward a lockout.</p>
+    <p>Authenticates the client, then the user. If the account has <b>any confirmed second factor</b>, the password alone returns a challenge instead of tokens, listing the user's methods (1 Email, 2 SMS, 3 WhatsApp) and whether an authenticator app can supply the code; otherwise a session is issued. With exactly one delivery method and no authenticator app the code is sent right away (<code>twoFactorCodeSentVia</code>); otherwise the user picks where it goes. Failed attempts count toward a lockout.</p>
     <div class="figure">
 <pre class="mmd">
 sequenceDiagram
@@ -435,18 +434,47 @@ sequenceDiagram
     API-->>GW: forward
     GW-->>App: 400 invalid_credentials
   else second factor enrolled
-    opt contact OTP method
-      API->>OB: TwoFactorChallengeIssued
+    opt one delivery method, no authenticator app
+      API->>OB: TwoFactorChallengeIssued (destination, channel)
       OB-->>App: code delivered to user
     end
     API-->>GW: forward
-    GW-->>App: twoFactorRequired + methods
+    GW-->>App: twoFactorRequired + methods (+ codeSentVia)
   else no second factor
     API->>DB: create UserSession (token hashes)
     API->>R: cache session by access hash
     API-->>GW: forward
     GW-->>App: access_token + refresh_token
   end
+</pre>
+    </div>
+  </section>
+
+  <section class="flow" id="twofactor-send">
+    <h3>Choose where the code goes</h3>
+    <div class="endpoint">POST /connect/two-factor/send</div>
+    <p>After the challenge, the user picks one of their enrolled methods and the code is sent there: Email to the email address, SMS and WhatsApp to the phone number. The credentials are <b>re-verified</b> (a wrong password counts toward lockout) and the method must be one the user enrolled in. The code is stored under the same key whatever the channel, so the two_factor grant verifies it without knowing where it went. Sending again replaces the previous code.</p>
+    <div class="figure">
+<pre class="mmd">
+sequenceDiagram
+  autonumber
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant OTP as OTP service
+  participant N as Notifications
+  App->>GW: POST /connect/two-factor/send (method)
+  GW->>API: proxy
+  API->>DB: load client + user, re-verify password
+  API->>DB: check the user enrolled in the method
+  API->>DB: outbox TwoFactorChallengeIssued (subject, destination, channel)
+  API-->>GW: forward
+  GW-->>App: 200
+  DB-->>OTP: relay event
+  OTP->>OTP: generate code under subject
+  OTP->>N: OtpGenerated (destination, channel)
+  N-->>App: code by email / SMS / WhatsApp
 </pre>
     </div>
   </section>
@@ -617,51 +645,6 @@ sequenceDiagram
   API->>R: cache new session
   API-->>GW: forward
   GW-->>App: new access_token + refresh_token
-</pre>
-    </div>
-  </section>
-
-  <section class="flow" id="device">
-    <h3>Device authorization grant</h3>
-    <div class="endpoint">POST /connect/device_authorization &nbsp;·&nbsp; /connect/device &nbsp;·&nbsp; token (device_code)</div>
-    <p>For input-constrained devices (RFC 8628). The device shows a short user code and polls; the user approves on a second screen. Polling returns <code>authorization_pending</code> / <code>slow_down</code> until approval.</p>
-    <div class="figure">
-<pre class="mmd">
-sequenceDiagram
-  autonumber
-  participant D as Device
-  participant API as Identity API
-  participant GW as GM Identity Gateway
-  participant DB as Database
-  participant U as User (2nd screen)
-  participant R as Session cache
-  D->>GW: POST /connect/device_authorization (client creds)
-  GW->>API: proxy
-  API->>DB: store DeviceCode (hashed) + user_code [Pending]
-  API-->>GW: forward
-  GW-->>D: device_code, user_code, verification_uri, interval
-  par user approves
-    U->>GW: POST /connect/device (user_code, credentials)
-    GW->>API: proxy
-    API->>DB: verify user, approve DeviceCode
-  and device polls
-    loop every interval
-      D->>GW: POST /connect/token (device_code)
-      GW->>API: proxy
-      alt still pending
-        API-->>GW: forward
-        GW-->>D: authorization_pending / slow_down
-      else approved
-        API->>DB: consume DeviceCode, create UserSession
-        API->>R: cache session
-        API-->>GW: forward
-        GW-->>D: access_token + refresh_token
-      else denied or expired
-        API-->>GW: forward
-        GW-->>D: access_denied / expired_token
-      end
-    end
-  end
 </pre>
     </div>
   </section>
@@ -1505,7 +1488,7 @@ sequenceDiagram
   participant GW as GM Identity Gateway
   participant RL as Redis (rate limits)
   participant API as Identity API
-  C->>GW: /connect/*, POST register, GET /me, GET /me/sessions
+  C->>GW: /connect/*, POST register, GET /me, /me/sessions, /me/permissions
   GW->>RL: check the route's rate-limit policy
   alt over limit
     GW-->>C: 429 Too Many Requests
@@ -1513,9 +1496,9 @@ sequenceDiagram
     GW->>API: proxy (forward actor claims if present)
     API-->>GW: response
     GW-->>C: response
-  else /me, /me/sessions (owner-scoped)
+  else /me, /me/sessions, /me/permissions (owner-scoped)
     GW->>GW: authenticate opaque token (user id, session id)
-    GW->>GW: rewrite /me to the backend user endpoint for that user
+    GW->>GW: rewrite /me/* to the backend Me endpoints
     GW->>API: proxy with forwarded actor headers
     API-->>GW: response
     GW-->>C: response
@@ -2028,7 +2011,6 @@ erDiagram
   CLIENT ||--o{ CLIENT_SESSION : owns
   CLIENT ||--o{ AUTH_CODE : issued_for
   USER ||--o{ AUTH_CODE : for
-  CLIENT ||--o{ DEVICE_CODE : issued_for
   USER ||--o{ USER_CLIENT_CONSENT : grants
   CLIENT ||--o{ USER_CLIENT_CONSENT : for
   USER ||--o{ USER_PASSKEY : registers
@@ -2126,14 +2108,6 @@ erDiagram
     string CodeChallenge
     guid SsoSessionId FK
   }
-  DEVICE_CODE {
-    guid Id PK
-    guid ClientId FK
-    string DeviceCodeHash
-    string UserCode
-    int Status
-    guid UserId FK
-  }
   USER_CLIENT_CONSENT {
     guid Id PK
     guid UserId FK
@@ -2223,25 +2197,6 @@ erDiagram
   </section>
 
   <h2 class="group-head" id="g-state">State machines</h2>
-
-  <section class="flow" id="sm-devicecode">
-    <h3>Device code</h3>
-    <div class="endpoint">DeviceCodeStatus</div>
-    <p>A device-authorization request moves out of <b>Pending</b> only by the user's choice, and is consumed when the device finally exchanges it.</p>
-    <div class="figure">
-<pre class="mmd">
-stateDiagram-v2
-  [*] --> Pending : issued
-  Pending --> Approved : Approve(userId)
-  Pending --> Denied : Deny()
-  Approved --> [*] : consumed at token exchange
-  Pending --> Expired : past ExpiresAt
-  Approved --> Expired : past ExpiresAt
-  Denied --> [*]
-  Expired --> [*]
-</pre>
-    </div>
-  </section>
 
   <section class="flow" id="sm-otp">
     <h3>OTP challenge</h3>
@@ -2358,7 +2313,6 @@ classDiagram
   SoftDeletableEntity <|-- GMPasskeyChallenge
   SoftDeletableEntity <|-- GMAuthorizationCode
   SoftDeletableEntity <|-- GMClientRedirectUri
-  SoftDeletableEntity <|-- GMDeviceCode
   SoftDeletableEntity <|-- GMSsoSession
   SoftDeletableEntity <|-- GMUserClientConsent
   SoftDeletableEntity <|-- TotpEnrolment
@@ -2369,7 +2323,6 @@ classDiagram
   GMPasskeyChallenge <|-- PasskeyChallenge
   GMAuthorizationCode <|-- AuthorizationCode
   GMClientRedirectUri <|-- ClientRedirectUri
-  GMDeviceCode <|-- DeviceCode
   GMSsoSession <|-- SsoSession
   GMUserClientConsent <|-- UserClientConsent
   TotpEnrolment <|-- UserTotpDevice
@@ -2380,7 +2333,6 @@ classDiagram
   IAggregateRoot <|.. PasskeyChallenge
   IAggregateRoot <|.. AuthorizationCode
   IAggregateRoot <|.. ClientRedirectUri
-  IAggregateRoot <|.. DeviceCode
   IAggregateRoot <|.. SsoSession
   IAggregateRoot <|.. UserClientConsent
   IAggregateRoot <|.. UserTotpDevice

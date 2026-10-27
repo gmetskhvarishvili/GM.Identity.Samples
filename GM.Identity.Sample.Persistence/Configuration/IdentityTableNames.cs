@@ -40,7 +40,6 @@ public static class IdentityTableNames
     public const string ClientSessions = "client_sessions";
     public const string SsoSessions = "sso_sessions";
     public const string AuthorizationCodes = "authorization_codes";
-    public const string DeviceCodes = "device_codes";
     public const string UserClientConsents = "user_client_consents";
 
     // Compliance

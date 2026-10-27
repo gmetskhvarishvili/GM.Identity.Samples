@@ -3,13 +3,12 @@ using GM.API.Controllers;
 using GM.Identity.Sample.Application.Accounts.Commands.Authorize;
 using GM.Identity.Sample.Application.Accounts.Commands.AuthorizeCode;
 using GM.Identity.Sample.Application.Accounts.Commands.BeginPasskeyAssertion;
-using GM.Identity.Sample.Application.Accounts.Commands.ApproveDevice;
 using GM.Identity.Sample.Application.Accounts.Commands.CompletePasskeyAssertion;
-using GM.Identity.Sample.Application.Accounts.Commands.DeviceAuthorization;
 using GM.Identity.Sample.Application.Accounts.Commands.EndSession;
 using GM.Identity.Sample.Application.Accounts.Commands.ExternalAuthorize;
 using GM.Identity.Sample.Application.Accounts.Commands.IntrospectToken;
 using GM.Identity.Sample.Application.Accounts.Commands.RevokeToken;
+using GM.Identity.Sample.Application.Accounts.Commands.SendTwoFactorCode;
 using GM.Identity.Sample.Application.Accounts.Queries.GetJwks;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOAuthRedirectUri;
 using GM.Identity.Sample.Application.Accounts.Queries.GetOpenIdConfiguration;
@@ -60,11 +59,37 @@ public class AccountsController : BaseController
             Code = request.Code,
             RedirectUri = request.RedirectUri,
             CodeVerifier = request.CodeVerifier,
-            DeviceCode = request.DeviceCode,
             Issuer = $"{Request.Scheme}://{Request.Host}",
         };
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Send a two-factor code over the method the user picks (Email, SMS or WhatsApp) after the password grant
+    /// answered with a 2FA challenge. Re-checks the client and user credentials; complete login with
+    /// grant_type=two_factor and the code.
+    /// </summary>
+    /// <param name="request">Credentials and the chosen method (two_factor_auth_type_id)</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Result</returns>
+    [Consumes("application/x-www-form-urlencoded")]
+    [HttpPost("~/connect/two-factor/send", Name = nameof(SendTwoFactorCode))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendTwoFactorCode(
+        SendTwoFactorCodeModel request,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new SendTwoFactorCodeCommand
+        {
+            UserName = request.UserName,
+            Password = request.Password,
+            ClientId = request.ClientId,
+            ClientSecret = request.ClientSecret,
+            TwoFactorAuthTypeId = request.TwoFactorAuthTypeId,
+        }, cancellationToken);
+        return Ok();
     }
 
 
@@ -160,49 +185,6 @@ public class AccountsController : BaseController
             Response.Cookies.Append(SsoCookieName, result.SsoCookie, BuildSsoCookieOptions(result.SsoCookieExpiresAt));
 
         return Ok(result);
-    }
-
-    /// <summary>
-    /// Device authorization endpoint (RFC 8628). A browserless device authenticates as a client and receives a
-    /// device_code (to poll /connect/token with grant_type=urn:ietf:params:oauth:grant-type:device_code) and a
-    /// user_code for the user to approve at the verification URI.
-    /// </summary>
-    [AllowAnonymous]
-    [Consumes("application/x-www-form-urlencoded")]
-    [HttpPost("~/connect/device_authorization", Name = nameof(DeviceAuthorization)), Produces("application/json")]
-    [ProducesResponseType(typeof(DeviceAuthorizationResponseDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> DeviceAuthorization(
-        DeviceAuthorizationModel request, CancellationToken cancellationToken)
-    {
-        var result = await Mediator.Send(new DeviceAuthorizationCommand
-        {
-            ClientId = request.ClientId,
-            ClientSecret = request.ClientSecret,
-            Scope = request.Scope,
-            Issuer = $"{Request.Scheme}://{Request.Host}",
-        }, cancellationToken);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Approves (or denies) a device user_code. The user authenticates with their credentials; on approval the
-    /// paired device's next poll receives tokens. In a browser deployment this sits behind the verification page.
-    /// </summary>
-    [AllowAnonymous]
-    [Consumes("application/x-www-form-urlencoded")]
-    [HttpPost("~/connect/device", Name = nameof(ApproveDevice)), Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ApproveDevice(
-        ApproveDeviceModel request, CancellationToken cancellationToken)
-    {
-        await Mediator.Send(new ApproveDeviceCommand
-        {
-            UserCode = request.UserCode,
-            UserName = request.UserName,
-            Password = request.Password,
-            Approve = request.Approve,
-        }, cancellationToken);
-        return Ok();
     }
 
     /// <summary>

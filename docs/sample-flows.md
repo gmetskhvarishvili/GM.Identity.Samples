@@ -39,17 +39,17 @@ the user's TOTP app or WebAuthn device
 **Password & 2FA**
 
 1. [Password sign-in](#password)
-2. [Two-factor completion](#twofactor)
-3. [Authenticator (TOTP) enrolment](#totp)
+2. [Choose where the code goes](#twofactor-send)
+3. [Two-factor completion](#twofactor)
+4. [Authenticator (TOTP) enrolment](#totp)
 
 **OAuth / OIDC**
 
 1. [Authorization code + PKCE](#authcode)
 2. [Silent SSO authorization](#silent)
 3. [Refresh token](#refresh)
-4. [Device authorization grant](#device)
-5. [Client credentials](#clientcreds)
-6. [Discovery & keys](#discovery)
+4. [Client credentials](#clientcreds)
+5. [Discovery & keys](#discovery)
 
 **Passkeys & social**
 
@@ -133,10 +133,9 @@ the user's TOTP app or WebAuthn device
 
 **State machines**
 
-1. [Device code](#sm-devicecode)
-2. [OTP challenge](#sm-otp)
-3. [Notification](#sm-notification)
-4. [Session](#sm-session)
+1. [OTP challenge](#sm-otp)
+2. [Notification](#sm-notification)
+3. [Session](#sm-session)
 5. [Entity visibility](#sm-softdelete)
 
 **Domain model**
@@ -149,7 +148,7 @@ the user's TOTP app or WebAuthn device
 
 POST /connect/token · grant_type=password
 
-Authenticates the client, then the user. If the account has **any confirmed second factor**, the password alone returns a challenge instead of tokens; otherwise a session is issued. Failed attempts count toward a lockout.
+Authenticates the client, then the user. If the account has **any confirmed second factor**, the password alone returns a challenge instead of tokens, listing the user's methods (1 Email, 2 SMS, 3 WhatsApp) and whether an authenticator app can supply the code; otherwise a session is issued. With exactly one delivery method and no authenticator app the code is sent right away (`twoFactorCodeSentVia`); otherwise the user picks where it goes. Failed attempts count toward a lockout.
 
 ```
 sequenceDiagram
@@ -171,18 +170,46 @@ sequenceDiagram
     API-->>GW: forward
     GW-->>App: 400 invalid_credentials
   else second factor enrolled
-    opt contact OTP method
-      API->>OB: TwoFactorChallengeIssued
+    opt one delivery method, no authenticator app
+      API->>OB: TwoFactorChallengeIssued (destination, channel)
       OB-->>App: code delivered to user
     end
     API-->>GW: forward
-    GW-->>App: twoFactorRequired + methods
+    GW-->>App: twoFactorRequired + methods (+ codeSentVia)
   else no second factor
     API->>DB: create UserSession (token hashes)
     API->>R: cache session by access hash
     API-->>GW: forward
     GW-->>App: access_token + refresh_token
   end
+```
+
+### Choose where the code goes
+
+POST /connect/two-factor/send
+
+After the challenge, the user picks one of their enrolled methods and the code is sent there: Email to the email address, SMS and WhatsApp to the phone number. The credentials are **re-verified** (a wrong password counts toward lockout) and the method must be one the user enrolled in. The code is stored under the same key whatever the channel, so the two_factor grant verifies it without knowing where it went. Sending again replaces the previous code.
+
+```
+sequenceDiagram
+  autonumber
+  participant App as Client App
+  participant API as Identity API
+  participant GW as GM Identity Gateway
+  participant DB as Database
+  participant OTP as OTP service
+  participant N as Notifications
+  App->>GW: POST /connect/two-factor/send (method)
+  GW->>API: proxy
+  API->>DB: load client + user, re-verify password
+  API->>DB: check the user enrolled in the method
+  API->>DB: outbox TwoFactorChallengeIssued (subject, destination, channel)
+  API-->>GW: forward
+  GW-->>App: 200
+  DB-->>OTP: relay event
+  OTP->>OTP: generate code under subject
+  OTP->>N: OtpGenerated (destination, channel)
+  N-->>App: code by email / SMS / WhatsApp
 ```
 
 ### Two-factor completion
@@ -348,50 +375,6 @@ sequenceDiagram
   API->>R: cache new session
   API-->>GW: forward
   GW-->>App: new access_token + refresh_token
-```
-
-### Device authorization grant
-
-POST /connect/device_authorization · /connect/device · token (device_code)
-
-For input-constrained devices (RFC 8628). The device shows a short user code and polls; the user approves on a second screen. Polling returns `authorization_pending` / `slow_down` until approval.
-
-```
-sequenceDiagram
-  autonumber
-  participant D as Device
-  participant API as Identity API
-  participant GW as GM Identity Gateway
-  participant DB as Database
-  participant U as User (2nd screen)
-  participant R as Session cache
-  D->>GW: POST /connect/device_authorization (client creds)
-  GW->>API: proxy
-  API->>DB: store DeviceCode (hashed) + user_code [Pending]
-  API-->>GW: forward
-  GW-->>D: device_code, user_code, verification_uri, interval
-  par user approves
-    U->>GW: POST /connect/device (user_code, credentials)
-    GW->>API: proxy
-    API->>DB: verify user, approve DeviceCode
-  and device polls
-    loop every interval
-      D->>GW: POST /connect/token (device_code)
-      GW->>API: proxy
-      alt still pending
-        API-->>GW: forward
-        GW-->>D: authorization_pending / slow_down
-      else approved
-        API->>DB: consume DeviceCode, create UserSession
-        API->>R: cache session
-        API-->>GW: forward
-        GW-->>D: access_token + refresh_token
-      else denied or expired
-        API-->>GW: forward
-        GW-->>D: access_denied / expired_token
-      end
-    end
-  end
 ```
 
 ### Client credentials
@@ -1205,7 +1188,7 @@ sequenceDiagram
   participant GW as GM Identity Gateway
   participant RL as Redis (rate limits)
   participant API as Identity API
-  C->>GW: /connect/*, POST register, GET /me, GET /me/sessions
+  C->>GW: /connect/*, POST register, GET /me, /me/sessions, /me/permissions
   GW->>RL: check the route's rate-limit policy
   alt over limit
     GW-->>C: 429 Too Many Requests
@@ -1213,9 +1196,9 @@ sequenceDiagram
     GW->>API: proxy (forward actor claims if present)
     API-->>GW: response
     GW-->>C: response
-  else /me, /me/sessions (owner-scoped)
+  else /me, /me/sessions, /me/permissions (owner-scoped)
     GW->>GW: authenticate opaque token (user id, session id)
-    GW->>GW: rewrite /me to the backend user endpoint for that user
+    GW->>GW: rewrite /me/* to the backend Me endpoints
     GW->>API: proxy with forwarded actor headers
     API-->>GW: response
     GW-->>C: response
@@ -1716,7 +1699,6 @@ erDiagram
   CLIENT ||--o{ CLIENT_SESSION : owns
   CLIENT ||--o{ AUTH_CODE : issued_for
   USER ||--o{ AUTH_CODE : for
-  CLIENT ||--o{ DEVICE_CODE : issued_for
   USER ||--o{ USER_CLIENT_CONSENT : grants
   CLIENT ||--o{ USER_CLIENT_CONSENT : for
   USER ||--o{ USER_PASSKEY : registers
@@ -1814,14 +1796,6 @@ erDiagram
     string CodeChallenge
     guid SsoSessionId FK
   }
-  DEVICE_CODE {
-    guid Id PK
-    guid ClientId FK
-    string DeviceCodeHash
-    string UserCode
-    int Status
-    guid UserId FK
-  }
   USER_CLIENT_CONSENT {
     guid Id PK
     guid UserId FK
@@ -1909,24 +1883,6 @@ erDiagram
 Notification is one table per channel in the real schema (email, SMS, push, Slack, WhatsApp), each with the same status shape shown here.
 
 ## State machines
-
-### Device code
-
-DeviceCodeStatus
-
-A device-authorization request moves out of **Pending** only by the user's choice, and is consumed when the device finally exchanges it.
-
-```
-stateDiagram-v2
-  [*] --> Pending : issued
-  Pending --> Approved : Approve(userId)
-  Pending --> Denied : Deny()
-  Approved --> [*] : consumed at token exchange
-  Pending --> Expired : past ExpiresAt
-  Approved --> Expired : past ExpiresAt
-  Denied --> [*]
-  Expired --> [*]
-```
 
 ### OTP challenge
 
@@ -2040,7 +1996,6 @@ classDiagram
   SoftDeletableEntity <|-- GMPasskeyChallenge
   SoftDeletableEntity <|-- GMAuthorizationCode
   SoftDeletableEntity <|-- GMClientRedirectUri
-  SoftDeletableEntity <|-- GMDeviceCode
   SoftDeletableEntity <|-- GMSsoSession
   SoftDeletableEntity <|-- GMUserClientConsent
   SoftDeletableEntity <|-- TotpEnrolment
@@ -2051,7 +2006,6 @@ classDiagram
   GMPasskeyChallenge <|-- PasskeyChallenge
   GMAuthorizationCode <|-- AuthorizationCode
   GMClientRedirectUri <|-- ClientRedirectUri
-  GMDeviceCode <|-- DeviceCode
   GMSsoSession <|-- SsoSession
   GMUserClientConsent <|-- UserClientConsent
   TotpEnrolment <|-- UserTotpDevice
@@ -2062,7 +2016,6 @@ classDiagram
   IAggregateRoot <|.. PasskeyChallenge
   IAggregateRoot <|.. AuthorizationCode
   IAggregateRoot <|.. ClientRedirectUri
-  IAggregateRoot <|.. DeviceCode
   IAggregateRoot <|.. SsoSession
   IAggregateRoot <|.. UserClientConsent
   IAggregateRoot <|.. UserTotpDevice

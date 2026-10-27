@@ -1,7 +1,7 @@
 meta {
   name: Authorize
   type: http
-  seq: 8
+  seq: 14
 }
 
 post {
@@ -19,8 +19,8 @@ body:form-urlencoded {
   code_challenge_method: S256
   username: {{username}}
   password: {{password}}
-  ~prompt: login
   nonce: bruno-nonce
+  ~prompt: login
   ~consent: true
 }
 
@@ -32,7 +32,7 @@ tests {
   test("returns 200", function () {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("returns a code and echoes the state", function () {
     const body = res.getBody();
     expect(body.code).to.be.a("string").and.not.empty;

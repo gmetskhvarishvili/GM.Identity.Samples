@@ -106,7 +106,6 @@ return request.GrantType switch
     "refresh_token"      => await RefreshAsync(...),
     "two_factor"         => await TwoFactorGrantAsync(...),
     "authorization_code" => await AuthorizationCodeGrantAsync(...),
-    "urn:ietf:params:oauth:grant-type:device_code" => await DeviceCodeGrantAsync(...),
     _                    => await PasswordGrantAsync(...),   // default
 };
 ```
@@ -123,10 +122,10 @@ Keep tokens opaque and stored only as hashes (see [ADR-005](architecture-decisio
 
 The sample supports two kinds of second factor: **delivered one-time codes** (contact OTP, keyed by `TwoFactorAuthType` reference data) and **authenticator-app TOTP** (`UserTotpDevice`). Passkeys are a separate passwordless path.
 
-To add a new **contact-based** method (e.g. a new channel):
+Email, SMS and WhatsApp are seeded (`TwoFactorAuthType` ids 1–3, mirrored by the `TwoFactorMethod` enum); users enrol via `SetUserTwoFactor` (`UserTwoFactorAuthType`) and pick one at login (`POST /connect/two-factor/send`). To add a new **contact-based** method (e.g. a new channel):
 
-1. **Seed a `TwoFactorAuthType`** row for it (reference data). Users enrol via `SetUserTwoFactor` (`UserTwoFactorAuthType`).
-2. **Resolve its destination.** The login flow resolves the user's contact via `TwoFactorSubject(user)` and issues a challenge by publishing `TwoFactorChallengeIssuedIntegrationEvent` (see [events.md](events.md)); the OTP service generates the code and the Notifications service delivers it over the chosen channel. Make sure the subject/destination for your method is available on the user and routed to the right channel.
+1. **Seed a `TwoFactorAuthType`** row for it in `TwoFactorAuthTypeConfiguration` and add the id to `TwoFactorMethod`.
+2. **Map its destination and channel** in `TwoFactorMethodExtensions` (`UsesPhoneNumber`, `ToChannel`). `TwoFactorDelivery.QueueTwoFactorCodeAsync` publishes `TwoFactorChallengeIssuedIntegrationEvent` with the destination and channel (see [events.md](events.md)); the OTP service generates the code and the Notifications service delivers it over that channel, so make sure Notifications handles the channel number.
 3. **No verification code to write** — completion goes through the existing `two_factor` grant, which tries the contact OTP (`TryVerifyOtpAsync`) and TOTP in turn.
 
 To add a fundamentally different factor (e.g. WebAuthn as a step-up), model it like the passkey aggregate and add its verify step to the `two_factor` grant.

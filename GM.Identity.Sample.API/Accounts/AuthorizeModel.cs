@@ -53,11 +53,6 @@ public class AuthorizeModel
     [FromForm(Name = "code_verifier")]
     [Display(ResourceType = typeof(StringResource), Name = "CodeVerifier")]
     public string? CodeVerifier { get; set; }
-
-    /// <summary>The device code.</summary>
-    [FromForm(Name = "device_code")]
-    [Display(ResourceType = typeof(StringResource), Name = "DeviceCode")]
-    public string? DeviceCode { get; set; }
 }
 
 public class AuthorizeModelValidator : AbstractValidator<AuthorizeModel>

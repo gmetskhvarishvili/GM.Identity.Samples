@@ -128,7 +128,7 @@ public class ExternalAuthorizeCommandHandler(
             .Select(x => x.TwoFactorAuthTypeId)
             .ToListAsync(cancellationToken);
         if (twoFactorTypeIds.Count > 0)
-            return AuthorizeResponseDto.TwoFactorChallenge(twoFactorTypeIds);
+            return AuthorizeResponseDto.TwoFactorChallenge(twoFactorTypeIds, authenticatorApp: false, codeSentVia: null);
 
         // Issue a short-lived access token + a rotating refresh token, exactly like the password grant:
         // the session's absolute expiry is the refresh lifetime, while the Redis access entry carries the

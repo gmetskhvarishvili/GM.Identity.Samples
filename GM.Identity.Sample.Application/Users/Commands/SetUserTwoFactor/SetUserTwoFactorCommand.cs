@@ -2,8 +2,10 @@ using FluentValidation;
 using GM.Exceptions;
 using GM.Identity.Sample.Common.Resources;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate;
+using GM.Identity.Sample.Domain.Enums;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Mediator.Contracts;
+using ValidationException = GM.Exceptions.ValidationException;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,9 +42,9 @@ public class SetUserTwoFactorCommandHandler(
 {
     public async Task Handle(SetUserTwoFactorCommand request, CancellationToken cancellationToken)
     {
-        var userExists = await unitOfWork.UserRepository.ExistsAsync(
-            x => x.Id == request.UserId && !x.IsDeleted, cancellationToken);
-        if (!userExists)
+        var user = await unitOfWork.UserRepository.FirstOrDefaultAsync(
+            x => x.Id == request.UserId && !x.IsDeleted, false, null, cancellationToken);
+        if (user == null)
             throw new NotFoundException(StringResource.User, StringResource.Id, request.UserId);
 
         var existing = await unitOfWork.UserTwoFactorAuthTypeRepository
@@ -63,6 +65,17 @@ public class SetUserTwoFactorCommandHandler(
                 cancellationToken);
             if (!typeExists)
                 throw new NotFoundException(StringResource.TwoFactorAuthType, StringResource.Id, request.TwoFactorAuthTypeId);
+
+            // A code-delivery method needs somewhere to deliver to, or login would stall at the challenge.
+            if (Enum.IsDefined(typeof(TwoFactorMethod), request.TwoFactorAuthTypeId))
+            {
+                var method = (TwoFactorMethod)request.TwoFactorAuthTypeId;
+                var contact = method.UsesPhoneNumber() ? user.PhoneNumber : user.Email;
+                if (string.IsNullOrWhiteSpace(contact))
+                    throw new ValidationException(method.UsesPhoneNumber()
+                        ? $"Add a phone number to the user before enabling {method} two-factor."
+                        : "Add an email address to the user before enabling Email two-factor.");
+            }
 
             var entity = UserTwoFactorAuthType.Create(request.UserId, request.TwoFactorAuthTypeId);
             await unitOfWork.UserTwoFactorAuthTypeRepository.AddAsync(entity, cancellationToken);

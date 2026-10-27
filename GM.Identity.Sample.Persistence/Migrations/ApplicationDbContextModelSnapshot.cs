@@ -861,87 +861,6 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.ToTable("client_sessions", "authorization");
                 });
 
-            modelBuilder.Entity("GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate.DeviceCode", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("client_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<string>("DeviceCodeHash")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("device_code_hash");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at");
-
-                    b.Property<int>("IntervalSeconds")
-                        .HasColumnType("integer")
-                        .HasColumnName("interval_seconds");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsHidden")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_hidden");
-
-                    b.Property<DateTime?>("LastPolledAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_polled_at");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.Property<string>("UserCode")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("user_code");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_device_codes");
-
-                    b.HasIndex("DeviceCodeHash")
-                        .HasDatabaseName("ix_device_codes_device_code_hash");
-
-                    b.HasIndex("UserCode")
-                        .HasDatabaseName("ix_device_codes_user_code");
-
-                    b.ToTable("device_codes", "authorization");
-                });
-
             modelBuilder.Entity("GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.SsoSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1677,6 +1596,39 @@ namespace GM.Identity.Sample.Persistence.Migrations
                             IsHidden = false,
                             Name = "None",
                             UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Email",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsHidden = false,
+                            Name = "Email",
+                            UpdatedAt = new DateTime(2026, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "SMS",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsHidden = false,
+                            Name = "Sms",
+                            UpdatedAt = new DateTime(2026, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2026, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "WhatsApp",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsHidden = false,
+                            Name = "WhatsApp",
+                            UpdatedAt = new DateTime(2026, 10, 25, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -1766,6 +1718,11 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.Property<DateTime?>("PhoneNumberConfirmedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("phone_number_confirmed_at");
+
+                    b.Property<string>("ProfileImageKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("profile_image_key");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")

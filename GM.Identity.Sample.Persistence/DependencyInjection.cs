@@ -8,7 +8,6 @@ using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.Scope
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.UserRoleAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.AuthorizationCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.ClientSessionAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.DeviceCodeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.SsoSessionAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserClientConsentAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuthorizationBoundedContext.UserSessionAggregate.Interfaces;
@@ -94,7 +93,6 @@ public static class DependencyInjection
         services.AddTransient<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
         services.AddTransient<ISsoSessionRepository, SsoSessionRepository>();
         services.AddTransient<IUserClientConsentRepository, UserClientConsentRepository>();
-        services.AddTransient<IDeviceCodeRepository, DeviceCodeRepository>();
         services.AddTransient<IUserConsentRepository, UserConsentRepository>();
         services.AddTransient<IConsentDocumentRepository, ConsentDocumentRepository>();
         services.AddTransient<IUserPasskeyRepository, UserPasskeyRepository>();

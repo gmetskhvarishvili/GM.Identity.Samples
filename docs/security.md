@@ -14,7 +14,7 @@ Internet ──▶ Gateway (YARP) ──▶ Identity API ──▶ PostgreSQL / 
                                   Message bus ──▶ OTP service ──▶ Notifications service
 ```
 
-1. **Public boundary** — nothing reaches the Identity API directly. The **public gateway** (`GM.Identity.Sample.Gateway.API`) fronts `/connect/*`, registration, and the `/me` self endpoints; the **admin gateway** (`GM.Identity.Sample.Admin.Gateway.API`) fronts the RBAC/admin routes. Both apply per-route rate limiting and forward the authenticated actor's claims to the backend.
+1. **Public boundary** — nothing reaches the Identity API directly. The **public gateway** (`GM.Identity.Sample.Gateway.API`) fronts `/connect/*` (except the internal `/connect/authz/*` decision endpoints, which resource servers call on the API directly), registration, and the `/me` self endpoints; the **admin gateway** (`GM.Identity.Sample.Admin.Gateway.API`) fronts the RBAC/admin routes and the same `/me` endpoints. Both apply per-route rate limiting and forward the authenticated actor's claims to the backend.
 2. **Service boundary** — the Identity service never delivers codes or messages itself. It publishes integration events over the bus; the OTP and Notifications services consume them. The only synchronous cross-service call is the Identity API verifying a submitted code against the OTP API over HTTPS.
 3. **Data boundary** — only the services reach PostgreSQL and Redis; these are private. Redis holds derived state (sessions, the RBAC/scope projections, rate-limit counters, distributed locks), never the source of truth.
 
@@ -27,7 +27,6 @@ Internet ──▶ Gateway (YARP) ──▶ Identity API ──▶ PostgreSQL / 
 | Access / refresh token | Stored only as `TokenGenerator.Hash(...)`; raw value never persisted | hash lookup |
 | SSO cookie | Stored as a hash on `SsoSession.TokenHash` | hash lookup |
 | Authorization code | Stored as `CodeHash`; bound to client, redirect URI, PKCE challenge, nonce | hash + PKCE |
-| Device code | Stored as `DeviceCodeHash`; paired with a short `UserCode` | hash lookup |
 | Delivered OTP | Stored hashed + salted on `OtpChallenge` (OTP service), never returned | constant-time compare |
 | TOTP secret | `SecretBase32` on the enrolment row | RFC 6238 verify in-process |
 | Passkey | **Public key only** (`PublicKeySpki`); the private key never leaves the authenticator | ES256 assertion verify |

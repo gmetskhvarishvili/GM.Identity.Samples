@@ -5,6 +5,7 @@ using GM.Identity.Sample.Application.Users.Queries.GetUsersList;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate;
 using Mapster;
 using System;
+using System.Linq;
 
 namespace GM.Identity.Sample.Application.Common;
 
@@ -30,6 +31,10 @@ public class MappingRegister : IRegister
         config.NewConfig<User, UserDto>()
             .Map(dest => dest.Username, src => src.UserName);
         config.NewConfig<User, UserDetailsDto>()
-            .Map(dest => dest.Username, src => src.UserName);
+            .Map(dest => dest.Username, src => src.UserName)
+            .Map(dest => dest.RoleIds, src => src.UserRoles
+                .Where(x => x.IsActive && !x.IsDeleted).Select(x => x.RoleId).ToList())
+            .Map(dest => dest.TwoFactorAuthTypeIds, src => src.UserTwoFactorAuthTypes
+                .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden).Select(x => x.TwoFactorAuthTypeId).ToList());
     }
 }

@@ -65,8 +65,11 @@ sequenceDiagram
   permission when **any** of their roles holds it. Write-through on assignment + a reconciliation job keep it
   in sync with PostgreSQL (the source of truth).
 - **`[HasPermission(nameof(Action))]`** gates each management action; the permission name equals the action
-  name and is resolved to its id via Redis. Owner-scoped `/me`, `/me/sessions` and `/me/Password` need no
-  admin permission (the user is resolved from the token, never the route).
+  name and is resolved to its id via Redis. The owner-scoped `/me`, `/me/sessions` and `/me/permissions` (on both
+  gateways) need no admin permission: the user is resolved from the token, never the request. A front end caches
+  `/me/permissions` and checks it locally to show or hide actions; the API still enforces every permission.
+- **`/connect/authz/permission` and `/connect/authz/scope`** are the Identity API's decision service for resource
+  servers (the Service API asks "may user X do Y?" by id). The gateways do not expose them.
 - **`[RequiresScope("operation")]`** enforces the OAuth *client* dimension, orthogonally to RBAC: a call is
   allowed only when one of the calling client's granted scopes covers the required operation
   (`Client → Scope → Operation`). It reads the client from the token-derived `X-Client-Id` and checks a
@@ -87,8 +90,10 @@ sequenceDiagram
   tenant-agnostic, which is why the tenant must come from the token rather than the caller.
 - **Two-factor step-up** — a user enrolled in any two-factor method (enrolled the same child-collection way
   roles are, at user creation) cannot complete a password grant: the response is a challenge
-  (`twoFactorRequired: true` naming the enrolled methods) and a one-time code is dispatched (via the outbox,
-  like contact confirmation). The caller then completes login with `grant_type=two_factor` + the `code`,
+  (`twoFactorRequired: true` naming the enrolled methods). The user picks where the one-time code goes —
+  Email, SMS or WhatsApp, the seeded methods 1–3 — with `POST /connect/two-factor/send`, and it is dispatched
+  via the outbox like contact confirmation (with only one delivery method and no authenticator app, the
+  password grant sends it right away). The caller then completes login with `grant_type=two_factor` + the `code`,
   which re-verifies the password, validates the code, and issues the session. Code generation and delivery
   are handled out-of-process by the companion **GM.OTP** sample (it consumes the `user.twofactor.challenge`
   event and backs the OTP verify API), keeping OTP mechanics outside the identity server. External
@@ -187,6 +192,7 @@ curl -k -X POST https://localhost:7225/connect/token \
 
 curl -k https://localhost:7225/api/v1/Permissions -H 'Authorization: Bearer <access_token>'
 curl -k https://localhost:7225/me                 -H 'Authorization: Bearer <access_token>'
+curl -k https://localhost:7225/me/permissions     -H 'Authorization: Bearer <access_token>'
 
 # refresh grant → rotates and returns a new access + refresh token (the old pair is revoked)
 curl -k -X POST https://localhost:7225/connect/token \
@@ -203,8 +209,18 @@ throwaway permission (create, read, update, deactivate/activate, hide/unhide, de
 again at the end.
 
 If the user is enrolled in a 2FA method, the password grant returns `{ twoFactorRequired: true,
-twoFactorAuthTypeIds: [...] }` instead of tokens (and dispatches a one-time code). Complete the login with
-the code:
+twoFactorAuthTypeIds: [...] }` instead of tokens. The ids are the user's methods (1 Email, 2 SMS,
+3 WhatsApp); `twoFactorAuthenticatorApp` says an authenticator app can supply the code instead. Send the code
+over the method the user picks (skip this when `twoFactorCodeSentVia` is set: the user had only one method, so
+it was already sent):
+
+```bash
+curl -k -X POST https://localhost:7225/connect/two-factor/send \
+  -d username=admin@local -d password=Admin123! -d two_factor_auth_type_id=3 \
+  -d client_id=11111111-1111-1111-1111-111111111111 -d client_secret=secret
+```
+
+Then complete the login with the code:
 
 ```bash
 curl -k -X POST https://localhost:7225/connect/token \

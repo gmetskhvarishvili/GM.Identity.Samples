@@ -17,6 +17,16 @@
             <param name="cancellationToken"></param>
             <returns>UserSession Response</returns>
         </member>
+        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.SendTwoFactorCode(GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel,System.Threading.CancellationToken)">
+            <summary>
+            Send a two-factor code over the method the user picks (Email, SMS or WhatsApp) after the password grant
+            answered with a 2FA challenge. Re-checks the client and user credentials; complete login with
+            grant_type=two_factor and the code.
+            </summary>
+            <param name="request">Credentials and the chosen method (two_factor_auth_type_id)</param>
+            <param name="cancellationToken"></param>
+            <returns>Result</returns>
+        </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.BeginPasskeyAssertion(GM.Identity.Sample.API.Accounts.BeginPasskeyModel,System.Threading.CancellationToken)">
             <summary>Begin a passkey login: returns a single-use challenge for the user's authenticator to sign.</summary>
         </member>
@@ -40,19 +50,6 @@
             Authorization endpoint of the PKCE authorization-code flow. Authenticates the resource owner, validates
             the client + registered redirect URI + PKCE challenge, and returns a short-lived authorization code plus
             the redirect target (code + state). Exchange it at /connect/token with grant_type=authorization_code.
-            </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.DeviceAuthorization(GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel,System.Threading.CancellationToken)">
-            <summary>
-            Device authorization endpoint (RFC 8628). A browserless device authenticates as a client and receives a
-            device_code (to poll /connect/token with grant_type=urn:ietf:params:oauth:grant-type:device_code) and a
-            user_code for the user to approve at the verification URI.
-            </summary>
-        </member>
-        <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.ApproveDevice(GM.Identity.Sample.API.Accounts.ApproveDeviceModel,System.Threading.CancellationToken)">
-            <summary>
-            Approves (or denies) a device user_code. The user authenticates with their credentials; on approval the
-            paired device's next poll receives tokens. In a browser deployment this sits behind the verification page.
             </summary>
         </member>
         <member name="M:GM.Identity.Sample.API.Accounts.AccountsController.EndSession(GM.Identity.Sample.API.Accounts.EndSessionModel,System.Threading.CancellationToken)">
@@ -201,36 +198,6 @@
         <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.CodeVerifier">
             <summary>The code verifier.</summary>
         </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.AuthorizeModel.DeviceCode">
-            <summary>The device code.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel">
-            <summary>Form body for the device authorization endpoint (client-authenticated).</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel.ClientId">
-            <summary>The client id.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel.ClientSecret">
-            <summary>The client secret.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.DeviceAuthorizationModel.Scope">
-            <summary>The scope.</summary>
-        </member>
-        <member name="T:GM.Identity.Sample.API.Accounts.ApproveDeviceModel">
-            <summary>Form body for approving (or denying) a device user_code.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.UserCode">
-            <summary>The user code.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.UserName">
-            <summary>The user name.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.Password">
-            <summary>The password.</summary>
-        </member>
-        <member name="P:GM.Identity.Sample.API.Accounts.ApproveDeviceModel.Approve">
-            <summary>The approve.</summary>
-        </member>
         <member name="T:GM.Identity.Sample.API.Accounts.EndSessionModel">
             <summary>Form body for the OpenID Connect end-session (logout) endpoint. The SSO session itself is taken
             from the browser's SSO cookie, not the body.</summary>
@@ -297,6 +264,24 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Accounts.RevokeTokenModel.ClientSecret">
             <summary>The client secret.</summary>
+        </member>
+        <member name="T:GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel">
+            <summary>Send two-factor code model.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel.UserName">
+            <summary>The user name.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel.Password">
+            <summary>The password.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel.ClientId">
+            <summary>The client id.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel.ClientSecret">
+            <summary>The client secret.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Accounts.SendTwoFactorCodeModel.TwoFactorAuthTypeId">
+            <summary>The enrolled method to send the code over: 1 Email, 2 SMS, 3 WhatsApp.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Authorization.AuthorizationController">
             <summary>
@@ -1575,6 +1560,9 @@
         <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.PersonalInfo">
             <summary>Optional personal details, stored 1:1 with the user.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.CreateUserModel.ProfileImageKey">
+            <summary>Storage key of the user's profile image (e.g. an object key in blob storage), if any.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.CreateUserPersonalInfoModel">
             <summary>Personal details supplied when creating a user; stored 1:1 with the user.</summary>
         </member>
@@ -1631,6 +1619,35 @@
         </member>
         <member name="M:GM.Identity.Sample.API.Users.GetUsersListModelValidator.#ctor">
             <inheritdoc />
+        </member>
+        <member name="T:GM.Identity.Sample.API.Users.MeController">
+            <summary>
+            The signed-in user's own data. The user is always the one the gateway resolved from the access token
+            (forwarded as X-User-Id) — never an id the caller passes — so these need no admin permission: a caller can
+            only ever read their own profile, sessions and permissions.
+            </summary>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.MeController.GetMe(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>The signed-in user's details.</summary>
+            <param name="currentActor"></param>
+            <param name="cancellationToken"></param>
+            <returns>User Details</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.MeController.GetMySessions(GM.EntityFramework.Domain.Common.ICurrentActor,GM.Identity.Sample.API.Users.GetUserSessionsListModel,System.Threading.CancellationToken)">
+            <summary>The signed-in user's sessions.</summary>
+            <param name="currentActor"></param>
+            <param name="request">Filters and paging</param>
+            <param name="cancellationToken"></param>
+            <returns>User Sessions</returns>
+        </member>
+        <member name="M:GM.Identity.Sample.API.Users.MeController.GetMyPermissions(GM.EntityFramework.Domain.Common.ICurrentActor,System.Threading.CancellationToken)">
+            <summary>
+            The names of every permission the signed-in user holds, for the front end to cache and check locally
+            (e.g. show or hide actions). The API still enforces each permission on every call.
+            </summary>
+            <param name="currentActor"></param>
+            <param name="cancellationToken"></param>
+            <returns>Permission names</returns>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.PendingConsentModel">
             <summary>A consent document the current user must still accept.</summary>
@@ -1710,6 +1727,9 @@
         <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.PersonalInfo">
             <summary>Optional personal details, stored 1:1 with the user.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.UpdateUserModel.ProfileImageKey">
+            <summary>Storage key of the user's profile image. Omit to keep it; send empty to clear it.</summary>
+        </member>
         <member name="T:GM.Identity.Sample.API.Users.UpdateUserPasswordModel">
             <summary>Update user password model.</summary>
         </member>
@@ -1732,19 +1752,61 @@
             <summary>Date of birth.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UserDetailsModel">
-            <summary>User details model.</summary>
+            <summary>User details model: everything about the user except the password hash and salt.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Id">
             <summary>The id.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.TenantId">
+            <summary>The tenant the user belongs to (null for a global user).</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Email">
             <summary>The email.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.EmailConfirmed">
+            <summary>Whether the email address has been confirmed.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.EmailConfirmedAt">
+            <summary>When the email address was confirmed.</summary>
         </member>
         <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.Username">
             <summary>The username.</summary>
         </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.PhoneNumber">
+            <summary>The phone number.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.PhoneNumberConfirmed">
+            <summary>Whether the phone number has been confirmed.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.PhoneNumberConfirmedAt">
+            <summary>When the phone number was confirmed.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.LockoutEnabled">
+            <summary>Whether failed sign-ins can lock the account.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.LockoutEnd">
+            <summary>Until when the account is locked out after failed sign-ins (null when not locked).</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.AccessFailedCount">
+            <summary>Failed sign-in attempts since the last success.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.IsBlocked">
+            <summary>Whether an admin has blocked the account.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.BlockedAt">
+            <summary>When the account was blocked.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.RoleIds">
+            <summary>The user's active roles.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.TwoFactorAuthTypeIds">
+            <summary>The user's active second-factor methods (1 Email, 2 SMS, 3 WhatsApp, or a custom type).</summary>
+        </member>
         <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.PersonalInfo">
             <summary>Optional personal details, stored 1:1 with the user.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserDetailsModel.ProfileImageKey">
+            <summary>Storage key of the user's profile image (e.g. an object key in blob storage), if any.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UserModel">
             <summary>User model.</summary>
@@ -1760,6 +1822,9 @@
         </member>
         <member name="P:GM.Identity.Sample.API.Users.UserModel.PersonalInfo">
             <summary>Optional personal details, stored 1:1 with the user.</summary>
+        </member>
+        <member name="P:GM.Identity.Sample.API.Users.UserModel.ProfileImageKey">
+            <summary>Storage key of the user's profile image (e.g. an object key in blob storage), if any.</summary>
         </member>
         <member name="T:GM.Identity.Sample.API.Users.UserPersonalInfoModel">
             <summary>A user's optional personal details, carried 1:1 with the user.</summary>

@@ -1,0 +1,31 @@
+meta {
+  name: Get My Permissions
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{gateway}}/me/permissions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Every permission the signed-in user holds through their roles. The user comes from the access token, never
+  from the request. A front end caches this list and checks it locally to show or hide actions; the API still
+  enforces each permission on every call.
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("returns a list of permission names", function () {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

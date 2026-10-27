@@ -13,7 +13,8 @@ namespace GM.Identity.Sample.Admin.Gateway.API;
 /// Serves the gateway's OpenAPI document: it fetches the backend Identity API's document, stamps a
 /// gateway-specific title/description, and (unless <c>IncludeAll</c>) keeps only the operations this
 /// gateway actually exposes â€” so Swagger shows exactly what the gateway proxies, not the whole API.
-/// Configured from the "Documentation" section; add an <c>Include</c> rule to expose more later.
+/// Configured from the "Documentation" section; add an <c>Include</c> rule to expose more later, or an
+/// <c>Exclude</c> path prefix to hide a backend path the gateway does not route.
 /// </summary>
 public static class GatewayOpenApiDoc
 {
@@ -51,7 +52,13 @@ public static class GatewayOpenApiDoc
             var originalPaths = root["paths"] as JsonObject;
             var resultPaths = originalPaths is not null && !section.GetValue<bool>("IncludeAll")
                 ? FilterPaths(originalPaths, section.GetSection("Include").Get<List<IncludeRule>>() ?? [])
-                : originalPaths ?? new JsonObject();
+                : originalPaths?.DeepClone().AsObject() ?? new JsonObject();
+
+            // Backend paths the gateway deliberately does not route (e.g. internal endpoints) stay out of its Swagger.
+            foreach (var prefix in section.GetSection("Exclude").Get<string[]>() ?? [])
+                foreach (var path in resultPaths.Select(p => p.Key).ToList())
+                    if (StripVersion(path).StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        resultPaths.Remove(path);
 
             // Expose token-derived gateway routes (e.g. /me) by cloning the backend operation they map to.
             foreach (var rewrite in section.GetSection("Rewrites").Get<List<RewriteRule>>() ?? [])

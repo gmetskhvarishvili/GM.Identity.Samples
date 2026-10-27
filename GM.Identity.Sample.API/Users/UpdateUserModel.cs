@@ -1,4 +1,5 @@
 using FluentValidation;
+using GM.Identity.Domain.Identity.UserAggregate.Entities;
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
 
@@ -19,6 +20,9 @@ public class UpdateUserModel
 
     /// <summary>Optional personal details, stored 1:1 with the user.</summary>
     public UpdateUserPersonalInfoModel? PersonalInfo { get; set; }
+
+    /// <summary>Storage key of the user's profile image. Omit to keep it; send empty to clear it.</summary>
+    public string? ProfileImageKey { get; set; }
 }
 
 public class UpdateUserModelValidator : AbstractValidator<UpdateUserModel>
@@ -27,5 +31,6 @@ public class UpdateUserModelValidator : AbstractValidator<UpdateUserModel>
     {
         RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
         RuleFor(x => x.Username).NotNull().NotEmpty();
+        RuleFor(x => x.ProfileImageKey).MaximumLength(GMUserLimits.ProfileImageKeyMaxLength);
     }
 }

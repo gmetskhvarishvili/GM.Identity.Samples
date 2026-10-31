@@ -4,8 +4,8 @@ using GM.Exceptions;
 using GM.Identity;
 using GM.Identity.Sample.Application.Infrastructure.Services.OAuth;
 using GM.Identity.Sample.Infrastructure.Options;
-using GM.Secrets;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System;
@@ -30,7 +30,7 @@ public class OAuthService(
     IOptions<OAuthOptions> options,
     IHttpClientFactory httpClientFactory,
     IConnectionMultiplexer redis,
-    ISecretsService secrets) : IOAuthService
+    IConfiguration configuration) : IOAuthService
 {
     // The PKCE verifier for an external-login round trip is held in Redis, keyed by the opaque state value, so
     // the state survives across the two requests (redirect, then callback) regardless of which instance handles
@@ -101,7 +101,7 @@ public class OAuthService(
     private async Task<string> ExchangeCodeAsync(
         GetEmailDto request, OAuthProviderOptions provider, string codeVerifier, CancellationToken cancellationToken)
     {
-        var clientSecret = await ResolveClientSecretAsync(request.Provider, provider, cancellationToken);
+        var clientSecret = ResolveClientSecret(request.Provider, provider);
 
         var client = httpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -135,20 +135,24 @@ public class OAuthService(
     }
 
     // For Apple the client secret is a per-request ES256 JWT built from the .p8 private key; every other
-    // provider uses a static secret. Both are read from the secrets store, never bound from config.
-    private async Task<string> ResolveClientSecretAsync(
-        string providerName, OAuthProviderOptions provider, CancellationToken cancellationToken)
+    // provider uses a static secret. Both are read from configuration at exchange time, so they can come from
+    // any secret layer GM.Secrets loads (appsecrets.json, Doppler, AWS, Azure Key Vault, Vault) and a rotated
+    // value applies on the next login without a restart.
+    private string ResolveClientSecret(string providerName, OAuthProviderOptions provider)
     {
         if (provider.SecretKind == SecretKind.AppleJwt)
-        {
-            var privateKeyPem = await secrets.GetRequiredSecretAsync(
-                $"OAuth:{providerName}:PrivateKey", cancellationToken);
-            return AppleClientSecretGenerator.Generate(provider, privateKeyPem);
-        }
+            return AppleClientSecretGenerator.Generate(provider, RequiredSecret($"OAuth:{providerName}:PrivateKey"));
 
-        // Resolve the provider's client secret at exchange time through the secrets abstraction rather than
-        // reading it from bound options, so the backing store (config today, a vault tomorrow) is swappable.
-        return await secrets.GetRequiredSecretAsync($"OAuth:{providerName}:ClientSecret", cancellationToken);
+        return RequiredSecret($"OAuth:{providerName}:ClientSecret");
+    }
+
+    // The error names the key, never a value.
+    private string RequiredSecret(string key)
+    {
+        var value = configuration[key];
+        return string.IsNullOrWhiteSpace(value)
+            ? throw new CustomException($"Secret '{key}' is not configured.")
+            : value;
     }
 
     private static string? ReadEmailFromIdToken(string idToken, OAuthProviderOptions provider)

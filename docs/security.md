@@ -69,7 +69,7 @@ The sample demonstrates the patterns; a production deployment must additionally:
 1. **WebAuthn**: verify **registration attestation** (via a full FIDO2 library), the **RP-ID hash**, and the **user-presence / user-verification** flags. The sample verifies the assertion signature only (see the note on `WebAuthnAssertion`).
 2. **Transport**: terminate TLS at/behind the gateway and require HTTPS end to end; set secure/HttpOnly/SameSite on the SSO cookie.
 3. **Signing keys**: manage the id_token signing keys (rotation, a real JWKS source, an HSM/KMS) rather than sample keys.
-4. **Secrets**: load connection strings, provider credentials, and signing material from a secret manager (the sample reads `appsettings` / env vars; `GM.Secrets` is wired for this).
+4. **Secrets**: load connection strings, provider credentials, and signing material from a secret manager — set `SECRETS_PROVIDER` and the store's environment variables, and GM.Secrets (wired by GM.API) loads them into configuration under the keys the sample already reads. Keep them out of committed `appsettings`.
 5. **Password & hashing parameters**: review `PasswordHasher` work factors and the `PasswordPolicyOptions` against current guidance.
 6. **Rate-limit & lockout tuning**: set per-route limits and lockout thresholds for your threat model; add CAPTCHA/step-up where appropriate.
 7. **Provider validation**: the external/social sign-in path should fully validate the provider token (issuer, audience, signature) before provisioning.

@@ -159,7 +159,9 @@ Resilience is configured declaratively (`GM.HttpClient`).
 
 ## Overriding settings
 
-Precedence (later wins): `appsettings.json` → `appsettings.{Environment}.json` → environment variables → command line.
+Precedence (later wins): `appsettings.json` → `appsettings.Local.json` → `appsettings.{Environment}.json`
+→ `appsecrets.json` → the secret store `SECRETS_PROVIDER` names → environment variables. The two secret
+layers come from GM.Secrets, wired by GM.API's `CreateGMBuilder`.
 
 - **Nested keys** use `__` (double underscore) as the separator in environment variables:
   ```bash
@@ -167,8 +169,13 @@ Precedence (later wins): `appsettings.json` → `appsettings.{Environment}.json`
   ConnectionStrings__Redis=redis:6379
   RateLimiting__Policies__auth__PermitLimit=5
   ```
-- **Secrets in development**: use `dotnet user-secrets` for the API/gateway projects instead of editing `appsettings.json`.
-- **Secrets in production**: load connection strings, provider credentials, and signing material from a secret manager (`GM.Secrets` is wired for this), not from files.
+- **Secrets in development**: put real values in a gitignored `appsecrets.json` next to the project (or
+  `dotnet user-secrets`) instead of editing `appsettings.json` — e.g.
+  `{ "OAuth": { "Google": { "ClientSecret": "..." } } }`.
+- **Secrets in production**: set `SECRETS_PROVIDER` (`Doppler`, `AwsSecretsManager`, `AzureKeyVault` or
+  `Vault`) and that store's own environment variables; its secrets load into configuration under the same
+  keys (`OAuth:Google:ClientSecret`, `OAuth:Apple:PrivateKey`, connection strings, …), and
+  `SECRETS_RELOAD_INTERVAL` picks up rotation. See [GM.Secrets](https://github.com/gmetskhvarishvili/GM.Secrets).
 
 ## Related
 

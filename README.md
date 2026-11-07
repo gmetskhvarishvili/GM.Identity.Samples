@@ -108,8 +108,8 @@ GM.Identity.Sample.Common/            # shared resources & localized exceptions 
 GM.Identity.Sample.Infrastructure/    # OAuth/OTP, Redis permission & session caches, reconciliation jobs (GM.Scheduling), health
 GM.Identity.Sample.Persistence/       # ApplicationDbContext, EF configs, migrations, RBAC/admin seeding
 GM.Identity.Sample.API/               # identity server: controllers, [HasPermission], /me, composition root
-GM.Identity.Sample.Gateway.API/       # public YARP gateway: opaque-token auth, /connect, create-user, /me
-GM.Identity.Sample.Admin.Gateway.API/ # admin YARP gateway: all routes
+GM.Identity.Sample.Gateway.API/       # public YARP gateway: opaque-token auth, /connect, create-user, /me, file upload/download
+GM.Identity.Sample.Admin.Gateway.API/ # admin YARP gateway: all routes, file upload/download
 GM.Identity.Sample.Producer.Worker/   # Wolverine messaging producer worker
 tests/GM.Identity.Sample.Tests/       # xUnit + GM.Testing (domain guards + WAF end-to-end RBAC)
 ```
@@ -227,6 +227,31 @@ curl -k -X POST https://localhost:7225/connect/token \
   -d grant_type=two_factor -d username=admin@local -d password=Admin123! -d code=<one-time-code> \
   -d client_id=11111111-1111-1111-1111-111111111111 -d client_secret=secret
 ```
+
+### Files
+
+Both gateways forward two routes to [GM.FileStorage.Samples](https://github.com/gmetskhvarishvili/GM.FileStorage.Samples)'
+files API (`files-api`, `https://localhost:7140` by default), so signed-in users can keep files such as a profile
+image:
+
+| Route | Forwards to |
+|---|---|
+| `POST /api/{version}/files` (multipart `file`) | upload; returns the file's id |
+| `GET /api/{version}/files/{id}/content` | download |
+
+Both need a sign-in. The gateway replaces any `X-User-Id` / `X-Tenant-Id` the client sent with the signed-in user's,
+so the files API records the upload under that user and tenant, and another tenant's file is a 404. Uploads stream
+through without being buffered, up to 60 MB at the gateway (the files API allows 50 MB per file), and have their own
+rate limit (`uploads`, 30 a minute). Run the files API alongside, or point
+`ReverseProxy:Clusters:files-api:Destinations:primary:Address` at it. The uploaded file's id is what a user's
+profile image file id refers to.
+
+```bash
+curl -k -H "Authorization: Bearer <access_token>" -F "file=@avatar.png" https://localhost:7225/api/v1/files
+curl -k -H "Authorization: Bearer <access_token>" -o avatar.png https://localhost:7225/api/v1/files/<id>/content
+```
+
+The Bruno collection has both under **Files** in each gateway's folder.
 
 ### Tokens & login hardening
 

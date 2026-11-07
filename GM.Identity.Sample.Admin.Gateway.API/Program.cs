@@ -15,6 +15,7 @@ using GM.Identity.Authorization;
 using GM.RateLimiting.Http;
 using GM.RateLimiting.Redis;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -22,6 +23,9 @@ using System.Threading.Tasks;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Kestrel:Limits from appsettings.json (the 60 MB request body cap for file uploads); the builder doesn't bind them.
+builder.Services.Configure<KestrelServerOptions>(builder.Configuration.GetSection("Kestrel"));
 
 // ---------------------------------------------------------------------------------------------
 // Backing store: Redis-backed cache + distributed lock, plus the lock-free atomic Redis rate-limit
@@ -130,10 +134,12 @@ var app = builder.Build();
 
 // An auth handler that reads a form POST body (e.g. to extract access_token) would consume the request
 // body before YARP can forward it (leaving the proxy with 0 bytes vs the promised Content-Length).
-// Buffer form POSTs so the body can be re-read, and rewind it before the proxy runs.
+// Buffer URL-encoded form POSTs so the body can be re-read, and rewind it before the proxy runs. Multipart file
+// uploads are left alone: they stream through to the files API instead of being buffered here.
 app.Use(async (context, next) =>
 {
-    if (HttpMethods.IsPost(context.Request.Method) && context.Request.HasFormContentType)
+    if (HttpMethods.IsPost(context.Request.Method)
+        && context.Request.ContentType?.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) == true)
         context.Request.EnableBuffering();
 
     await next();

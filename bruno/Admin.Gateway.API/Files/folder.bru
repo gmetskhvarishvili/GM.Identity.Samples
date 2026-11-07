@@ -1,0 +1,12 @@
+meta {
+  name: Files
+  seq: 11
+}
+
+docs {
+  Upload and download through this gateway to GM.FileStorage.Samples' files API (https://localhost:7140), which
+  must be running. Both need a sign-in (Accounts/Login first): the gateway forwards the signed-in user as
+  X-User-Id and their tenant as X-Tenant-Id, so the file is recorded as theirs.
+
+  Upload File saves the new file's id as fileId; Download File reads it back.
+}

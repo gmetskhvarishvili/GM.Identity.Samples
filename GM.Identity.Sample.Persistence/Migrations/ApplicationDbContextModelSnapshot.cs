@@ -1719,10 +1719,9 @@ namespace GM.Identity.Sample.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("phone_number_confirmed_at");
 
-                    b.Property<string>("ProfileImageKey")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("profile_image_key");
+                    b.Property<Guid?>("ProfileImageFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_image_file_id");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")

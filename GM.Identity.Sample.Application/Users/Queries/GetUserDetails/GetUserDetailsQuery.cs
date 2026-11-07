@@ -85,7 +85,7 @@ public class UserDetailsDto : AuditableDto
     /// <summary>The user's active second-factor methods (1 Email, 2 SMS, 3 WhatsApp, or a custom type).</summary>
     public IReadOnlyCollection<int> TwoFactorAuthTypeIds { get; set; } = [];
 
-    /// <summary>Storage key of the user's profile image, if any.</summary>
-    public string? ProfileImageKey { get; set; }
+    /// <summary>File id of the user's profile image in file storage, if any.</summary>
+    public Guid? ProfileImageFileId { get; set; }
     public UserPersonalInfoDto? PersonalInfo { get; set; }
 }

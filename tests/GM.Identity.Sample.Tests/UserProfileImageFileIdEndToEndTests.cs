@@ -16,11 +16,11 @@ using System.Threading.Tasks;
 namespace GM.Identity.Sample.Tests;
 
 /// <summary>
-/// End-to-end proof of the user's profile image key: set at creation, returned in the details, kept by an update
-/// that omits it, replaced by one that sends a new key, and cleared by an empty one. Requires Postgres + Redis;
+/// End-to-end proof of the user's profile image file id: set at creation, returned in the details, kept by an update
+/// that omits it, replaced by one that sends a new id, and cleared by <see cref="Guid.Empty"/>. Requires Postgres + Redis;
 /// no-ops if they aren't reachable.
 /// </summary>
-public sealed class UserProfileImageKeyEndToEndTests : IAsyncLifetime
+public sealed class UserProfileImageFileIdEndToEndTests : IAsyncLifetime
 {
     private readonly GmWebApplicationFactory<Program> _factory = new();
     private readonly string _userName = $"avatar-{Guid.NewGuid():N}";
@@ -58,35 +58,37 @@ public sealed class UserProfileImageKeyEndToEndTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Profile_image_key_is_set_kept_replaced_and_cleared()
+    public async Task Profile_image_file_id_is_set_kept_replaced_and_cleared()
     {
         if (!_infraReady) return;
 
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
         _userId = await Send(new CreateUserCommand
         {
             Username = _userName,
             Email = $"{_userName}@test.local",
             Password = "Kx9!vR2#mQ7$wZ4p",
-            ProfileImageKey = "avatars/first.png",
+            ProfileImageFileId = first,
         });
-        Assert.Equal("avatars/first.png", (await DetailsAsync()).ProfileImageKey);
+        Assert.Equal(first, (await DetailsAsync()).ProfileImageFileId);
 
-        await Send(Update(profileImageKey: null));              // omitted → kept
-        Assert.Equal("avatars/first.png", (await DetailsAsync()).ProfileImageKey);
+        await Send(Update(profileImageFileId: null));       // omitted → kept
+        Assert.Equal(first, (await DetailsAsync()).ProfileImageFileId);
 
-        await Send(Update(profileImageKey: "avatars/second.png")); // new key → replaced
-        Assert.Equal("avatars/second.png", (await DetailsAsync()).ProfileImageKey);
+        await Send(Update(profileImageFileId: second));     // new id → replaced
+        Assert.Equal(second, (await DetailsAsync()).ProfileImageFileId);
 
-        await Send(Update(profileImageKey: ""));                // empty → cleared
-        Assert.Null((await DetailsAsync()).ProfileImageKey);
+        await Send(Update(profileImageFileId: Guid.Empty)); // empty id → cleared
+        Assert.Null((await DetailsAsync()).ProfileImageFileId);
     }
 
-    private UpdateUserCommand Update(string? profileImageKey) => new()
+    private UpdateUserCommand Update(Guid? profileImageFileId) => new()
     {
         Id = _userId,
         Username = _userName,
         Email = $"{_userName}@test.local",
-        ProfileImageKey = profileImageKey,
+        ProfileImageFileId = profileImageFileId,
     };
 
     private Task<UserDetailsDto> DetailsAsync() => Send(new GetUserDetailsQuery { Id = _userId });

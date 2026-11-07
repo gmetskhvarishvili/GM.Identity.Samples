@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using GM.Identity.Domain.Identity.UserAggregate.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using GM.Identity.Sample.Common.Resources;
@@ -37,8 +37,8 @@ public class CreateUserModel
     /// <summary>Optional personal details, stored 1:1 with the user.</summary>
     public CreateUserPersonalInfoModel? PersonalInfo { get; set; }
 
-    /// <summary>Storage key of the user's profile image (e.g. an object key in blob storage), if any.</summary>
-    public string? ProfileImageKey { get; set; }
+    /// <summary>File id of the user's profile image in file storage (a GM.FileStorage file id), if any.</summary>
+    public Guid? ProfileImageFileId { get; set; }
 }
 
 public class CreateUserModelValidator : AbstractValidator<CreateUserModel>
@@ -47,7 +47,6 @@ public class CreateUserModelValidator : AbstractValidator<CreateUserModel>
     {
         RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
         RuleFor(x => x.Username).NotNull().NotEmpty();
-        RuleFor(x => x.ProfileImageKey).MaximumLength(GMUserLimits.ProfileImageKeyMaxLength);
         RuleFor(x => x.Password).NotNull().NotEmpty();
     }
 }

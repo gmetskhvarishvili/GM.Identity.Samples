@@ -49,7 +49,7 @@ public class UserDto : AuditableDto
     public Guid Id { get; set; }
     public string? Email { get; set; }
     public string? Username { get; set; }
-    /// <summary>Storage key of the user's profile image, if any.</summary>
-    public string? ProfileImageKey { get; set; }
+    /// <summary>File id of the user's profile image in file storage, if any.</summary>
+    public Guid? ProfileImageFileId { get; set; }
     public UserPersonalInfoDto? PersonalInfo { get; set; }
 }

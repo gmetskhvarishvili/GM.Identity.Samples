@@ -51,6 +51,6 @@ public class UserDetailsModel : AuditableModel
     /// <summary>Optional personal details, stored 1:1 with the user.</summary>
     public UserPersonalInfoModel? PersonalInfo { get; set; }
 
-    /// <summary>Storage key of the user's profile image (e.g. an object key in blob storage), if any.</summary>
-    public string? ProfileImageKey { get; set; }
+    /// <summary>File id of the user's profile image in file storage (a GM.FileStorage file id), if any.</summary>
+    public Guid? ProfileImageFileId { get; set; }
 }

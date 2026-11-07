@@ -112,7 +112,8 @@ Resilience is configured declaratively (`GM.HttpClient`).
 |---|---|
 | `ConnectionStrings:Redis` | Backs rate limiting, caching, and distributed locks. |
 | `ReverseProxy:Routes` | One entry per route: `Match` (`Path`, `Methods`), `ClusterId`, optional `AuthorizationPolicy`, and `Metadata` (`RateLimitPolicy`, `RateLimitPartition`). |
-| `ReverseProxy:Clusters` | Backend destinations, e.g. `identity-api` → `https://localhost:7122/`. |
+| `ReverseProxy:Clusters` | Backend destinations, e.g. `identity-api` → `https://localhost:7122/`, `files-api` → `https://localhost:7140/` (GM.FileStorage.Samples' files API, for the upload and download routes). |
+| `Kestrel:Limits:MaxRequestBodySize` | 60 MB, so file uploads (up to 50 MB at the files API) pass through. |
 | `RateLimiting:Policies` | Named policies referenced by route metadata. |
 
 ### Rate-limit policies (defaults)
@@ -121,6 +122,7 @@ Resilience is configured declaratively (`GM.HttpClient`).
 |---|---|---|---|
 | `api` | FixedWindow | 60 / min | general API routes (`/me`, registration, admin resources) |
 | `auth` | FixedWindow | 10 / min | `/connect/*` (login, token, code endpoints) |
+| `uploads` | FixedWindow | 30 / min | `POST /api/{version}/files` (file uploads) |
 
 `RateLimitPartition` (e.g. `Ip,Endpoint`) sets what the counter is keyed on.
 

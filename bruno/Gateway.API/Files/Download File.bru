@@ -1,0 +1,29 @@
+meta {
+  name: Download File
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{gateway}}/api/v1/files/{{fileId}}/content
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("returns 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("streams the PDF", function () {
+    expect(res.getHeader("content-type")).to.contain("application/pdf");
+  });
+}
+
+docs {
+  The file Upload File stored (fileId), streamed back. Another tenant's file is a 404.
+}

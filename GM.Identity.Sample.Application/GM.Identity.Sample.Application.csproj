@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="GM.API.Application" Version="2.0.0" />
+      <PackageReference Include="GM.API.Application" Version="2.2.0" />
       <PackageReference Include="Mapster" Version="10.0.12" />
       <PackageReference Include="GM.Identity" Version="4.0.0" />
       <PackageReference Include="GM.Mediator" Version="2.0.0" />

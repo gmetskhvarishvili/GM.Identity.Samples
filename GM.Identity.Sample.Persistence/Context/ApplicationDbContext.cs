@@ -1,13 +1,10 @@
 using GM.EntityFramework.Domain.Common;
-using GM.EntityFramework.Domain.Events;
 using GM.EntityFramework.Persistence;
 using GM.EntityFramework.Persistence.Extensions;
 using GM.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System;
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,15 +15,14 @@ public class ApplicationDbContext : GenericDbContext, ITenantContext
     public const string DefaultSchema = "application";
 
     private readonly ICurrentActor _currentActor;
-    private readonly IDomainEventDispatcher _dispatcher;
 
+    // GenericDbContext logs the domain events aggregates raise with each save, and dispatches them to their
+    // IDomainEventHandler<>s (e.g. the RBAC cache write-through) after SaveChangesAsync.
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
-        ICurrentActor currentActor,
-        IDomainEventDispatcher dispatcher) : base(options)
+        ICurrentActor currentActor) : base(options)
     {
         _currentActor = currentActor;
-        _dispatcher = dispatcher;
     }
 
     /// <summary>The tenant this unit of work acts under (from the gateway-forwarded X-Tenant-Id).</summary>
@@ -58,24 +54,5 @@ public class ApplicationDbContext : GenericDbContext, ITenantContext
     {
         ChangeTracker.StampTenants(_currentActor);
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        // Snapshot the raised domain events before persisting: the base save copies each to the durable
-        // DomainEvents log and clears the aggregates' in-memory lists. We then dispatch to the in-process
-        // handlers (e.g. the RBAC cache write-through) once the changes — event rows included — are saved.
-        var domainEvents = ChangeTracker.Entries<IHasDomainEvents>()
-            .SelectMany(entry => entry.Entity.DomainEvents)
-            .ToList();
-
-        var result = await base.SaveChangesAsync(cancellationToken);
-
-        if (domainEvents.Count > 0)
-        {
-            await _dispatcher.DispatchRangeAsync(domainEvents, cancellationToken);
-        }
-
-        return result;
     }
 }

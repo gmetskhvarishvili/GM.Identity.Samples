@@ -99,11 +99,6 @@ public static class DependencyInjection
         services.AddTransient<IPasskeyChallengeRepository, PasskeyChallengeRepository>();
         services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
-        // Dispatches domain events raised by aggregates to their in-process IDomainEventHandler<>s after
-        // ApplicationDbContext.SaveChangesAsync persists them. Handlers are registered by the layers that own
-        // them (e.g. the RBAC cache write-through in Infrastructure).
-        services.AddDomainEventDispatcher();
-
         // Read-side over the durable domain-event log (the audit trail).
         services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
 

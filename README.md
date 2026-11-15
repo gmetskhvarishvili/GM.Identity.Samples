@@ -294,6 +294,20 @@ multi-role RBAC authorization and the auth flows — password login, refresh-tok
 detection, and account lockout. They need PostgreSQL + Redis up (`docker compose up -d`) and otherwise
 no-op.
 
+Many tests seed roles, users and sessions straight into Redis with no database row. The scheduled
+cache reconciliation jobs (`permission-cache-reconcile`, `scope-cache-reconcile`,
+`session-cache-reconcile`) would prune those entries as orphans, so the test assembly turns them off
+for every test host by setting `Authorization:CacheReconciliation:Enabled` to `false` (see
+`tests/GM.Identity.Sample.Tests/TestEnvironment.cs`). Tests that exercise the jobs turn the switch
+back on with `WithConfig(CacheReconciliation.EnabledKey, "true")`.
+
+The switch is ordinary configuration (default `true`), so it can also turn reconciliation off in any
+environment, for example while investigating cache drift:
+
+```json
+{ "Authorization": { "CacheReconciliation": { "Enabled": false } } }
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

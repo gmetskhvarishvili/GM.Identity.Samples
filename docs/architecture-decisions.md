@@ -52,6 +52,8 @@ Status legend: **Accepted** — in effect in the sample.
 
 **Consequences.** The cache is self-healing; drift is corrected without a redeploy or manual flush. The cost is a periodic full read of the RBAC sets — acceptable at the sample's scale, and the interval is configurable for larger ones.
 
+Because reconciliation prunes every cache entry with no database row, it also removes data that was put into Redis directly on purpose. The test suite does exactly that, so `Authorization:CacheReconciliation:Enabled` (default `true`) turns the permission, scope and session reconcile jobs into no-ops when set to `false`. The test assembly sets it to `false` for every test host.
+
 ---
 
 ## ADR-005 — Opaque tokens stored as hashes (not self-contained JWTs)

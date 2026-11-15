@@ -1,6 +1,7 @@
 using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Scheduling;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,10 +20,14 @@ namespace GM.Identity.Sample.Infrastructure.Authorization;
 [ScheduledJob("scope-cache-reconcile", Cron = "0 0/10 * * * ?")]
 public sealed class ScopeCacheReconciliationJob(
     IUnitOfWork unitOfWork,
-    IScopeCache cache) : IScheduledJob
+    IScopeCache cache,
+    IConfiguration configuration) : IScheduledJob
 {
     public async Task<JobExecutionResult> ExecuteAsync(JobExecutionContext context, CancellationToken cancellationToken)
     {
+        if (!CacheReconciliation.IsEnabled(configuration))
+            return CacheReconciliation.Disabled();
+
         // Desired state from the DB (only live rows).
         var clientScopes = (await unitOfWork.ClientScopeRepository.GetAllAsync(true, null, cancellationToken))
             .Where(x => x.IsActive && !x.IsDeleted && !x.IsHidden);

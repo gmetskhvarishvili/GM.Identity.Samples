@@ -20,7 +20,6 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDe
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
-using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuditBoundedContext.AuditAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -29,7 +28,6 @@ using GM.Identity.Sample.Persistence.Repositories;
 using GM.Caching.Redis;
 using GM.DistributedLock.Redis;
 using GM.EntityFramework.Persistence;
-using GM.Messaging.Persistence.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -101,10 +99,6 @@ public static class DependencyInjection
 
         // Read-side over the durable domain-event log (the audit trail).
         services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
-
-        services.AddTransient<OutboxMessageRepository>();
-        services.AddTransient<IOutboxMessageRepository>(sp => sp.GetRequiredService<OutboxMessageRepository>());
-        services.AddTransient<IOutboxDbContext<OutboxMessage>>(sp => sp.GetRequiredService<OutboxMessageRepository>());
 
         return services;
     }

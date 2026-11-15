@@ -7,14 +7,14 @@ using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMes
 using GM.Identity.Sample.Infrastructure;
 using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
-using GM.Messaging.Workers;
+using GM.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddProducerWorkerInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
-builder.Services.AddHostedService<OutboxRelayWorker<OutboxMessage>>();
+builder.Services.AddGMOutboxRelay<OutboxMessage, ApplicationDbContext>();
 
 var app = builder.Build();
 

@@ -35,7 +35,9 @@ public sealed class SessionTenantEndToEndTests : IAsyncLifetime
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly GmWebApplicationFactory<Program> _factory = new();
+    // These tests run the reconcile jobs directly, so they turn reconciliation back on (TestEnvironment turns it off).
+    private readonly GmWebApplicationFactory<Program> _factory =
+        new GmWebApplicationFactory<Program>().WithConfig(CacheReconciliation.EnabledKey, "true");
     private readonly Guid _tenant = Guid.NewGuid();
     private readonly string _tenantUserName = $"tenant-session-{Guid.NewGuid():N}";
     private readonly string _globalUserName = $"global-session-{Guid.NewGuid():N}";

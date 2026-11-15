@@ -31,7 +31,9 @@ namespace GM.Identity.Sample.Tests;
 /// </summary>
 public sealed class ReconciliationJobTests : IAsyncLifetime
 {
-    private readonly GmWebApplicationFactory<Program> _factory = new();
+    // These tests run the reconcile jobs directly, so they turn reconciliation back on (TestEnvironment turns it off).
+    private readonly GmWebApplicationFactory<Program> _factory =
+        new GmWebApplicationFactory<Program>().WithConfig(CacheReconciliation.EnabledKey, "true");
     private bool _infraReady;
 
     public Task InitializeAsync()

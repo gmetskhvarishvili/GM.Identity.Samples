@@ -1,6 +1,7 @@
 ﻿using GM.Identity.Authorization;
 using GM.Identity.Sample.Domain.SeedWork;
 using GM.Scheduling;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +21,14 @@ namespace GM.Identity.Sample.Infrastructure.Authorization;
 [ScheduledJob("session-cache-reconcile", Cron = "0 5/10 * * * ?")]
 public sealed class SessionCacheReconciliationJob(
     IUnitOfWork unitOfWork,
-    ISessionCache sessionCache) : IScheduledJob
+    ISessionCache sessionCache,
+    IConfiguration configuration) : IScheduledJob
 {
     public async Task<JobExecutionResult> ExecuteAsync(JobExecutionContext context, CancellationToken cancellationToken)
     {
+        if (!CacheReconciliation.IsEnabled(configuration))
+            return CacheReconciliation.Disabled();
+
         var now = DateTime.UtcNow;
 
         // Desired state = live sessions from the DB, keyed by token hash (which is also the Redis key).

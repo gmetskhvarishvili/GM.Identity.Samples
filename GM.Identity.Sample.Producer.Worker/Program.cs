@@ -3,18 +3,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Infrastructure;
 using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
-using GM.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddProducerWorkerInfrastructure(builder.Configuration);
-builder.Services.AddPersistence(builder.Configuration);
-builder.Services.AddGMOutboxRelay<OutboxMessage, ApplicationDbContext>();
+builder.Services.AddPersistence(builder.Configuration, runOutboxRelay: true);
 
 var app = builder.Build();
 

@@ -20,6 +20,7 @@ using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTotpDe
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.TwoFactorAuthTypeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.IdentityBoundedContext.UserTwoFactorAuthTypeAggregate.Interfaces;
+using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate;
 using GM.Identity.Sample.Domain.BoundedContext.MessagingBoundedContext.OutboxMessageAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AuditBoundedContext.AuditAggregate.Interfaces;
 using GM.Identity.Sample.Domain.SeedWork;
@@ -28,6 +29,7 @@ using GM.Identity.Sample.Persistence.Repositories;
 using GM.Caching.Redis;
 using GM.DistributedLock.Redis;
 using GM.EntityFramework.Persistence;
+using GM.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -37,7 +39,7 @@ namespace GM.Identity.Sample.Persistence;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration, bool runOutboxRelay = false)
     {
         var redis = configuration.GetConnectionString("Redis");
         if (!string.IsNullOrWhiteSpace(redis))
@@ -99,6 +101,11 @@ public static class DependencyInjection
 
         // Read-side over the durable domain-event log (the audit trail).
         services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
+
+        // Only the process that relays the outbox (the producer worker) passes true; the API must not,
+        // or two pollers would read the same outbox table and publish messages twice.
+        if (runOutboxRelay)
+            services.AddGMOutboxRelay<OutboxMessage, ApplicationDbContext>();
 
         return services;
     }

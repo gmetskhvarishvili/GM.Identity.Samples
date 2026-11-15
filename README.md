@@ -110,13 +110,18 @@ GM.Identity.Sample.Persistence/       # ApplicationDbContext, EF configs, migrat
 GM.Identity.Sample.API/               # identity server: controllers, [HasPermission], /me, composition root
 GM.Identity.Sample.Gateway.API/       # public YARP gateway: opaque-token auth, /connect, create-user, /me, file upload/download
 GM.Identity.Sample.Admin.Gateway.API/ # admin YARP gateway: all routes, file upload/download
-GM.Identity.Sample.Producer.Worker/   # outbox relay to RabbitMQ (AddGMOutboxRelay, GM.Messaging)
+GM.Identity.Sample.Producer.Worker/   # outbox relay to RabbitMQ (AddPersistence(..., runOutboxRelay: true))
 tests/GM.Identity.Sample.Tests/       # xUnit + GM.Testing (domain guards + WAF end-to-end RBAC)
 ```
 
 Dependencies flow inward: Domain has no infrastructure dependencies; Application depends on Domain;
 Persistence and Infrastructure implement outward concerns; the APIs are the composition roots.
 `ImplicitUsings` is disabled solution-wide — every file carries explicit `using` directives.
+
+The outbox relay (GM.Messaging) runs only in the Producer.Worker, which calls
+`AddPersistence(configuration, runOutboxRelay: true)`. The API calls `AddPersistence` without the flag,
+so the outbox is never polled and published twice. The `outbox_messages` table lives in the shared
+`messaging` schema.
 
 ## Documentation
 

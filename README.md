@@ -110,7 +110,7 @@ GM.Identity.Sample.Persistence/       # ApplicationDbContext, EF configs, migrat
 GM.Identity.Sample.API/               # identity server: controllers, [HasPermission], /me, composition root
 GM.Identity.Sample.Gateway.API/       # public YARP gateway: opaque-token auth, /connect, create-user, /me, file upload/download
 GM.Identity.Sample.Admin.Gateway.API/ # admin YARP gateway: all routes, file upload/download
-GM.Identity.Sample.Producer.Worker/   # Wolverine messaging producer worker
+GM.Identity.Sample.Producer.Worker/   # outbox relay to RabbitMQ (AddGMOutboxRelay, GM.Messaging)
 tests/GM.Identity.Sample.Tests/       # xUnit + GM.Testing (domain guards + WAF end-to-end RBAC)
 ```
 

@@ -3,4 +3,4 @@ using GM.Messaging.Persistence.Configuration;
 
 namespace GM.Identity.Sample.Persistence.Configuration;
 
-public class OutboxMessageConfiguration() : OutboxMessageConfiguration<OutboxMessage>("outbox_messages");
+public class OutboxMessageConfiguration() : OutboxMessageConfiguration<OutboxMessage>("messaging");

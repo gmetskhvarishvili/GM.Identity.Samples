@@ -2003,7 +2003,7 @@ namespace GM.Identity.Sample.Persistence.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_outbox_messages_user_id");
 
-                    b.ToTable("outbox_messages", "outbox_messages");
+                    b.ToTable("outbox_messages", "messaging");
                 });
 
             modelBuilder.Entity("GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.ClientScope", b =>

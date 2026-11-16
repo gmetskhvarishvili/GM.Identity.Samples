@@ -9,8 +9,8 @@
 
     <ItemGroup>
         <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
-        <PackageReference Include="GM.Caching.Redis" Version="1.0.1" />
-        <PackageReference Include="GM.DistributedLock.Redis" Version="1.0.2" />
+        <PackageReference Include="GM.Caching.Redis" Version="1.2.0" />
+        <PackageReference Include="GM.DistributedLock.Redis" Version="1.2.0" />
         <PackageReference Include="GM.EntityFramework.Persistence" Version="3.0.0" />
         <PackageReference Include="GM.Identity.Persistence" Version="4.0.0" />
         <!-- GM.Messaging (not just GM.Messaging.Persistence) so AddPersistence can register the outbox relay worker. -->

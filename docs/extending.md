@@ -141,7 +141,7 @@ In `GM.Notifications.Samples`, each channel is an aggregate + a send command + a
 3. **Sender service** — define `IXSenderService` and an implementation that talks to the provider; register it in Infrastructure (the existing ones are `IEmailSenderService`, `ISmsSenderService`, `IPushSenderService`, `ISlackSenderService`, `IWhatsAppSenderService`).
 4. **Worker** — add an `XNotificationWorker : BackgroundService` that polls `Pending` rows for the channel, calls the sender, and marks `Sent`/`Failed`; register it with `AddHostedService<XNotificationWorker>()` in its host.
 5. **API** — add the channel's controller (`batch` / `{id}` get / `{id}` delete).
-6. **Event intake (optional)** — to have the channel react to an integration event, add the event type to the inbox `EventTypeMap` in `InboxProcessorWorker` and map it to `SendX`.
+6. **Event intake (optional)** — to have the channel react to an integration event, have the consumer worker ingest it (`IInboxProcessor.IngestAsync`), add an `IInboxHandler<TEvent>` in `GM.Notifications.Sample.Worker/InboxHandlers` that sends `SendX`, and register it with `AddGMInboxHandler<TEvent, THandler>()` in that worker's `Program.cs`.
 
 Provider credentials belong in a secret store, not `appsettings` (see [configuration.md](configuration.md)).
 

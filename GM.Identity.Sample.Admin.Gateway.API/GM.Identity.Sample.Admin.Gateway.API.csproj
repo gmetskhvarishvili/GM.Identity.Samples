@@ -25,9 +25,9 @@
         <PackageReference Include="GM.RateLimiting.Redis" Version="1.2.0" />
 
         <!-- Liveness/readiness endpoints for the edge. -->
-        <PackageReference Include="GM.HealthChecks" Version="1.0.3" />
-        <PackageReference Include="GM.HealthChecks.Caching" Version="1.0.3" />
-        <PackageReference Include="GM.HealthChecks.DistributedLock" Version="1.0.3" />
+        <PackageReference Include="GM.HealthChecks" Version="1.1.0" />
+        <PackageReference Include="GM.HealthChecks.Caching" Version="1.1.0" />
+        <PackageReference Include="GM.HealthChecks.DistributedLock" Version="1.1.0" />
 
         <!-- Swagger UI at the root, rendering the proxied Identity API's OpenAPI document. -->
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />

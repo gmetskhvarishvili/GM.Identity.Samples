@@ -128,6 +128,11 @@ GM.Messaging 4.0 needs no database change, but it declares each exchange with th
 redeclare an existing exchange with a new argument: on a broker that already has the sample's exchanges,
 delete them once (the services recreate them when they start).
 
+The API maps GM.Messaging's outbox admin endpoints (`MapGMMessagingAdmin`, GM.Messaging.AspNetCore) under
+`/admin/messaging/outbox`: backlog, dead letters, requeue and purge. They're for operators, so they require
+the `messaging-admin` policy, which accepts an API key in the `X-Admin-Key` header (`Admin:ApiKey`;
+`local-dev-admin-key` in development). Without it a request gets 401. See `GM.Identity.Sample.API/Admin/MessagingAdmin.cs`.
+
 ## Documentation
 
 Deeper reference material lives in [`docs/`](docs):

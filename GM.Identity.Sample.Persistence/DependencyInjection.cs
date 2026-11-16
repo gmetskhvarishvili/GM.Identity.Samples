@@ -30,6 +30,7 @@ using GM.Caching.Redis;
 using GM.DistributedLock.Redis;
 using GM.EntityFramework.Persistence;
 using GM.Messaging;
+using GM.Messaging.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -101,6 +102,9 @@ public static class DependencyInjection
 
         // Read-side over the durable domain-event log (the audit trail).
         services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
+
+        // Every host can inspect the outbox and requeue dead letters (the API maps it under /admin/messaging).
+        services.AddGMOutboxAdministration<OutboxMessage, ApplicationDbContext>();
 
         // Only the process that relays the outbox (the producer worker) passes true; the API must not,
         // or two pollers would read the same outbox table and publish messages twice.

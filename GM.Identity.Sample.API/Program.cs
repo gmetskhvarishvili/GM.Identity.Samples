@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using GM.Identity.Sample.API.Admin;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,9 @@ builder.Services.AddSingleton<IActorEstablisher>(sp => sp.GetRequiredService<Est
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// GM.Messaging's outbox admin endpoints (/admin/messaging/outbox), behind an operations API key (Admin/MessagingAdmin.cs).
+builder.Services.AddMessagingAdmin(builder.Configuration);
+
 // OpenTelemetry: request/HTTP/DB tracing + ASP.NET/HTTP/runtime metrics, exported over OTLP. The trace
 // context flows from the gateway (W3C traceparent), so a request is one connected distributed trace.
 // Point it at a collector via OTEL_EXPORTER_OTLP_ENDPOINT (default http://localhost:4317).
@@ -67,6 +71,7 @@ builder.Services.AddOpenTelemetry()
 var app = builder.Build();
 
 app.UseGMServices();
+app.MapMessagingAdmin();
 
 using (var scope = app.Services.CreateScope())
 {

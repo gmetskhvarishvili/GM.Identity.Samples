@@ -11,18 +11,18 @@
         <PackageReference Include="GM.Gateway" Version="1.1.0" />
 
         <!-- Redis-backed counter store + distributed lock for cross-instance rate limiting. -->
-        <PackageReference Include="GM.Caching.Redis" Version="1.0.1" />
-        <PackageReference Include="GM.DistributedLock.Redis" Version="1.0.2" />
-        <PackageReference Include="GM.RateLimiting.Redis" Version="1.0.1" />
+        <PackageReference Include="GM.Caching.Redis" Version="1.2.0" />
+        <PackageReference Include="GM.DistributedLock.Redis" Version="1.2.0" />
+        <PackageReference Include="GM.RateLimiting.Redis" Version="1.2.0" />
 
         <!-- Opaque bearer-token validation against the Redis session store (TokenGenerator.Hash + IConnectionMultiplexer). -->
         <PackageReference Include="GM.Identity" Version="4.0.0" />
         <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
 
         <!-- Liveness/readiness endpoints for the edge. -->
-        <PackageReference Include="GM.HealthChecks" Version="1.0.2" />
-        <PackageReference Include="GM.HealthChecks.Caching" Version="1.0.2" />
-        <PackageReference Include="GM.HealthChecks.DistributedLock" Version="1.0.2" />
+        <PackageReference Include="GM.HealthChecks" Version="1.0.3" />
+        <PackageReference Include="GM.HealthChecks.Caching" Version="1.0.3" />
+        <PackageReference Include="GM.HealthChecks.DistributedLock" Version="1.0.3" />
 
         <!-- Swagger UI at the root, rendering the proxied Identity API's OpenAPI document. -->
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />

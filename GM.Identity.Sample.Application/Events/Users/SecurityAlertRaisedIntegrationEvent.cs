@@ -8,7 +8,7 @@ namespace GM.Identity.Sample.Application.Events.Users;
 // via object initializer. MessageIdentity pins the cross-service wire name for the notification producer.
 [MessageIdentity("user.security.alert")]
 public sealed record SecurityAlertRaisedIntegrationEvent(
-    string Subject,
+    [property: SensitiveData] string Subject,
     string AlertType) : IntegrationEvent;
 
 /// <summary>Well-known <see cref="SecurityAlertRaisedIntegrationEvent.AlertType"/> values.</summary>

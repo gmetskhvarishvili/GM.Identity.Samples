@@ -159,7 +159,9 @@ public sealed class CreateUserConsentEndToEndTests : IAsyncLifetime
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var message = await context.Set<OutboxMessage>().SingleAsync(x => x.UserId == _userId);
-        return JsonSerializer.Deserialize<UserRegisteredIntegrationEvent>(message.Payload)!;
+        // Email, username and phone are [SensitiveData] (ciphertext in the row): read it as the relay does.
+        var registry = scope.ServiceProvider.GetRequiredService<GM.Messaging.Domain.Events.IntegrationEventRegistry>();
+        return (UserRegisteredIntegrationEvent)registry.Deserialize(message.Payload, typeof(UserRegisteredIntegrationEvent), message.EventVersion);
     }
 
     private async Task<IReadOnlyList<PendingConsentDto>> PendingAsync()

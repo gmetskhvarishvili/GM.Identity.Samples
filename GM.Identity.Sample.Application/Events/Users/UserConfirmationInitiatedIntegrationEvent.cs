@@ -9,5 +9,5 @@ namespace GM.Identity.Sample.Application.Events.Users;
 // on the consumer side (GM.OTP).
 [MessageIdentity("user.confirmation.initiated")]
 public sealed record UserConfirmationInitiatedIntegrationEvent(
-    string Subject,
+    [property: SensitiveData] string Subject,
     int ConfirmationType) : IntegrationEvent;

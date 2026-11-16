@@ -8,5 +8,5 @@ namespace GM.Identity.Sample.Application.Events.Users;
 // via object initializer. MessageIdentity pins the cross-service wire name.
 [MessageIdentity("user.password.reset.requested")]
 public sealed record PasswordResetRequestedIntegrationEvent(
-    string Subject,
+    [property: SensitiveData] string Subject,
     int NotificationType) : IntegrationEvent;

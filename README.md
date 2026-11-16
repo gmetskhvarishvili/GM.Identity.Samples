@@ -128,6 +128,13 @@ GM.Messaging 4.0 needs no database change, but it declares each exchange with th
 redeclare an existing exchange with a new argument: on a broker that already has the sample's exchanges,
 delete them once (the services recreate them when they start).
 
+Personal data in events is encrypted (GM.Messaging 4.4): `UserRegistered`'s email, username and phone
+number, `TwoFactorChallengeIssued`'s destination, and the `Subject` of every user event (the username,
+often an email address) are `[SensitiveData]`, so the outbox and RabbitMQ only hold ciphertext and consumers
+get the plain values. The user id (`UserId`) stays readable. The key ring is
+`Messaging:SensitiveData` (a sample key in appsettings; use a secret store in production). The OTP and
+Notifications samples consume these events with the same key ring.
+
 The API maps GM.Messaging's outbox admin endpoints (`MapGMMessagingAdmin`, GM.Messaging.AspNetCore) under
 `/admin/messaging/outbox`: backlog, dead letters, requeue and purge. They're for operators, so they require
 the `messaging-admin` policy, which accepts an API key in the `X-Admin-Key` header (`Admin:ApiKey`;

@@ -12,9 +12,9 @@ namespace GM.Identity.Sample.Application.Events.Users;
 // on the consumer side.
 [MessageIdentity("user.registered")]
 public sealed record UserRegisteredIntegrationEvent(
-    string? Email,
-    string? Username,
-    string? PhoneNumber,
+    [property: SensitiveData] string? Email,
+    [property: SensitiveData] string? Username,
+    [property: SensitiveData] string? PhoneNumber,
     IReadOnlyCollection<Guid> RoleIds,
     IReadOnlyCollection<int> TwoFactorAuthTypeIds,
     IReadOnlyCollection<RegisteredConsent> Consents) : IntegrationEvent;

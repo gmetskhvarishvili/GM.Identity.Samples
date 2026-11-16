@@ -9,5 +9,5 @@ namespace GM.Identity.Sample.Application.Events.Users;
 // on the consumer side.
 [MessageIdentity("user.confirmed")]
 public sealed record UserConfirmedIntegrationEvent(
-    string? Subject,
+    [property: SensitiveData] string? Subject,
     int ConfirmationType) : IntegrationEvent;

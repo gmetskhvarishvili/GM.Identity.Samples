@@ -30,8 +30,8 @@ public static class MessagingAdmin
     /// <summary>The API-key scheme and the <see cref="Policy"/> policy.</summary>
     public static IServiceCollection AddMessagingAdmin(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AdminKeyOptions>(o => o.ApiKey = configuration["Admin:ApiKey"]);
-        services.AddAuthentication().AddScheme<AdminKeyOptions, AdminKeyHandler>(Scheme, _ => { });
+        // Scheme options are named after the scheme, so the key is set here, not with Configure<T>().
+        services.AddAuthentication().AddScheme<AdminKeyOptions, AdminKeyHandler>(Scheme, o => o.ApiKey = configuration["Admin:ApiKey"]);
         services.AddAuthorizationBuilder()
             .AddPolicy(Policy, policy => policy.AddAuthenticationSchemes(Scheme).RequireAuthenticatedUser());
         return services;

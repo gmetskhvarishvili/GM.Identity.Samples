@@ -123,6 +123,10 @@ The outbox relay (GM.Messaging) runs only in the Producer.Worker, which calls
 so publishing stays in one host. (Since GM.Messaging 2.0 the relay leases each message before
 publishing it, so running it in several processes would also be safe.) The `outbox_messages` table
 lives in the shared `messaging` schema; the `UpgradeGMMessagingTo2` and `UpgradeGMMessagingTo3` migrations add the 2.0 and 3.0 columns.
+GM.Messaging 4.0 needs no database change, but it declares each exchange with the alternate exchange
+`gm.unrouted`, so messages with no queue bound for them are kept instead of dropped. RabbitMQ won't
+redeclare an existing exchange with a new argument: on a broker that already has the sample's exchanges,
+delete them once (the services recreate them when they start).
 
 ## Documentation
 

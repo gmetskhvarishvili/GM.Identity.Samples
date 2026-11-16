@@ -201,11 +201,17 @@ public sealed class TwoFactorDeliveryEndToEndTests : IAsyncLifetime
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var payloads = await context.Set<OutboxMessage>()
+        var rows = await context.Set<OutboxMessage>()
             .Where(x => x.UserId == userId && x.EventType.Contains(nameof(TwoFactorChallengeIssuedIntegrationEvent)))
-            .Select(x => x.Payload)
+            .Select(x => new { x.Payload, x.EventVersion })
             .ToListAsync();
-        return payloads.Select(p => JsonSerializer.Deserialize<TwoFactorChallengeIssuedIntegrationEvent>(p)!).ToList();
+
+        // The destination is [SensitiveData]: the stored payload holds ciphertext, so read it the way the relay
+        // does, through the app's event registry (which decrypts with the configured key ring).
+        foreach (var row in rows)
+            Assert.DoesNotContain("@test.local", row.Payload, StringComparison.Ordinal);
+        var registry = scope.ServiceProvider.GetRequiredService<GM.Messaging.Domain.Events.IntegrationEventRegistry>();
+        return rows.Select(r => (TwoFactorChallengeIssuedIntegrationEvent)registry.Deserialize(r.Payload, typeof(TwoFactorChallengeIssuedIntegrationEvent), r.EventVersion)).ToList();
     }
 
     private sealed record TokenResponse(

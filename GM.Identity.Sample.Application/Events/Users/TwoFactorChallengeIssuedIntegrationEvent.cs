@@ -11,5 +11,5 @@ namespace GM.Identity.Sample.Application.Events.Users;
 [MessageIdentity("user.twofactor.challenge")]
 public sealed record TwoFactorChallengeIssuedIntegrationEvent(
     string Subject,
-    string Destination,
+    [property: SensitiveData] string Destination,
     int Channel) : IntegrationEvent;

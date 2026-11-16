@@ -1,3 +1,4 @@
+using GM.Messaging.Persistence.Protection;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
@@ -102,6 +103,10 @@ public static class DependencyInjection
 
         // Read-side over the durable domain-event log (the audit trail).
         services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
+
+        // The key ring for [SensitiveData] values (Messaging:SensitiveData): personal data in events (email, phone,
+        // username, OTP destinations) is encrypted in the outbox and on RabbitMQ.
+        services.AddGMSensitiveData(configuration);
 
         // Every host can inspect the outbox and requeue dead letters (the API maps it under /admin/messaging).
         services.AddGMOutboxAdministration<OutboxMessage, ApplicationDbContext>();

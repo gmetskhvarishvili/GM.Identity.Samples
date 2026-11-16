@@ -129,8 +129,9 @@ redeclare an existing exchange with a new argument: on a broker that already has
 delete them once (the services recreate them when they start).
 
 Personal data in events is encrypted (GM.Messaging 4.4): `UserRegistered`'s email, username and phone
-number and `TwoFactorChallengeIssued`'s destination are `[SensitiveData]`, so the outbox and RabbitMQ only
-hold ciphertext and consumers get the plain values. User ids stay readable. The key ring is
+number, `TwoFactorChallengeIssued`'s destination, and the `Subject` of every user event (the username,
+often an email address) are `[SensitiveData]`, so the outbox and RabbitMQ only hold ciphertext and consumers
+get the plain values. The user id (`UserId`) stays readable. The key ring is
 `Messaging:SensitiveData` (a sample key in appsettings; use a secret store in production). The OTP and
 Notifications samples consume these events with the same key ring.
 

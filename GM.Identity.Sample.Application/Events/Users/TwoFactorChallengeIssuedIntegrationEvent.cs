@@ -10,6 +10,6 @@ namespace GM.Identity.Sample.Application.Events.Users;
 // name so the OTP producer (which owns its own copy of this contract) resolves the same Wolverine message-type.
 [MessageIdentity("user.twofactor.challenge")]
 public sealed record TwoFactorChallengeIssuedIntegrationEvent(
-    string Subject,
+    [property: SensitiveData] string Subject,
     [property: SensitiveData] string Destination,
     int Channel) : IntegrationEvent;

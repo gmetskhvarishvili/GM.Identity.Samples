@@ -122,7 +122,7 @@ The outbox relay (GM.Messaging) runs only in the Producer.Worker, which calls
 `AddPersistence(configuration, runOutboxRelay: true)`. The API calls `AddPersistence` without the flag,
 so publishing stays in one host. (Since GM.Messaging 2.0 the relay leases each message before
 publishing it, so running it in several processes would also be safe.) The `outbox_messages` table
-lives in the shared `messaging` schema; the `UpgradeGMMessagingTo2` migration adds the 2.0 columns.
+lives in the shared `messaging` schema; the `UpgradeGMMessagingTo2` and `UpgradeGMMessagingTo3` migrations add the 2.0 and 3.0 columns.
 
 ## Documentation
 

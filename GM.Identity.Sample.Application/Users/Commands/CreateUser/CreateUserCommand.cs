@@ -172,7 +172,7 @@ public class CreateUserCommandHandler(
             UserId = entity.Id
         };
 
-        await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.From(entity.Id, evt), cancellationToken);
+        await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.Create(evt), cancellationToken);
 
         // Self sign-up is anonymous — attribute it to the new user. An admin creating a user stays the actor.
         actorEstablisher.Establish(entity.Id, null, null);

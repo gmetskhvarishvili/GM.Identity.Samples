@@ -96,11 +96,10 @@ Resilience is configured declaratively (`GM.HttpClient`).
 
 | Key | Meaning |
 |---|---|
-| `Service:Name` | Logical service name (telemetry / health). |
+| `Service:Name` | Logical service name (health). |
 | `AllowedHosts` | Host filtering (`*` in dev). |
 | `SwaggerDocOptions` | OpenAPI document metadata. |
 | `Serilog` | Structured logging sinks/levels. |
-| OpenTelemetry (code-wired) | OTLP exporter endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT`. |
 
 ---
 

@@ -1,6 +1,8 @@
-﻿using GM.Identity.Sample.API.Admin;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -8,10 +10,8 @@ using System;
 using GM.API.Startup;
 using GM.Identity;
 using GM.API.Authorization;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using GM.Identity.Authorization;
+using GM.Messaging.AspNetCore;
 using GM.Identity.Sample.Infrastructure;
 using GM.Identity.Sample.Persistence;
 using GM.Identity.Sample.Persistence.Context;
@@ -49,29 +49,33 @@ builder.Services.AddSingleton<IActorEstablisher>(sp => sp.GetRequiredService<Est
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// GM.Messaging's outbox admin endpoints (/admin/messaging/outbox), behind an operations API key (Admin/MessagingAdmin.cs).
-builder.Services.AddMessagingAdmin(builder.Configuration);
+// GM.Messaging's admin endpoints (/admin/messaging) are for administrators: a bearer token this API issued (validated
+// like at the gateways, by GM.Identity's opaque-token scheme) whose user holds the MessagingAdmin permission through one
+// of their roles (the RBAC behind [HasPermission]; seeded below and granted to the Administrator role).
+const string MessagingAdmin = "MessagingAdmin";
+// Only the policy authenticates with the scheme: the rest of the API keeps reading the gateway-forwarded actor headers.
+AppContext.SetSwitch("Microsoft.AspNetCore.Authentication.SuppressAutoDefaultScheme", true);
+builder.Services.AddAuthentication()
+    .AddScheme<AuthenticationSchemeOptions, OpaqueTokenAuthenticationHandler>(OpaqueTokenAuthenticationHandler.SchemeName, null);
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(MessagingAdmin, policy => policy
+        .AddAuthenticationSchemes(OpaqueTokenAuthenticationHandler.SchemeName)
+        .RequireAuthenticatedUser()
+        .RequireAssertion(async context =>
+        {
+            if (context.Resource is not HttpContext http
+                || !Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                return false;
 
-// OpenTelemetry: request/HTTP/DB tracing + ASP.NET/HTTP/runtime metrics, exported over OTLP. The trace
-// context flows from the gateway (W3C traceparent), so a request is one connected distributed trace.
-// Point it at a collector via OTEL_EXPORTER_OTLP_ENDPOINT (default http://localhost:4317).
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("GM.Identity.Sample.API", serviceVersion: "1.0.0"))
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddSource("Npgsql")
-        .AddOtlpExporter())
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddOtlpExporter());
+            var permissions = http.RequestServices.GetRequiredService<IPermissionCache>();
+            return await permissions.GetPermissionIdByNameAsync(MessagingAdmin, http.RequestAborted) is { } permissionId
+                && await permissions.HasPermissionAsync(userId, permissionId, http.RequestAborted);
+        }));
 
 var app = builder.Build();
 
 app.UseGMServices();
-app.MapMessagingAdmin();
+app.MapGMMessagingAdmin(admin => admin.AuthorizationPolicy = MessagingAdmin);
 
 using (var scope = app.Services.CreateScope())
 {
@@ -90,12 +94,14 @@ using (var scope = app.Services.CreateScope())
             {
                 // Permission names come from the [HasPermission] attributes on controller actions (one per
                 // gated action, name = action name). Reflection lives here in the API (the seed, in the
-                // Persistence layer, can't see the controllers). The Redis cache is optional (null = no Redis).
+                // Persistence layer, can't see the controllers), plus MessagingAdmin for the messaging admin
+                // endpoints. The Redis cache is optional (null = no Redis).
                 var permissionNames = typeof(Program).Assembly.GetTypes()
                     .Where(t => typeof(ControllerBase).IsAssignableFrom(t))
                     .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                     .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>())
                     .Select(a => a.PermissionName)
+                    .Append(MessagingAdmin)
                     .Distinct()
                     .ToList();
 

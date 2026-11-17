@@ -23,7 +23,7 @@ public static class SecurityAlerts
             return;
 
         await unitOfWork.OutboxMessageRepository.AddAsync(
-            OutboxMessage.From(userId, new SecurityAlertRaisedIntegrationEvent(subject, alertType) { UserId = userId }),
+            OutboxMessage.Create(new SecurityAlertRaisedIntegrationEvent(subject, alertType) { UserId = userId }),
             cancellationToken);
     }
 }

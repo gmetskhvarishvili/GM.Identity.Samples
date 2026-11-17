@@ -70,7 +70,7 @@ Password reset follows the same shape from `PasswordResetRequested`, once a cons
 ## Adding an event
 
 1. Define a `sealed record X : IntegrationEvent` in the publisher's `Events/` folder.
-2. Publish it from the command handler with `OutboxMessage.From(entityId, evt)` inside the same unit of work.
+2. Publish it from the command handler with `OutboxMessage.Create(evt)` (set the event's `UserId`; it becomes the message's user) inside the same unit of work.
 3. On each consumer, add the type to the inbox `EventTypeMap` and a handler that maps it to a command (`mediator.Send(...)`), keeping the handler idempotent.
 
 ## Related

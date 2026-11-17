@@ -63,7 +63,7 @@ public static class TwoFactorDelivery
         var subject = TwoFactorSubject(user)!; // non-null: the destination above is one of the two contacts
 
         await unitOfWork.OutboxMessageRepository.AddAsync(
-            OutboxMessage.From(user.Id,
+            OutboxMessage.Create(
                 new TwoFactorChallengeIssuedIntegrationEvent(subject, destination, (int)method.ToChannel())
                 {
                     UserId = user.Id,

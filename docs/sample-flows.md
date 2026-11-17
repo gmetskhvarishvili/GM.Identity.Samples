@@ -1251,7 +1251,6 @@ flowchart LR
   SR["StackExchange.Redis"]
   ID["GM.Identity (auth, actor forwarding)"]
   HC["GM.HealthChecks (+ Caching, DistributedLock)"]
-  OT["OpenTelemetry.* (traces, metrics)"]
   SW["Swashbuckle SwaggerUI"]
   GW --> GWY
   GW --> RL
@@ -1260,7 +1259,6 @@ flowchart LR
   GW --> SR
   GW --> ID
   GW --> HC
-  GW --> OT
   GW --> SW
   GW -. proxies over HTTP .-> API["Identity API"]
 ```
@@ -1281,7 +1279,6 @@ flowchart LR
   SR["StackExchange.Redis"]
   ID["GM.Identity (required auth + authorization)"]
   HC["GM.HealthChecks (+ Caching, DistributedLock)"]
-  OT["OpenTelemetry.* (traces, metrics)"]
   SW["Swashbuckle SwaggerUI"]
   GW --> GWY
   GW --> RL
@@ -1290,7 +1287,6 @@ flowchart LR
   GW --> SR
   GW --> ID
   GW --> HC
-  GW --> OT
   GW --> SW
   GW -. proxies over HTTP .-> API["Identity API"]
 ```
@@ -1390,7 +1386,6 @@ flowchart LR
   API -->|GM.HttpClient| OTPAPI["External OTP service"]
   API -->|outbox, GM.Messaging| NOTIFY["Notifier → email/SMS"]
   API -->|OIDC| SOCIAL["Google, Facebook"]
-  API -->|OTLP| OTEL["Telemetry collector"]
 ```
 
 ### C4 model (Structurizr)

@@ -1,4 +1,3 @@
-using GM.Messaging.Persistence.Protection;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.ClientScopeAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.OperationAggregate.Interfaces;
 using GM.Identity.Sample.Domain.BoundedContext.AccessControlBoundedContext.PermissionAggregate.Interfaces;
@@ -31,7 +30,6 @@ using GM.Caching.Redis;
 using GM.DistributedLock.Redis;
 using GM.EntityFramework.Persistence;
 using GM.Messaging;
-using GM.Messaging.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -104,17 +102,12 @@ public static class DependencyInjection
         // Read-side over the durable domain-event log (the audit trail).
         services.AddTransient<IDomainEventLogRepository, DomainEventLogRepository>();
 
-        // The key ring for [SensitiveData] values (Messaging:SensitiveData): personal data in events (email, phone,
-        // username, OTP destinations) is encrypted in the outbox and on RabbitMQ.
-        services.AddGMSensitiveData(configuration);
-
-        // Every host can inspect the outbox and requeue dead letters (the API maps it under /admin/messaging).
-        services.AddGMOutboxAdministration<OutboxMessage, ApplicationDbContext>();
-
-        // Only the process that relays the outbox (the producer worker) passes true; the API must not,
-        // or two pollers would read the same outbox table and publish messages twice.
-        if (runOutboxRelay)
-            services.AddGMOutboxRelay<OutboxMessage, ApplicationDbContext>();
+        // Everything GM.Messaging needs, in one call: the outbox (administration, which the API maps under /admin/messaging,
+        // erasure events, and the relay in the producer worker or, in the API, the wake-up that makes the relay publish at
+        // once), its save interceptors on ApplicationDbContext, and the key ring for [SensitiveData] values
+        // (Messaging:SensitiveData): personal data in events (email, phone, username, OTP destinations) is encrypted in the
+        // outbox and on RabbitMQ.
+        services.AddGMOutbox<OutboxMessage, ApplicationDbContext>(configuration, relay: runOutboxRelay);
 
         return services;
     }

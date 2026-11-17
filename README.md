@@ -118,27 +118,34 @@ Dependencies flow inward: Domain has no infrastructure dependencies; Application
 Persistence and Infrastructure implement outward concerns; the APIs are the composition roots.
 `ImplicitUsings` is disabled solution-wide — every file carries explicit `using` directives.
 
-The outbox relay (GM.Messaging) runs only in the Producer.Worker, which calls
-`AddPersistence(configuration, runOutboxRelay: true)`. The API calls `AddPersistence` without the flag,
-so publishing stays in one host. (Since GM.Messaging 2.0 the relay leases each message before
-publishing it, so running it in several processes would also be safe.) The `outbox_messages` table
+GM.Messaging (5.0) is registered in one call, `services.AddGMOutbox<OutboxMessage, ApplicationDbContext>(configuration,
+relay: ...)` in `AddPersistence`: outbox administration, erasure events, the save interceptors on `ApplicationDbContext`
+and the `[SensitiveData]` key ring from `Messaging:SensitiveData`. The outbox relay runs only in the Producer.Worker,
+which calls `AddPersistence(configuration, runOutboxRelay: true)` (plus `AddGMMessaging(configuration)` for RabbitMQ).
+The API calls `AddPersistence` without the flag, so publishing stays in one host; it gets the outbox wake-up instead,
+which tells the relay over RabbitMQ that a save added events so it publishes at once (when RabbitMQ isn't reachable the
+relay just polls). (Since GM.Messaging 2.0 the relay leases each message before publishing it, so running it in several
+processes would also be safe.) The sample's `OutboxMessage` derives from `GMOutboxMessage` and is built with
+`OutboxMessage.Create(evt)` (the event's `UserId` is the message's user). The `outbox_messages` table
 lives in the shared `messaging` schema; the `UpgradeGMMessagingTo2` and `UpgradeGMMessagingTo3` migrations add the 2.0 and 3.0 columns.
 GM.Messaging 4.0 needs no database change, but it declares each exchange with the alternate exchange
 `gm.unrouted`, so messages with no queue bound for them are kept instead of dropped. RabbitMQ won't
 redeclare an existing exchange with a new argument: on a broker that already has the sample's exchanges,
 delete them once (the services recreate them when they start).
 
-Personal data in events is encrypted (GM.Messaging 4.4): `UserRegistered`'s email, username and phone
+Personal data in events is encrypted (since GM.Messaging 4.4): `UserRegistered`'s email, username and phone
 number, `TwoFactorChallengeIssued`'s destination, and the `Subject` of every user event (the username,
 often an email address) are `[SensitiveData]`, so the outbox and RabbitMQ only hold ciphertext and consumers
 get the plain values. The user id (`UserId`) stays readable. The key ring is
 `Messaging:SensitiveData` (a sample key in appsettings; use a secret store in production). The OTP and
 Notifications samples consume these events with the same key ring.
 
-The API maps GM.Messaging's outbox admin endpoints (`MapGMMessagingAdmin`, GM.Messaging.AspNetCore) under
-`/admin/messaging/outbox`: backlog, dead letters, requeue and purge. They're for operators, so they require
-the `messaging-admin` policy, which accepts an API key in the `X-Admin-Key` header (`Admin:ApiKey`;
-`local-dev-admin-key` in development). Without it a request gets 401. See `GM.Identity.Sample.API/Admin/MessagingAdmin.cs`.
+The API maps GM.Messaging's admin endpoints (`app.MapGMMessagingAdmin(...)` in its `Program.cs`, GM.Messaging.AspNetCore)
+under `/admin/messaging`: the outbox backlog, dead letters, requeue and purge, plus endpoints for the other GM.Messaging
+parts the API registers. They're for administrators, so they require the `MessagingAdmin` policy: a bearer token this API issued (validated with GM.Identity's
+opaque-token scheme, as at the gateways) whose user holds the `MessagingAdmin` permission through a role. The permission is
+seeded with the `[HasPermission]` ones and granted to the Administrator role. Without a valid token a request gets 401;
+without the permission, 403.
 
 ## Documentation
 
@@ -288,17 +295,6 @@ The Bruno collection has both under **Files** in each gateway's folder.
 > **Note on credentials:** `appsettings.json` ships **placeholder** OAuth client IDs/secrets and a
 > dev seed password so the sample is self-explanatory. Replace them (user secrets / environment
 > variables) and never reuse them in a real deployment.
-
-## Observability
-
-The API and both gateways emit **OpenTelemetry** traces (ASP.NET Core, HttpClient, PostgreSQL) and
-metrics (ASP.NET Core, HttpClient, runtime), exported over **OTLP**. The W3C trace context propagates
-from the gateway to the API, so a request is a single distributed trace across the edge and the backend
-(and lines up with the `CorrelationId` on the domain-event envelope). Point it at a collector:
-
-```bash
-OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"   # e.g. an OpenTelemetry Collector / Jaeger / Tempo
-```
 
 ## Testing
 

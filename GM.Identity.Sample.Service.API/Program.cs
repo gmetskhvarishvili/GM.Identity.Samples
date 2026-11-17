@@ -5,9 +5,6 @@ using GM.Identity.Sample.Service.API.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 
 // A *resource server* sample: it does not issue tokens. Same GM bootstrap as the provider API, but with no
 // database — it validates the provider's opaque access tokens and enforces the user's permissions and the
@@ -43,19 +40,6 @@ builder.Services.AddHttpClient<IIdentityProviderClient, IdentityProviderClient>(
 builder.Services.AddAuthentication(IntrospectionAuthenticationHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, IntrospectionAuthenticationHandler>(
         IntrospectionAuthenticationHandler.SchemeName, configureOptions: null);
-
-// Distributed tracing/metrics over OTLP, same shape as the provider; collector via OTEL_EXPORTER_OTLP_ENDPOINT.
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("GM.Identity.Sample.Service.API", serviceVersion: "1.0.0"))
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter())
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddOtlpExporter());
 
 var app = builder.Build();
 

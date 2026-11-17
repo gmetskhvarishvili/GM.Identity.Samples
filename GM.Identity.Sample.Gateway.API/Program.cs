@@ -17,9 +17,6 @@ using GM.RateLimiting.Http;
 using GM.RateLimiting.Redis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -108,20 +105,6 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 builder.Services.AddGMHealthChecks()
     .AddGMCacheCheck()
     .AddGMDistributedLockCheck();
-
-// Distributed tracing/metrics over OTLP; the W3C trace context is propagated to the backend so the
-// gateway and API spans join into one trace. Collector endpoint via OTEL_EXPORTER_OTLP_ENDPOINT.
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("GM.Identity.Sample.Gateway.API", serviceVersion: "1.0.0"))
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter())
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddOtlpExporter());
 
 // HTTP client used to fetch the backend's OpenAPI document for the gateway's Swagger. Dev-only cert
 // bypass, matching the reverse-proxy cluster.

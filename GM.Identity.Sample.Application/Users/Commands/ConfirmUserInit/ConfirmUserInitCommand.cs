@@ -81,7 +81,7 @@ public class ConfirmUserInitCommandHandler(
             UserId = entity.Id
         };
 
-        await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.From(entity.Id, evt), cancellationToken);
+        await unitOfWork.OutboxMessageRepository.AddAsync(OutboxMessage.Create(evt), cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
